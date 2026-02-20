@@ -1,0 +1,12 @@
+# Private workshop prep
+WORKSHOP.md
+scripts/gamma-prompt.md
+
+# Claude Code local settings
+.claude/
+
+# Runtime outputs
+.solopreneur/
+
+# OS files
+.DS_Store

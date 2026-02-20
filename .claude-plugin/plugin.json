@@ -1,0 +1,17 @@
+{
+  "name": "solopreneur",
+  "description": "Your virtual AI team. Treats your solopreneur workflow as a virtual company with specialized AI employees, SOPs, team meetings, and performance reviews.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Solopreneur Workshop"
+  },
+  "repository": "https://github.com/solopreneur/solopreneur",
+  "license": "MIT",
+  "keywords": [
+    "solopreneur",
+    "product-management",
+    "ai-team",
+    "workshop",
+    "agents"
+  ]
+}

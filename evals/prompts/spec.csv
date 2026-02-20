@@ -1,0 +1,6 @@
+id,should_trigger,prompt,expected_behaviors
+explicit-from-idea,true,"Run /solopreneur:spec for a habit tracking app with social accountability","Generates user stories in As a/I want/So that format|Includes acceptance criteria (Given/When/Then)|Lists technical requirements|Identifies out of scope items|Saves to .solopreneur/specs/"
+explicit-from-file,true,"Run /solopreneur:spec .solopreneur/discoveries/2024-01-15-invoice-gen.md","Reads the discovery file for context|Builds spec from discovery findings|References competitive landscape from discovery"
+implicit-build,true,"I know what I want to build - a Pomodoro timer with team sync. What should the requirements be?","Triggers spec workflow|Produces structured requirements|Includes both functional and non-functional requirements"
+contextual-complex,true,"Write a PRD for adding real-time collaboration to our document editor","Includes concurrency/sync in technical requirements|Identifies architectural complexity|Lists open questions about conflict resolution"
+negative-code,false,"Write a function that validates email addresses","Does NOT trigger spec workflow|Recognizes this is a direct coding task"

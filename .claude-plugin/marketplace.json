@@ -1,0 +1,18 @@
+{
+  "name": "solopreneur-workshop",
+  "owner": {
+    "name": "Solopreneur Workshop"
+  },
+  "metadata": {
+    "description": "Solopreneur workshop plugin marketplace - your virtual AI team for solopreneurs",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "solopreneur",
+      "source": "./",
+      "description": "Your virtual AI team - specialized employees, SOPs, team meetings, and performance reviews for solopreneurs.",
+      "version": "1.0.0"
+    }
+  ]
+}

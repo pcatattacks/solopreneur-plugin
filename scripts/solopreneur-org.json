@@ -1,0 +1,68 @@
+{
+  "name": "Solopreneur",
+  "agents": [
+    {
+      "name": "Engineer",
+      "model": "opus",
+      "skills": ["build", "review", "ship"],
+      "mcps": ["GitHub", "Chrome DevTools"],
+      "description": "Architecture & implementation"
+    },
+    {
+      "name": "Designer",
+      "model": "opus",
+      "skills": ["design", "review"],
+      "mcps": ["Chrome DevTools"],
+      "description": "UI/UX & wireframes"
+    },
+    {
+      "name": "BizOps",
+      "model": "opus",
+      "skills": ["discover", "release-notes"],
+      "mcps": [],
+      "description": "Market analysis & strategy"
+    },
+    {
+      "name": "QA",
+      "model": "sonnet",
+      "skills": ["review", "ship"],
+      "mcps": ["GitHub", "Chrome DevTools"],
+      "description": "Testing & security"
+    },
+    {
+      "name": "Researcher",
+      "model": "sonnet",
+      "skills": ["discover"],
+      "mcps": ["Context7"],
+      "description": "Competitive analysis & trends"
+    },
+    {
+      "name": "Content Strategist",
+      "model": "opus",
+      "skills": ["release-notes", "write-tutorial"],
+      "mcps": [],
+      "description": "Copy, tutorials & launch comms"
+    }
+  ],
+  "skills": [
+    { "name": "discover", "description": "Research & validate ideas" },
+    { "name": "spec", "description": "Write product requirements" },
+    { "name": "design", "description": "UI/UX direction" },
+    { "name": "build", "description": "Cursor-ready plans" },
+    { "name": "review", "description": "Quality review" },
+    { "name": "ship", "description": "Deploy & launch" },
+    { "name": "release-notes", "description": "Audience announcements" },
+    { "name": "write-tutorial", "description": "Tutorial synthesis" }
+  ],
+  "mcps": [
+    { "name": "GitHub", "description": "Code & PR management" },
+    { "name": "Context7", "description": "Up-to-date docs" },
+    { "name": "Chrome DevTools", "description": "Browser DOM inspection" }
+  ],
+  "teams": [
+    { "name": "Discovery Sprint", "members": ["Researcher", "BizOps", "Engineer"] },
+    { "name": "Build & QA", "members": ["Engineer", "QA", "Designer"] },
+    { "name": "Ship & Launch", "members": ["Engineer", "QA", "Content Strategist"] }
+  ],
+  "lifecycle": ["discover", "spec", "design", "build", "review", "ship", "release-notes"]
+}
