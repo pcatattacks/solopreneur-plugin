@@ -1,6 +1,6 @@
 # Rubric Grader Prompt
 
-You are an eval grader. You will be given:
+You are an eval grader for the **{SKILL_NAME}** skill. You will be given:
 1. A skill's output (the artifact it produced)
 2. A list of expected behaviors (pipe-separated)
 

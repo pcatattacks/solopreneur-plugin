@@ -84,20 +84,22 @@ This plugin follows a **"Claude thinks, Cursor executes"** pattern:
 
 Plan files are saved to `.solopreneur/plans/` in a format optimized for Cursor Composer.
 
-## Running Evals
+## Running Evals (Developer Only)
 
-Test your skills with the eval framework:
+Test your skill prompts with the eval framework. Eval CSVs live alongside each skill (`skills/*/eval.csv`).
 
 ```bash
 # Dry run - see test cases without executing
 bash evals/run-evals.sh --dry
 
+# Run all evals
+bash evals/run-evals.sh
+
 # Run evals for a specific skill
 bash evals/run-evals.sh discover
-
-# Run deterministic checks on outputs
-bash evals/graders/deterministic.sh discover .solopreneur/discoveries/
 ```
+
+Override models via env vars: `EVAL_MODEL=opus JUDGE_MODEL=opus bash evals/run-evals.sh`
 
 ## Building Your Own AI Org
 
@@ -121,6 +123,6 @@ solopreneur/
 ├── skills/                       # SOPs (12 skills)
 ├── hooks/hooks.json              # Automated observer logging
 ├── scripts/                      # Helper scripts
-├── evals/                        # Eval framework
+├── evals/                        # Eval runner + rubric grader
 └── .solopreneur/                     # Runtime outputs (created during use)
 ```

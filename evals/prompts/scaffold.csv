@@ -1,6 +1,0 @@
-id,should_trigger,prompt,expected_behaviors
-explicit-developer,true,"Run /solopreneur:scaffold I am a freelance web developer","Asks about time sinks and daily tools|Proposes relevant agents (code reviewer, project manager etc)|Suggests developer-specific skills|Recommends GitHub MCP|Generates plugin files"
-explicit-creator,true,"Run /solopreneur:scaffold I run a YouTube channel about cooking","Proposes content-focused agents (writer, editor, social manager)|Suggests content lifecycle skills|References content-creator.md example"
-implicit-help,true,"I want to set up my own AI team for my consulting business","Triggers scaffold workflow|Asks discovery questions about their consulting work|Proposes consulting-relevant agents"
-contextual-nontech,true,"I'm a real estate agent. Can I build an AI team to help me?","Uses accessible language (no jargon)|Proposes relevant agents (lead qualifier, listing writer etc)|Suggests real estate tools"
-negative-use-plugin,false,"How do I use the discover skill?","Does NOT trigger scaffold|Recognizes this is an explain question"

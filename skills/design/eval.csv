@@ -1,0 +1,7 @@
+id,should_trigger,prompt,expected_behaviors
+explicit-landing,true,"Run /solopreneur:design for a SaaS landing page with pricing tiers","Includes user flow diagram|Describes key screens with layout details|Lists UI components needed|Provides accessibility considerations|Suggests next step (/solopreneur:build)"
+explicit-from-spec,true,"Run /solopreneur:design .solopreneur/specs/habit-tracker.md","Reads context from spec file|Produces wireframe descriptions for key screens|Includes component list|Provides visual direction (colors or typography)"
+implicit-design,true,"I need wireframes for a checkout flow with cart review and payment","Triggers design workflow without explicit skill name|Describes checkout screens step by step|Includes ASCII wireframe or layout description|Lists form components and CTAs"
+implicit-visual,true,"What should the dashboard look like for my analytics tool?","Triggers design workflow|Proposes dashboard layout with key widgets|Includes data visualization components|Considers information hierarchy"
+negative-code,false,"Build a responsive navbar component in React","Does NOT trigger design workflow|Recognizes this is a code implementation task"
+negative-review,false,"Review the UI changes I just pushed","Does NOT trigger design workflow|Recognizes this is a review task"

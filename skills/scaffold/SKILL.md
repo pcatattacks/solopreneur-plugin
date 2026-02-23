@@ -116,7 +116,7 @@ On user approval, create the file structure. What you generate depends on their 
 5. **`[name]/settings.json`** - Enable agent teams
 6. **`[name]/hooks/hooks.json`** - Automated behaviors (at minimum: post-tool logging for observer functionality)
 7. **`[name]/scripts/observer-log.sh`** - Copy from this plugin's scripts/ for automated logging
-8. **`[name]/evals/prompts/[skill].csv`** - Basic eval CSV for their top skill
+8. **`[name]/skills/[top-skill]/eval.csv`** - Basic eval CSV for their top skill
 
 ### For sharing (full plugin):
 All of the above, plus:

@@ -1,0 +1,6 @@
+id,should_trigger,prompt,expected_behaviors
+explicit-developer,true,"Run /solopreneur:scaffold I am a freelance web developer","Asks about time sinks and daily tools|Asks about technical level|Begins discovery interview before proposing structure"
+explicit-creator,true,"Run /solopreneur:scaffold I run a YouTube channel about cooking","Asks discovery questions relevant to content creation|Adapts language for non-technical user|Does not jump straight to generating files"
+implicit-help,true,"I want to set up my own AI team for my consulting business","Triggers scaffold workflow|Asks discovery questions about their consulting work|Does not assume technical level"
+contextual-nontech,true,"I'm a real estate agent. Can I build an AI team to help me?","Uses accessible language (no jargon)|Asks about their daily work and time sinks|Begins interactive interview"
+negative-use-plugin,false,"How do I use the discover skill?","Does NOT trigger scaffold|Recognizes this is an explain question"

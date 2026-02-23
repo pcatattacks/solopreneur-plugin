@@ -8,5 +8,8 @@ scripts/gamma-prompt.md
 # Runtime outputs
 .solopreneur/
 
+# Eval run artifacts
+.eval-runs/
+
 # OS files
 .DS_Store
