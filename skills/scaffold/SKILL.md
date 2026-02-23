@@ -115,13 +115,16 @@ On user approval, create the file structure. What you generate depends on their 
 4. **`[name]/.mcp.json`** - MCP servers based on their daily tools
 5. **`[name]/settings.json`** - Enable agent teams
 6. **`[name]/hooks/hooks.json`** - Automated behaviors (at minimum: post-tool logging for observer functionality)
-7. **`[name]/scripts/observer-log.sh`** - Copy from this plugin's scripts/ for automated logging
-8. **`[name]/skills/[top-skill]/eval.csv`** - Basic eval CSV for their top skill
+7. **`[name]/scripts/observer-log.sh`** - Copy from this plugin's `scripts/` for automated logging
+8. **`[name]/evals/run-evals.sh`** - Copy from this plugin's `skills/scaffold/templates/evals/run-evals.sh` (make executable with `chmod +x`)
+9. **`[name]/evals/rubric.md`** - Copy from this plugin's `skills/scaffold/templates/evals/rubric.md`
+10. **`[name]/evals/README.md`** - Copy from this plugin's `skills/scaffold/templates/evals/README.md`
+11. **`[name]/skills/[top-skill]/eval.csv`** - Generate starter eval CSV (see eval guidance below)
 
 ### For sharing (full plugin):
 All of the above, plus:
-9. **`[name]/.claude-plugin/plugin.json`** - Plugin manifest with name, description, version
-10. **`[name]/.claude-plugin/marketplace.json`** - Registry manifest for distribution
+12. **`[name]/.claude-plugin/plugin.json`** - Plugin manifest with name, description, version
+13. **`[name]/.claude-plugin/marketplace.json`** - Registry manifest for distribution
 
 ### Hooks configuration
 Always include a `hooks/hooks.json` that:
@@ -152,6 +155,24 @@ You (Claude) manage all git operations for the CEO. They should never need to us
 - Always explain what you're doing with git before doing it
 ```
 
+### Eval CSV generation
+
+Generate a starter `skills/[top-skill]/eval.csv` with 4 test cases: 3 positive + 1 negative. Use the user's top skill (the one most central to their workflow).
+
+Each positive test should have 3-5 specific, countable expected_behaviors (pipe-separated). Negative tests should describe what the skill should NOT do.
+
+Example for a hypothetical `/content:brainstorm` skill:
+
+```csv
+id,should_trigger,prompt,expected_behaviors
+explicit-topic,true,"Run /content:brainstorm about sustainable fashion","Generates at least 5 content ideas|Includes mix of formats (blog, video, social)|Ideas are specific to sustainable fashion"
+implicit-stuck,true,"I'm running out of things to write about for my cooking blog","Triggers brainstorm workflow|Generates ideas relevant to cooking|Suggests content gaps or trends"
+edge-broad,true,"Brainstorm content ideas","Asks clarifying questions about niche or audience|Does not generate generic ideas without context"
+negative-write,false,"Write the introduction paragraph for my blog post about coffee","Does NOT trigger brainstorm|Recognizes this is a writing task"
+```
+
+Also add `.eval-runs/` to the generated `.gitignore` (eval artifacts are ephemeral).
+
 ## Step 5: Test & Next Steps
 
 Tell the user (adapted to their technical level):
@@ -164,8 +185,11 @@ Your setup is ready! Test it with:
 Try your first skill:
   /[name]:[first-skill] [example input]
 
-Run an eval to test quality:
+See your eval test cases:
   bash evals/run-evals.sh [skill] --dry
+
+Run the full eval (invokes your skill and grades the output):
+  bash evals/run-evals.sh [skill]
 ```
 
 **For non-technical users:**
