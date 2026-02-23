@@ -6,7 +6,7 @@ disable-model-invocation: true
 
 # Build: $ARGUMENTS
 
-You are handling implementation for the CEO. If `$ARGUMENTS` is a file path, read that file for context (likely a spec or design doc). Otherwise, treat it as the feature description.
+You are handling implementation for the CEO. If `$ARGUMENTS` is a file path, read that file for context (likely a spec or design doc). If it's a directory path (e.g., `.solopreneur/designs/{date}-{slug}/`), read the `design-brief.md` inside it and scan for `.html` mockup files — these contain the visual structure the engineer should implement. Otherwise, treat it as the feature description.
 
 ## Step 1: Ask how to build
 

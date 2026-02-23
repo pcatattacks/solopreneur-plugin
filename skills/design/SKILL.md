@@ -1,40 +1,78 @@
 ---
 name: design
-description: Create design direction, wireframe descriptions, and UI/UX recommendations for a feature or product. Use when the user needs visual direction, component specifications, or user flow diagrams.
+description: Create design direction, HTML mockups, and UI/UX recommendations for a feature or product. Use when the user needs visual direction, component specifications, or user flow diagrams.
 ---
 
 # Design Direction: $ARGUMENTS
 
-You are creating design direction for the CEO. If `$ARGUMENTS` is a file path, read that file for context (likely a spec). Otherwise, treat it as the feature description.
+You are creating design direction for the CEO. If `$ARGUMENTS` is a file path, read that file for context (likely a spec). If it's a directory, read files inside it for context. Otherwise, treat it as the feature description.
 
 ## Process
 
-1. Delegate to the `@designer` subagent to produce:
-   - **User Flow**: ASCII diagram showing the full user journey (use box-drawing characters)
-   - **Key Screens**: For each screen, describe the layout, key elements, and user actions
-   - **Component List**: All UI components needed (buttons, forms, cards, modals, etc.)
-   - **Visual Direction**: Color palette, typography, spacing recommendations
-   - **Accessibility**: Screen reader considerations, contrast ratios, keyboard navigation
+### Step 1: Design Brief
 
-2. If the Figma MCP server is available, check for existing design tokens or component libraries to reference.
+Delegate to the `@designer` subagent to produce a `design-brief.md` containing:
 
-3. For each key screen, include a simple ASCII wireframe:
-   ```
-   +---------------------------+
-   |  Logo    [Nav] [Nav] [CTA]|
-   +---------------------------+
-   |                           |
-   |    Hero Headline          |
-   |    Subtext here           |
-   |    [Primary Button]       |
-   |                           |
-   +---------------------------+
-   ```
+- **User Flow**: ASCII diagram showing the full user journey (use box-drawing characters). Example:
+  ```
+  [Landing Page] → [Sign Up] → [Onboarding] → [Dashboard]
+                         ↓
+                   [Login] ───→ [Dashboard]
+  ```
+- **Screen Inventory**: List every key screen with a one-line description of what the user does there
+- **Shared Visual Direction**: Color palette (hex values), typography (font families, sizes), spacing scale
+- **Component Patterns**: Buttons, cards, forms, navigation — the shared building blocks across screens
+- **Accessibility**: Screen reader flow, contrast requirements, keyboard navigation paths
 
-4. Save to `.solopreneur/designs/{date}-{slug}.md` (create the directory if needed).
+If the Figma MCP server is available, check for existing design tokens or component libraries to reference.
 
-5. End with the next step prompt:
-   ```
-   -> Next: Build this with a Cursor-ready plan:
-      /solopreneur:build .solopreneur/designs/{filename}
-   ```
+Save to `.solopreneur/designs/{date}-{slug}/design-brief.md` (create the directory).
+
+### Step 2: HTML Screen Mockups
+
+For each screen in the inventory, delegate to a `@designer` subagent to produce a self-contained HTML mockup. Each subagent receives:
+- The design brief (for shared visual direction and component patterns)
+- The specific screen name and description from the inventory
+
+Each HTML file must:
+- Include DaisyUI CSS and Tailwind via CDN:
+  ```html
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5/daisyui.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  ```
+- Use DaisyUI semantic classes for polished defaults (`btn`, `card`, `navbar`, `modal`, `table`, etc.)
+- Use realistic placeholder data (real names, prices, dates — not lorem ipsum)
+- Include basic interactivity where helpful (tab switches, modals, dropdowns via inline JS)
+- Have no external dependencies beyond DaisyUI + Tailwind CDN
+- Be openable via `file://` in any browser
+
+Save each screen to `.solopreneur/designs/{date}-{slug}/{screen-name}.html`.
+
+**Parallelization**: Launch one subagent per screen. Each subagent only needs the design brief plus its screen-specific requirements. For 3+ screens, run them in parallel using agent teams.
+
+### Step 3: Present to the CEO
+
+Tell the user:
+```
+Your design mockups are ready! Open them in your browser to see the designs:
+
+  open .solopreneur/designs/{date}-{slug}/
+
+Files:
+  - design-brief.md    — User flows, visual direction, component patterns
+  - {screen-1}.html    — [Screen 1 description]
+  - {screen-2}.html    — [Screen 2 description]
+  - ...
+
+Take a look and let me know what you'd like to change. I can iterate on any individual screen.
+```
+
+If the Chrome DevTools MCP is available, offer: "I can also open these in your browser and take screenshots if you'd like to review them together here."
+
+### Step 4: Next step
+
+End with the next step prompt:
+```
+-> Next: Build this with a Cursor-ready plan:
+   /solopreneur:build .solopreneur/designs/{date}-{slug}
+```

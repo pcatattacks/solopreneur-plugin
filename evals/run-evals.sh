@@ -113,7 +113,7 @@ get_negative_patterns() {
   case "$skill" in
     discover) echo "Go/No-Go|Competitive Landscape|Market Size|Discovery Brief" ;;
     spec)     echo "User Stor|Acceptance Criteria|Technical Requirements|Out of Scope" ;;
-    design)   echo "User Flow|Component List|Visual Direction|Wireframe|ASCII" ;;
+    design)   echo "User Flow|Component|Visual Direction|design-brief|\.html|daisyui" ;;
     review)   echo "Critical|Warning|Suggestion|Positive|Severity" ;;
     scaffold) echo "Your AI Org|Employees.*Agents|SOPs.*Skills|org chart" ;;
     *)        echo "" ;;

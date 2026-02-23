@@ -9,7 +9,7 @@ You are conducting a quality review. Determine what type of artifact is being re
 
 - If it's a file path ending in code extensions (.ts, .js, .py, etc.) or "recent changes" or a PR → **Code Review**
 - If it's a path to a `.solopreneur/specs/` file or mentions "spec" → **Spec Review**
-- If it's a path to a `.solopreneur/designs/` file or mentions "design" → **Design Review**
+- If it's a path to a `.solopreneur/designs/` directory or file, or mentions "design" → **Design Review**
 - If it's a path to a `.solopreneur/plans/` file → **Plan Validation** (check completed steps against acceptance criteria)
 
 ## Code Review
@@ -26,9 +26,11 @@ Delegate in parallel:
 
 ## Design Review
 
+If reviewing a design directory, read `design-brief.md` for flows and visual direction. If HTML mockups exist, open them in the browser (Chrome DevTools MCP if available) to inspect the actual layouts.
+
 Delegate in parallel:
-- `@designer`: Usability - is the flow intuitive? Are there accessibility issues?
-- `@engineer`: Implementability - can this be built as designed? Any technical constraints?
+- `@designer`: Usability - is the flow intuitive? Are there accessibility issues? If HTML mockups exist, inspect them for visual consistency and responsive behavior.
+- `@engineer`: Implementability - can this be built as designed? Review HTML mockups for feasible component structure. Any technical constraints?
 
 ## Plan Validation (after Cursor execution)
 

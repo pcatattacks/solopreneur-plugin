@@ -38,7 +38,7 @@ For GitHub features (creating repos, PRs, issues), the plugin uses the `gh` CLI.
 | Employee | Role | Model |
 |----------|------|-------|
 | Engineer | Architecture, implementation, debugging, code review | inherit |
-| Designer | UI/UX, wireframes, user flows, accessibility | inherit |
+| Designer | UI/UX, HTML mockups, user flows, accessibility | inherit |
 | BizOps | Market analysis, pricing, go-to-market, unit economics | inherit |
 | QA | Testing, bug hunting, security review, edge cases | sonnet |
 | Researcher | Competitive analysis, market research, trends | sonnet |
@@ -58,7 +58,7 @@ Each skill suggests the next step when it completes.
 |-------|-------------|
 | `/solopreneur:discover [idea]` | Research and validate a product idea |
 | `/solopreneur:spec [idea or file]` | Write a product requirement document |
-| `/solopreneur:design [spec or feature]` | Create UI/UX direction and wireframes |
+| `/solopreneur:design [spec or feature]` | Create UI/UX direction and HTML mockups |
 | `/solopreneur:build [spec or feature]` | Generate a Cursor-ready implementation plan |
 | `/solopreneur:review [file or "recent"]` | Multi-perspective quality review |
 | `/solopreneur:ship` | Deployment checklist and launch prep |
