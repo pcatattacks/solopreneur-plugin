@@ -1,10 +1,10 @@
 {
-  "name": "solopreneur-workshop",
+  "name": "solopreneur",
   "owner": {
-    "name": "Solopreneur Workshop"
+    "name": "Pranav Dhingra"
   },
   "metadata": {
-    "description": "Solopreneur workshop plugin marketplace - your virtual AI team for solopreneurs",
+    "description": "Your virtual AI team — specialized agents, skills, and workflows for solopreneurs.",
     "version": "1.0.0"
   },
   "plugins": [

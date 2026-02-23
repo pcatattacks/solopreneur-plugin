@@ -11,7 +11,7 @@ A Claude Code plugin that treats your solopreneur workflow as a virtual company.
 4. Switch to **Plugins** tab → install **solopreneur**
 
 ### Install from marketplace (coming soon)
-```bash
+```
 /plugin install solopreneur
 ```
 
