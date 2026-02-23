@@ -38,7 +38,7 @@ All available skills:
 | `/solopreneur:discover` | Research and validate a product idea |
 | `/solopreneur:spec` | Write a product requirement document (PRD) |
 | `/solopreneur:design` | Create UI/UX direction and wireframes |
-| `/solopreneur:build` | Generate a Cursor-ready implementation plan |
+| `/solopreneur:build` | Plan for another agent or build directly with Claude |
 | `/solopreneur:review` | Multi-perspective quality review |
 | `/solopreneur:ship` | Deployment checklist and launch prep |
 | `/solopreneur:release-notes` | Audience-targeted release announcements |
@@ -48,15 +48,14 @@ All available skills:
 | `/solopreneur:explain` | Learn how any Claude Code concept works |
 | `/solopreneur:write-tutorial` | Turn the observer log into a blog post |
 
-## Claude Code + Cursor Workflow
+## Build Workflow
 
-This plugin follows a "Claude thinks, Cursor executes" pattern:
+This plugin supports two build modes — the CEO chooses when running `/solopreneur:build`:
 
-1. **Claude Code** handles planning, architecture, and quality validation
-2. Skills that produce actionable work write **Cursor-ready plan files** to `.solopreneur/plans/`
-3. Plan files use a standard format: `Step → Files → Do → Acceptance`
-4. The user takes plan files to **Cursor Composer** for fast code generation
-5. On return, Claude's QA agent validates against the plan's acceptance criteria
+1. **Plan only** — Claude plans, another agent executes. Claude writes a plan file to `.solopreneur/plans/`, the CEO takes it to Cursor, Windsurf, or any coding agent for execution. On return, Claude's QA agent validates against acceptance criteria.
+2. **Build directly** — Claude plans and executes. The `@engineer` subagent creates the plan for reference, then writes the code itself.
+
+Both modes produce plan files using the standard format: `Step → Files → Do → Acceptance`
 
 ## Version Control & Checkpointing
 
@@ -72,19 +71,29 @@ You (Claude) manage ALL git operations for the CEO. They should never need to us
 - If the user asks to undo something: "I can take us back to before [change]. Want me to do that?"
 - Never assume the user knows what git, commits, branches, or pushes are
 
+**Initialization:**
+- On first use in a project, check if it's a git repository (`git rev-parse --is-inside-work-tree`)
+- If not, explain what git does in plain language and offer to initialize: "I'd like to start tracking your project's history so we can save checkpoints and undo changes if needed. Can I set that up?"
+- If the user declines, continue without git — skills that need git history will note this gracefully
+- If already a git repo, respect the existing setup and don't modify .gitignore or other config without asking
+
 **GitHub (when sharing):**
-- If the user wants to share their work or plugin, offer to create a GitHub repository and push
-- Walk them through connecting their GitHub account if needed
-- Handle all push/pull operations - the user just says "share this" or "publish this"
+- If the user wants to share their work, check if `gh` CLI is installed and authenticated
+- If not installed, explain: "To share this on GitHub, we need a small tool called GitHub CLI. Want me to help you set it up?"
+- Walk through `gh auth login` (browser-based, one click)
+- Handle all repo creation and push operations via `gh repo create` and `git push`
 
-## Tool Access (MCP Servers)
+## Tool Access
 
+### MCP Servers
 Agents can use MCP servers when available. Check before using:
-- **GitHub**: PR management, issue tracking, code search
 - **Context7**: Up-to-date documentation for libraries and frameworks. Use when agents need current API references or docs that may have changed since training.
 - **Chrome DevTools**: Inspect the live DOM of web pages in any Chromium browser (Chrome, Edge, Brave, Arc). Use when the Designer or Engineer needs to see what's actually rendered, debug layout issues, read computed styles, or take screenshots.
 
 If an MCP server is not available, work without it - never fail because a tool is missing.
+
+### CLI Tools
+- **GitHub (`gh` CLI)**: PR management, issue tracking, repo creation. Requires `gh auth login` — Claude will walk users through this on first use. Called via Bash, not MCP.
 
 ## Observer Protocol
 

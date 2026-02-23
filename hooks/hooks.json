@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$(dirname \"$0\")/../scripts/observer-log.sh\" tool-use"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/observer-log.sh\" tool-use"
           }
         ]
       },
@@ -15,7 +15,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$(dirname \"$0\")/../scripts/observer-log.sh\" command"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/observer-log.sh\" command"
           }
         ]
       }
@@ -25,7 +25,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$(dirname \"$0\")/../scripts/observer-log.sh\" session-end"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/observer-log.sh\" session-end"
           }
         ]
       }

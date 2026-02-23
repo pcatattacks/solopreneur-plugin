@@ -22,6 +22,17 @@ cd solopreneur-plugin
 claude --plugin-dir .
 ```
 
+## MCP Server Setup
+
+This plugin includes two MCP servers (`.mcp.json`) that work out of the box:
+
+| Server | What it does | Setup needed |
+|--------|-------------|-------------|
+| **Context7** | Up-to-date library docs for your agents | None — works automatically |
+| **Chrome DevTools** | Inspect live web pages | None — needs a Chromium browser open |
+
+For GitHub features (creating repos, PRs, issues), the plugin uses the `gh` CLI. Claude will walk you through setting it up if needed — just say "share this on GitHub" or "push my work."
+
 ## Your AI Team
 
 | Employee | Role | Model |
