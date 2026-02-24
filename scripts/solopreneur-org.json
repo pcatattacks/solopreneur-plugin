@@ -53,7 +53,8 @@
     { "name": "review", "description": "Quality review" },
     { "name": "ship", "description": "Deploy & launch" },
     { "name": "release-notes", "description": "Audience announcements" },
-    { "name": "story", "description": "Project story synthesis" }
+    { "name": "story", "description": "Project story synthesis" },
+    { "name": "sprint", "description": "Parallel ticket execution" }
   ],
   "mcps": [
     { "name": "GitHub", "description": "Code & PR management" },

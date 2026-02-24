@@ -43,7 +43,7 @@ All available skills:
 | `/solopreneur:review` | Multi-perspective quality review |
 | `/solopreneur:ship` | Deployment checklist and launch prep |
 | `/solopreneur:release-notes` | Audience-targeted release announcements |
-| `/solopreneur:kickoff` | Launch an agent team for parallel work |
+| `/solopreneur:sprint` | Execute a batch of backlog tickets in parallel |
 | `/solopreneur:standup` | Generate a daily standup summary |
 | `/solopreneur:scaffold` | Design and build your own AI org |
 | `/solopreneur:explain` | Learn how any Claude Code concept works |
@@ -89,9 +89,19 @@ You (Claude) manage ALL git operations for the CEO. They should never need to us
 ### MCP Servers
 Agents can use MCP servers when available. Check before using:
 - **Context7**: Up-to-date documentation for libraries and frameworks. Use when agents need current API references or docs that may have changed since training.
-- **Chrome DevTools**: Inspect the live DOM of web pages in any Chromium browser (Chrome, Edge, Brave, Arc). Use when the Designer needs to preview HTML mockups, the Engineer needs to debug layout issues, or anyone needs to read computed styles or take screenshots. The Designer uses this to open and screenshot design mockups for review with the CEO.
 
-If an MCP server is not available, work without it - never fail because a tool is missing.
+### Browser Tools
+Two browser tools can coexist. Detect by checking the tool set:
+- **Chrome DevTools MCP** (`mcp__chrome-devtools__*` tools): Always available via `.mcp.json`. Inspect DOM, take screenshots, debug layouts. Runs in an isolated browser profile — no access to the CEO's login sessions. Use for mockup inspection, layout debugging, and basic visual checks.
+- **Claude Chrome Extension** (`mcp__claude-in-chrome__*` tools): Optional. Connects to the CEO's real Chrome browser — shares login sessions, actions visible in real-time. Use for QA flow validation, testing authenticated pages, and visual verification.
+
+**Claude Chrome Extension setup check**: Before any skill delegates browser-based QA on UI work, check if the Claude Chrome Extension is available. If not:
+1. Check `.solopreneur/preferences.yaml` for `claude-chrome-extension: skip`. If present, silently use Chrome DevTools MCP only.
+2. If no preference recorded, ask the CEO via AskUserQuestion:
+   - "Yes, set up Claude Chrome Extension" → run `/chrome` for one-time setup, then continue
+   - "Skip for now" → continue with Chrome DevTools MCP only
+   - "Don't ask again" → write `claude-chrome-extension: skip` to `.solopreneur/preferences.yaml`, then continue
+3. Never block on this — Chrome DevTools MCP is always a working fallback.
 
 ### CLI Tools
 - **GitHub (`gh` CLI)**: PR management, issue tracking, repo creation. Requires `gh auth login` — Claude will walk users through this on first use. Called via Bash, not MCP.

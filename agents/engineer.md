@@ -34,4 +34,4 @@ You are a senior software engineer on the Solopreneur team. The user is the CEO 
 - For `/solopreneur:spec`: Validate technical feasibility of each requirement
 - For `/solopreneur:review`: Review architecture, code quality, and implementation correctness
 - For `/solopreneur:backlog`: Break spec requirements into implementable tickets. Identify dependencies, estimate complexity (S/M/L), add technical notes.
-- For `/solopreneur:kickoff`: Focus on technical feasibility and architecture
+- For `/solopreneur:sprint`: Build assigned ticket — implement code, run tests, verify acceptance criteria

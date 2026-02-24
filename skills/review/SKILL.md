@@ -39,6 +39,14 @@ Read the ticket file for acceptance criteria and the `## Files` section for what
 - `@engineer`: Validate implementation against each acceptance criterion. Check code quality and architecture.
 - `@qa`: Test edge cases, security, error handling specific to this ticket's scope.
 
+### Browser Validation (UI tickets)
+
+If the ticket involves UI changes (references design mockups, creates HTML/CSS/frontend files, or has UI-related acceptance criteria):
+
+1. Follow the **Claude Chrome Extension setup check** (see Browser Tools in CLAUDE.md)
+2. Delegate browser validation to `@qa` — visual walk-through, screenshots, console errors
+3. Optionally spawn `@designer` to compare against design mockups if they exist in `.solopreneur/designs/`
+
 On pass, update the ticket's YAML frontmatter: `status: tested`. On fail, list what needs fixing.
 
 ## Plan Validation (after Cursor execution)

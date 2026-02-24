@@ -31,6 +31,12 @@ This plugin includes two MCP servers (`.mcp.json`) that work out of the box:
 | **Context7** | Up-to-date library docs for your agents | None — works automatically |
 | **Chrome DevTools** | Inspect live web pages | None — needs a Chromium browser open |
 
+### Optional: Claude Chrome Extension (Recommended)
+
+For visual QA, testing user flows in the browser, and working with authenticated web apps, set up the Claude Chrome Extension. Just run `/chrome` inside Claude Code — it will walk you through installation and one-time setup.
+
+Once connected, your QA agent can validate user flows by clicking through the app, taking screenshots, and checking for errors — all in your real browser with your login sessions. Skills like `/sprint` and `/review` will automatically detect and use it when available.
+
 For GitHub features (creating repos, PRs, issues), the plugin uses the `gh` CLI. Claude will walk you through setting it up if needed — just say "share this on GitHub" or "push my work."
 
 ## Your AI Team
@@ -67,7 +73,7 @@ Each skill suggests the next step when it completes.
 ### Team & Utility
 | Skill | What it does |
 |-------|-------------|
-| `/solopreneur:kickoff [task]` | Launch an agent team for parallel work |
+| `/solopreneur:sprint [tickets]` | Execute backlog tickets in parallel with integrated QA |
 | `/solopreneur:standup` | Generate a daily standup from recent activity |
 | `/solopreneur:explain [concept]` | Learn how any Claude Code concept works |
 | `/solopreneur:scaffold [role]` | Design and build your own AI org plugin |

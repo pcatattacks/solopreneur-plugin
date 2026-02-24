@@ -1,0 +1,9 @@
+id,should_trigger,prompt,expected_behaviors
+explicit-backlog,true,"Run /solopreneur:sprint","Reads backlog directory|Identifies unblocked tickets|Presents ticket list to CEO|Caps at 3 tickets max"
+explicit-subset,true,"Run /solopreneur:sprint MVP-001 MVP-003","Builds only the specified tickets|Does not include other unblocked tickets|Spawns parallel build agents"
+implicit-batch,true,"Build all the unblocked tickets","Routes to sprint|Identifies unblocked tickets from backlog|Presents plan for parallel execution"
+implicit-mvp,true,"Let's knock out the MVP","Routes to sprint|Finds MVP-priority tickets|Proposes parallel build"
+edge-single,true,"Run /solopreneur:sprint with only 1 unblocked ticket in backlog","Works with single ticket|Runs build without parallelism|Still runs QA review"
+edge-no-backlog,true,"Run /solopreneur:sprint with no backlog directory","Detects missing backlog|Guides user to run /solopreneur:backlog first|Does not attempt to build"
+negative-no-tickets,true,"Run /solopreneur:sprint with all tickets blocked or done","Reports no actionable tickets|Suggests next steps|Does not spawn build agents"
+negative-non-build,false,"Sprint on the research","Does not route to sprint|Research is not ticket-based build work"

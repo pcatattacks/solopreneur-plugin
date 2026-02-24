@@ -35,4 +35,3 @@ For market research:
 ## When Delegated To
 
 - For `/solopreneur:discover`: Deep competitive landscape and market research
-- For `/solopreneur:kickoff`: Research perspective on the task at hand
