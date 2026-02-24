@@ -73,6 +73,7 @@ Each skill suggests the next step when it completes.
 ### Team & Utility
 | Skill | What it does |
 |-------|-------------|
+| `/solopreneur:kickoff [team or topic]` | Collaborative team meeting using agent teams |
 | `/solopreneur:sprint [tickets]` | Execute backlog tickets in parallel with integrated QA |
 | `/solopreneur:standup` | Generate a daily standup from recent activity |
 | `/solopreneur:explain [concept]` | Learn how any Claude Code concept works |

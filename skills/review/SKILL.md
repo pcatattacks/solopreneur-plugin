@@ -67,4 +67,8 @@ End with the next step prompt:
 ```
 -> Next: Ready to ship? Run:
    /solopreneur:ship
+
+   Or want a deeper adversarial discussion on the findings?
+   /solopreneur:kickoff code review
+   (assembles your team for collaborative debate — takes longer, deeper analysis)
 ```

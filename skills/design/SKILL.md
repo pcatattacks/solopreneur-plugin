@@ -48,7 +48,7 @@ Each HTML file must:
 
 Save each screen to `.solopreneur/designs/{date}-{slug}/{screen-name}.html`.
 
-**Parallelization**: Launch one subagent per screen. Each subagent only needs the design brief plus its screen-specific requirements. For 3+ screens, run them in parallel using agent teams.
+**Parallelization**: Launch one `@designer` subagent per screen in parallel. Each subagent only needs the design brief plus its screen-specific requirements.
 
 ### Step 3: Present to the CEO
 

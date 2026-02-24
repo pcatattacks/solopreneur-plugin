@@ -54,7 +54,8 @@
     { "name": "ship", "description": "Deploy & launch" },
     { "name": "release-notes", "description": "Audience announcements" },
     { "name": "story", "description": "Project story synthesis" },
-    { "name": "sprint", "description": "Parallel ticket execution" }
+    { "name": "sprint", "description": "Parallel ticket execution" },
+    { "name": "kickoff", "description": "Collaborative team meetings" }
   ],
   "mcps": [
     { "name": "GitHub", "description": "Code & PR management" },

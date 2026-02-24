@@ -30,4 +30,8 @@ You are running a discovery sprint for the CEO. Your goal is to determine whethe
    ```
    -> Next: Turn this into a product spec with:
       /solopreneur:spec .solopreneur/discoveries/{filename}
+
+   Or want the team to debate these findings first?
+      /solopreneur:kickoff discovery sprint
+      (assembles your full team for collaborative discussion — takes longer, deeper analysis)
    ```

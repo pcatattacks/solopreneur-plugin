@@ -35,3 +35,4 @@ For market research:
 ## When Delegated To
 
 - For `/solopreneur:discover`: Deep competitive landscape and market research
+- For `/solopreneur:kickoff`: Contribute market data and competitive intelligence. Surface evidence that supports or contradicts the team's hypotheses.

@@ -17,8 +17,10 @@ A solo content creator producing blog posts, newsletters, social media, and vide
 5. `/content:seo` - Optimize content for search engines
 6. `/content:repurpose` - Turn a blog post into tweets, LinkedIn posts, newsletter
 7. `/content:schedule` - Plan a content calendar for the week/month
+8. `/content:kickoff` - Collaborative team meeting using agent teams
 
 ## Team Meetings (Agent Teams)
+Invoke with `/content:kickoff [team-name] [topic]`:
 1. **Content Sprint**: Writer + SEO Specialist + Editor (produce a full post)
 2. **Distribution Team**: Social Media Manager + Writer (repurpose + schedule)
 
@@ -29,4 +31,4 @@ A solo content creator producing blog posts, newsletters, social media, and vide
 - Buffer or Hootsuite (social scheduling)
 
 ## Lifecycle
-`/brainstorm` → `/outline` → `/write` → `/edit` → `/seo` → `/repurpose` → `/schedule`
+`/brainstorm` → `/outline` → `/write` → `/edit` → `/seo` → `/repurpose` → `/schedule` (use `/kickoff` any time for team discussions)

@@ -53,3 +53,4 @@ When producing design direction, structure as a directory:
 - For `/solopreneur:review`: Evaluate usability, consistency, and accessibility. Use Chrome DevTools MCP to inspect live mockups if available.
 - For `/solopreneur:backlog`: Identify which tickets need design work. Flag UX dependencies between tickets.
 - For `/solopreneur:sprint`: Compare built UI against design mockups, flag visual discrepancies
+- For `/solopreneur:kickoff`: Contribute UX perspective. Challenge usability assumptions. Advocate for the end user.

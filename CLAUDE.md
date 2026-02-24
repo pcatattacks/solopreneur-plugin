@@ -23,6 +23,18 @@ The following AI employees are available as subagents:
 - **Researcher** (`@researcher`): Market research, competitive analysis, trend identification
 - **Content Strategist** (`@content-strategist`): Copywriting, tutorials, launch comms, documentation
 
+## Team Meetings (Agent Teams)
+
+Named teams for `/solopreneur:kickoff`. Invoke with `/solopreneur:kickoff [team name] [topic]`:
+
+1. **Discovery Sprint**: @researcher + @bizops + @engineer — Deep collaborative exploration of an idea. Use when you want agents to challenge each other's assumptions, not just produce independent analyses.
+2. **Build & QA**: @engineer + @qa + @designer — Adversarial code review, debugging with competing hypotheses, or implementation planning where trade-offs need debate.
+3. **Ship & Launch**: @engineer + @qa + @content-strategist — Launch coordination where messaging, known issues, and deployment need cross-team alignment.
+
+You can also assemble ad-hoc teams: `/solopreneur:kickoff @engineer @designer on [topic]`
+
+Agent teams use more resources than standard skills (scales linearly with teammates). Use for deep collaboration; use lifecycle skills (`/discover`, `/review`, etc.) for structured independent analysis.
+
 ## Product Lifecycle (Skills)
 
 The standard workflow flows through these skills in order. Each skill suggests the next step when it completes:
@@ -43,6 +55,7 @@ All available skills:
 | `/solopreneur:review` | Multi-perspective quality review |
 | `/solopreneur:ship` | Deployment checklist and launch prep |
 | `/solopreneur:release-notes` | Audience-targeted release announcements |
+| `/solopreneur:kickoff` | Collaborative agent team meetings |
 | `/solopreneur:sprint` | Execute a batch of backlog tickets in parallel |
 | `/solopreneur:standup` | Generate a daily standup summary |
 | `/solopreneur:scaffold` | Design and build your own AI org |

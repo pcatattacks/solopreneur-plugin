@@ -50,6 +50,7 @@ Based on their answers, propose an org structure. Adapt the format to their tech
 - After commands: [what happens automatically]
 
 ## Team Meetings (Agent Teams)
+Invoke with `/[name]:kickoff [team-name] [topic]`:
 1. **[Team Name]**: [Agent 1] + [Agent 2] + [Agent 3] - [When to use]
 
 ## Product Lifecycle
@@ -71,6 +72,7 @@ Think of this as your virtual company. Here's who works for you:
 - ...
 
 ## They Work Together Too
+Say "/[name]:kickoff [team name]" to start a team meeting:
 - **[Team Name]**: When you need [outcome], these employees team up: [names]
 
 ## They'll Automatically...
@@ -111,7 +113,7 @@ On user approval, create the file structure. What you generate depends on their 
 ### For personal use (no plugin packaging):
 1. **`[name]/CLAUDE.md`** - Company handbook tailored to their workflow
 2. **`[name]/agents/[agent].md`** - One file per agent with YAML frontmatter (name, description, tools, model) and role-specific system prompt
-3. **`[name]/skills/[skill]/SKILL.md`** - One skill per SOP with YAML frontmatter and process instructions
+3. **`[name]/skills/[skill]/SKILL.md`** - One skill per SOP with YAML frontmatter and process instructions. Always generate a `skills/kickoff/SKILL.md` that reads team definitions from the org's CLAUDE.md. Use the solopreneur plugin's kickoff as a reference pattern — it works generically with any team definitions.
 4. **`[name]/.mcp.json`** - MCP servers based on their daily tools
 5. **`[name]/settings.json`** - Enable agent teams
 6. **`[name]/hooks/hooks.json`** - Automated behaviors (at minimum: decision and session boundary logging)

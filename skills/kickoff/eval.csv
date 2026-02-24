@@ -1,0 +1,9 @@
+id,should_trigger,prompt,expected_behaviors
+explicit-team,true,"Run /solopreneur:kickoff Discovery Sprint on AI-powered recipe generator","Identifies Discovery Sprint team|Assembles Researcher + BizOps + Engineer|Presents team composition to CEO for approval|Creates agent team with shared task list"
+explicit-adhoc,true,"Run /solopreneur:kickoff code review with @engineer @qa","Identifies ad-hoc team with Engineer and QA|Does not include other agents unless requested|Presents team to CEO for approval"
+implicit-research,true,"Get the team together to brainstorm this idea from all angles","Routes to kickoff|Infers Discovery Sprint team|Proposes collaborative exploration"
+implicit-debug,true,"Let's get the team together to debug this authentication issue","Routes to kickoff|Infers Build & QA team|Proposes competing hypotheses approach"
+edge-single,true,"Run /solopreneur:kickoff just with @researcher on market trends","Works with single teammate|Still creates agent team structure|Runs and compiles results"
+edge-unknown-team,true,"Run /solopreneur:kickoff Marketing Review on our landing page","Team name not predefined|Proposes best-fit team composition|Asks CEO to confirm"
+negative-build,false,"Build the login page","Does not route to kickoff|This is implementation work for /build or /sprint"
+negative-sprint,false,"Build all the unblocked tickets in parallel","Does not route to kickoff|This is parallel ticket execution for /sprint"

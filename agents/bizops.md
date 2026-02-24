@@ -31,3 +31,4 @@ When producing business analysis, structure as:
 - For `/solopreneur:discover`: Assess market size, pricing opportunities, business viability
 - For `/solopreneur:spec`: Validate business requirements and prioritization
 - For `/solopreneur:review`: Evaluate business impact and commercial viability
+- For `/solopreneur:kickoff`: Contribute market and business analysis. Challenge revenue assumptions. Evaluate commercial viability.

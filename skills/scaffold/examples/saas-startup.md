@@ -17,8 +17,10 @@ A solo founder building a B2B SaaS product. Handles everything from code to cust
 5. `/saas:support` - Draft a customer support response
 6. `/saas:churn-analysis` - Analyze why users are leaving and propose fixes
 7. `/saas:metrics` - Generate a weekly metrics report
+8. `/saas:kickoff` - Collaborative team meeting using agent teams
 
 ## Team Meetings (Agent Teams)
+Invoke with `/saas:kickoff [team-name] [topic]`:
 1. **Sprint Planning**: Product Manager + Engineer + Growth Marketer
 2. **Launch Team**: Engineer + Growth Marketer + Customer Success
 3. **Retention Review**: Customer Success + Product Manager + Growth Marketer
@@ -30,4 +32,4 @@ A solo founder building a B2B SaaS product. Handles everything from code to cust
 - Intercom or Zendesk (support tickets)
 
 ## Lifecycle
-`/feature-idea` → `/sprint-plan` → `/build` → `/launch` → `/metrics`
+`/feature-idea` → `/sprint-plan` → `/build` → `/launch` → `/metrics` (use `/kickoff` any time for team discussions)

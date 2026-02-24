@@ -145,7 +145,7 @@ def fix_name_casing(name):
 
 
 # Skills that are meta/orchestration and shouldn't appear on agent cards
-META_SKILLS = {"sprint", "standup", "scaffold", "explain"}
+META_SKILLS = {"sprint", "standup", "scaffold", "explain", "kickoff"}
 
 
 def build_from_plugin(plugin_dir):
