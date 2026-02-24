@@ -6,7 +6,12 @@ disable-model-invocation: true
 
 # Build: $ARGUMENTS
 
-You are handling implementation for the CEO. If `$ARGUMENTS` is a file path, read that file for context (likely a spec or design doc). If it's a directory path (e.g., `.solopreneur/designs/{date}-{slug}/`), read the `design-brief.md` inside it and scan for `.html` mockup files — these contain the visual structure the engineer should implement. Otherwise, treat it as the feature description.
+You are handling implementation for the CEO. Determine the input type from `$ARGUMENTS`:
+
+- If it's a **ticket file path** (e.g., `.solopreneur/backlog/{dir}/MVP-001.md`), read the ticket for requirements, acceptance criteria, and technical notes. Also read `backlog.md` in the same directory for dependency context — check that all blocking tickets (listed in `depends_on`) have `status: done` or `status: tested` before proceeding. If blockers remain, tell the CEO which tickets need to be completed first and suggest building one of those instead.
+- If it's a **design directory** (e.g., `.solopreneur/designs/{date}-{slug}/`), read `design-brief.md` inside it and scan for `.html` mockup files — these contain the visual structure the engineer should implement.
+- If it's a **spec file path**, read it for context.
+- Otherwise, treat it as the feature description.
 
 ## Step 1: Ask how to build
 
@@ -17,6 +22,30 @@ Before doing anything else, ask the CEO:
 > 2. **Build it now** — I'll write the code directly, right here
 
 Wait for their answer before proceeding. If they say "plan", follow the **Plan Path**. If they say "build" (or "now", "do it", "just build it", etc.), follow the **Direct Path**.
+
+## Step 1.5: Branch Setup (ticket builds only)
+
+If building from a ticket file, set up an isolated branch before building:
+
+1. **Check for parallel builds**: Run `git branch` to see if any `ticket/*` branches exist that are not yet merged. If another ticket branch is active (checked out in the current worktree), create a new worktree instead:
+   ```
+   git worktree add .solopreneur/worktrees/{ID} -b ticket/{ID}
+   ```
+   Then work inside that worktree directory.
+
+2. **Normal case** (no active ticket branch): Create a branch for this ticket:
+   ```
+   git checkout -b ticket/{ID}
+   ```
+
+3. **Update the ticket file**: Set `status: in-progress` and `branch: ticket/{ID}` in the YAML frontmatter.
+
+4. **Adapt explanation to user's technical level**: If `.solopreneur/preferences.md` exists, read it for the CEO's git comfort level. Explain accordingly:
+   - Technical: "Creating branch `ticket/MVP-001`"
+   - Basic: "I'm creating a separate branch for this ticket"
+   - Non-technical: "I'm saving your work in a separate space so it doesn't interfere with other work"
+
+   If preferences don't exist yet, ask the CEO: "Quick question — how comfortable are you with git? (I use it daily / I know the basics / What's git?)" and save their answer to `.solopreneur/preferences.md`.
 
 ---
 
@@ -46,7 +75,9 @@ Wait for their answer before proceeding. If they say "plan", follow the **Plan P
    - Add acceptance criteria that the QA agent can later validate against
    - Note any dependencies to install
 
-3. Save the plan to `.solopreneur/plans/build-{feature-slug}.md` (create the directory if needed).
+3. Save the plan:
+   - If building from a ticket: save co-located as `.solopreneur/backlog/{dir}/{ID}-plan.md`
+   - Otherwise: save to `.solopreneur/plans/build-{feature-slug}.md` (create the directory if needed)
 
 4. Present a summary of the plan to the CEO:
    - Number of steps
@@ -70,7 +101,7 @@ Wait for their answer before proceeding. If they say "plan", follow the **Plan P
 
 1. Delegate to the `@engineer` subagent to **plan and execute the implementation directly**. The engineer should:
    - First, create the same structured plan (3-8 steps with files, instructions, and acceptance criteria)
-   - Save the plan to `.solopreneur/plans/build-{feature-slug}.md` for reference
+   - Save the plan: if building from a ticket, co-locate as `.solopreneur/backlog/{dir}/{ID}-plan.md`; otherwise save to `.solopreneur/plans/build-{feature-slug}.md`
    - Then execute each step: create/modify files, install dependencies, write the actual code
    - After each step, briefly report progress to the CEO
 
@@ -83,4 +114,33 @@ Wait for their answer before proceeding. If they say "plan", follow the **Plan P
    ```
    -> Next: Let's review what was built:
       /solopreneur:review
+   ```
+
+---
+
+## Ticket Completion (ticket builds only)
+
+After the plan or direct build is complete:
+
+1. **Update the ticket**: Set `status: done` in the YAML frontmatter. Populate the `## Files` section with files created/modified.
+
+2. **Offer to merge**: Ask the CEO:
+   > This ticket is built on branch `ticket/{ID}`. Want me to merge it into the main branch?
+
+3. **If yes**: Merge with a descriptive commit:
+   ```
+   git checkout main && git merge ticket/{ID} --no-ff -m "Merge ticket/{ID}: {title}"
+   ```
+   If there are merge conflicts:
+   - For technical users: show the conflicts and ask how to resolve
+   - For non-technical users: attempt auto-resolution; if that fails, explain in plain language: "Two changes touched the same file. Let me show you both versions so you can pick which one to keep."
+
+4. **Clean up**: Delete the ticket branch (`git branch -d ticket/{ID}`). If a worktree was created, remove it (`git worktree remove .solopreneur/worktrees/{ID}`).
+
+5. **Suggest next ticket**: Read `backlog.md`, find tickets that are now unblocked (their `depends_on` tickets are all `done` or `tested`), and suggest:
+   ```
+   -> Ticket {ID} is done! Next unblocked tickets:
+      /solopreneur:build .solopreneur/backlog/{dir}/{NEXT-ID}.md
+
+   Tickets that can be built in parallel: {list}
    ```

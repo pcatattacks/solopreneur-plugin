@@ -49,7 +49,7 @@ For GitHub features (creating repos, PRs, issues), the plugin uses the `gh` CLI.
 
 ### Product Lifecycle
 ```
-/solopreneur:discover  ->  /solopreneur:spec  ->  /solopreneur:design  ->  /solopreneur:build  ->  /solopreneur:review  ->  /solopreneur:ship  ->  /solopreneur:release-notes
+/solopreneur:discover  ->  /solopreneur:spec  ->  /solopreneur:backlog  ->  /solopreneur:design  ->  /solopreneur:build  ->  /solopreneur:review  ->  /solopreneur:ship  ->  /solopreneur:release-notes
 ```
 
 Each skill suggests the next step when it completes.
@@ -58,6 +58,7 @@ Each skill suggests the next step when it completes.
 |-------|-------------|
 | `/solopreneur:discover [idea]` | Research and validate a product idea |
 | `/solopreneur:spec [idea or file]` | Write a product requirement document |
+| `/solopreneur:backlog [spec or feature]` | Break a spec into prioritized tickets |
 | `/solopreneur:design [spec or feature]` | Create UI/UX direction and HTML mockups |
 | `/solopreneur:build [spec or feature]` | Generate a Cursor-ready implementation plan |
 | `/solopreneur:review [file or "recent"]` | Multi-perspective quality review |

@@ -115,6 +115,7 @@ get_negative_patterns() {
     spec)     echo "User Stor|Acceptance Criteria|Technical Requirements|Out of Scope" ;;
     design)   echo "User Flow|Component|Visual Direction|design-brief|\.html|daisyui" ;;
     review)   echo "Critical|Warning|Suggestion|Positive|Severity" ;;
+    backlog)  echo "Backlog|MVP|P1|P2|Depend|Acceptance Criteria|ticket" ;;
     scaffold) echo "Your AI Org|Employees.*Agents|SOPs.*Skills|org chart" ;;
     *)        echo "" ;;
   esac

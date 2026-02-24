@@ -28,7 +28,7 @@ The following AI employees are available as subagents:
 The standard workflow flows through these skills in order. Each skill suggests the next step when it completes:
 
 ```
-/solopreneur:discover → /solopreneur:spec → /solopreneur:design → /solopreneur:build → /solopreneur:review → /solopreneur:ship → /solopreneur:release-notes
+/solopreneur:discover → /solopreneur:spec → /solopreneur:backlog → /solopreneur:design → /solopreneur:build → /solopreneur:review → /solopreneur:ship → /solopreneur:release-notes
 ```
 
 All available skills:
@@ -37,6 +37,7 @@ All available skills:
 |-------|---------|
 | `/solopreneur:discover` | Research and validate a product idea |
 | `/solopreneur:spec` | Write a product requirement document (PRD) |
+| `/solopreneur:backlog` | Break a spec into prioritized, dependency-tracked tickets |
 | `/solopreneur:design` | Create UI/UX direction and HTML mockups |
 | `/solopreneur:build` | Plan for another agent or build directly with Claude |
 | `/solopreneur:review` | Multi-perspective quality review |
@@ -120,6 +121,7 @@ All artifacts are saved under `.solopreneur/`:
 .solopreneur/
 ├── discoveries/     # Discovery briefs
 ├── specs/           # Product requirement docs
+├── backlog/         # Prioritized tickets (per feature/project)
 ├── designs/         # Design direction (brief + HTML mockups per feature)
 ├── plans/           # Cursor-ready implementation plans
 ├── builds/          # Build logs

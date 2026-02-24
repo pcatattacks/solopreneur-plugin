@@ -4,14 +4,14 @@
     {
       "name": "Engineer",
       "model": "opus",
-      "skills": ["build", "review", "ship"],
+      "skills": ["backlog", "build", "review", "ship"],
       "mcps": ["GitHub", "Chrome DevTools"],
       "description": "Architecture & implementation"
     },
     {
       "name": "Designer",
       "model": "opus",
-      "skills": ["design", "review"],
+      "skills": ["backlog", "design", "review"],
       "mcps": ["Chrome DevTools"],
       "description": "UI/UX & HTML mockups"
     },
@@ -47,6 +47,7 @@
   "skills": [
     { "name": "discover", "description": "Research & validate ideas" },
     { "name": "spec", "description": "Write product requirements" },
+    { "name": "backlog", "description": "Prioritized ticket breakdown" },
     { "name": "design", "description": "UI/UX direction" },
     { "name": "build", "description": "Cursor-ready plans" },
     { "name": "review", "description": "Quality review" },
@@ -64,5 +65,5 @@
     { "name": "Build & QA", "members": ["Engineer", "QA", "Designer"] },
     { "name": "Ship & Launch", "members": ["Engineer", "QA", "Content Strategist"] }
   ],
-  "lifecycle": ["discover", "spec", "design", "build", "review", "ship", "release-notes"]
+  "lifecycle": ["discover", "spec", "backlog", "design", "build", "review", "ship", "release-notes"]
 }
