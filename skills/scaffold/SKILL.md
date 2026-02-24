@@ -74,7 +74,7 @@ Think of this as your virtual company. Here's who works for you:
 - **[Team Name]**: When you need [outcome], these employees team up: [names]
 
 ## They'll Automatically...
-- Keep a log of everything that happens (so you can create tutorials later)
+- Keep a log of your decisions (so you can write about your journey later)
 - [Other automated behaviors]
 ```
 
@@ -114,7 +114,7 @@ On user approval, create the file structure. What you generate depends on their 
 3. **`[name]/skills/[skill]/SKILL.md`** - One skill per SOP with YAML frontmatter and process instructions
 4. **`[name]/.mcp.json`** - MCP servers based on their daily tools
 5. **`[name]/settings.json`** - Enable agent teams
-6. **`[name]/hooks/hooks.json`** - Automated behaviors (at minimum: post-tool logging for observer functionality)
+6. **`[name]/hooks/hooks.json`** - Automated behaviors (at minimum: decision and session boundary logging)
 7. **`[name]/scripts/observer-log.sh`** - Copy from this plugin's `scripts/` for automated logging
 8. **`[name]/evals/run-evals.sh`** - Copy from this plugin's `skills/scaffold/templates/evals/run-evals.sh` (make executable with `chmod +x`)
 9. **`[name]/evals/rubric.md`** - Copy from this plugin's `skills/scaffold/templates/evals/rubric.md`
@@ -128,11 +128,9 @@ All of the above, plus:
 
 ### Hooks configuration
 Always include a `hooks/hooks.json` that:
-- Logs file changes (PostToolUse on Write/Edit) to an observer log
-- Logs commands (PostToolUse on Bash) to the observer log
-- Marks session boundaries (Stop event)
+- Captures CEO decisions (PostToolUse on AskUserQuestion) to an observer log
 
-Explain to the user: "Hooks are like automatic triggers. Every time you or your AI team creates or edits a file, a small script runs in the background to log what happened. This means you'll always have a record of what was built and when - useful for creating tutorials or just tracking progress."
+Explain to the user: "Hooks automatically capture your decisions when your AI team asks you questions. This builds a decision journal you can use to write about your building journey later."
 
 ### CLAUDE.md communication level
 In the generated CLAUDE.md, include a section like:

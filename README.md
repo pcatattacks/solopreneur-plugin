@@ -43,7 +43,6 @@ For GitHub features (creating repos, PRs, issues), the plugin uses the `gh` CLI.
 | QA | Testing, bug hunting, security review, edge cases | sonnet |
 | Researcher | Competitive analysis, market research, trends | sonnet |
 | Content Strategist | Copywriting, tutorials, launch communications | inherit |
-| Observer | Background logging for tutorial generation | haiku |
 
 ## Skills (SOPs)
 
@@ -72,7 +71,7 @@ Each skill suggests the next step when it completes.
 | `/solopreneur:standup` | Generate a daily standup from recent activity |
 | `/solopreneur:explain [concept]` | Learn how any Claude Code concept works |
 | `/solopreneur:scaffold [role]` | Design and build your own AI org plugin |
-| `/solopreneur:write-tutorial` | Turn the observer log into a blog post |
+| `/solopreneur:story` | Synthesize your project journey into a narrative |
 
 ## Claude + Cursor Workflow
 
@@ -122,7 +121,7 @@ solopreneur/
 ├── CLAUDE.md                     # Company handbook (shared context)
 ├── agents/                       # Employee definitions (7 agents)
 ├── skills/                       # SOPs (12 skills)
-├── hooks/hooks.json              # Automated observer logging
+├── hooks/hooks.json              # Decision capture hooks
 ├── scripts/                      # Helper scripts
 ├── evals/                        # Eval runner + rubric grader
 └── .solopreneur/                     # Runtime outputs (created during use)

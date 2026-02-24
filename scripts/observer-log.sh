@@ -1,59 +1,59 @@
 #!/bin/bash
-# observer-log.sh - Automatically append tool usage events to the observer log.
+# observer-log.sh - Log CEO decisions to the observer log.
 #
-# This script is called by Claude Code hooks (PostToolUse, Stop).
-# It reads hook event data from stdin (JSON) and appends a structured
-# entry to .solopreneur/observer-log.md.
+# Called by PostToolUse hook on AskUserQuestion.
+# Extracts the questions asked, options presented, and the CEO's answers.
 #
-# Usage: observer-log.sh [event-type]
-#   event-type: "tool-use", "command", or "session-end"
+# Hook stdin format:
+#   tool_input.questions  — array of {question, options, ...}
+#   tool_input.answers    — {question_text: selected_label} (filled by permission component)
 
-EVENT_TYPE="${1:-tool-use}"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 LOG_FILE=".solopreneur/observer-log.md"
 
-# Create the log directory and file if they don't exist
 mkdir -p .solopreneur
 touch "$LOG_FILE"
 
-# Read hook input from stdin
+# Read hook data from stdin
 INPUT=$(cat 2>/dev/null || echo '{}')
 
-if [ "$EVENT_TYPE" = "session-end" ]; then
-  cat >> "$LOG_FILE" << EOF
+# Pass data via env var — can't pipe + heredoc at the same time (heredoc steals stdin)
+INPUT="$INPUT" TIMESTAMP="$TIMESTAMP" LOG_FILE="$LOG_FILE" python3 << 'PYEOF'
+import json, os
 
-## [$TIMESTAMP] - SESSION_END
-**Event**: Claude Code session ended
----
-EOF
-  exit 0
-fi
+timestamp = os.environ.get("TIMESTAMP", "")
+log_file = os.environ.get("LOG_FILE", ".solopreneur/observer-log.md")
 
-# Extract tool name and target from the hook JSON
-TOOL=$(echo "$INPUT" | python3 -c "
-import sys, json
 try:
-    data = json.load(sys.stdin)
-    print(data.get('tool_name', 'unknown'))
-except:
-    print('unknown')
-" 2>/dev/null || echo "unknown")
+    data = json.loads(os.environ.get("INPUT", "{}"))
+except Exception:
+    exit(0)
 
-TARGET=$(echo "$INPUT" | python3 -c "
-import sys, json
-try:
-    data = json.load(sys.stdin)
-    inp = data.get('tool_input', {})
-    print(inp.get('file_path', inp.get('command', 'N/A'))[:120])
-except:
-    print('N/A')
-" 2>/dev/null || echo "N/A")
+tool_input = data.get("tool_input", {})
+questions = tool_input.get("questions", [])
+# Answers live in tool_input.answers (filled by the permission component)
+answers = tool_input.get("answers", {}) if isinstance(tool_input, dict) else {}
 
-cat >> "$LOG_FILE" << EOF
+if not questions or not answers:
+    exit(0)
 
-## [$TIMESTAMP] - TOOL_USE
-**Tool**: $TOOL
-**Target**: $TARGET
-**Event**: $EVENT_TYPE
----
-EOF
+lines = []
+for q in questions:
+    question_text = q.get("question", "")
+    options = q.get("options", [])
+    answer_text = answers.get(question_text, "")
+
+    if not question_text or not answer_text:
+        continue
+
+    option_labels = [o.get("label", "") for o in options if o.get("label")]
+    lines.append(f"\n## [{timestamp}] - {question_text}")
+    if option_labels:
+        lines.append(f"**Options**: {', '.join(option_labels)}")
+    lines.append(f"**Choice**: {answer_text}")
+    lines.append("---")
+
+if lines:
+    with open(log_file, "a") as f:
+        f.write("\n".join(lines) + "\n")
+PYEOF

@@ -30,4 +30,4 @@ For documentation: What → Why → How → Examples → Troubleshooting
 
 - For `/solopreneur:release-notes`: Generate audience-appropriate announcements
 - For `/solopreneur:ship`: Draft launch announcement and social posts
-- For `/solopreneur:write-tutorial`: Synthesize observer log into a tutorial
+- For `/solopreneur:story`: Synthesize project journey into a publishable narrative

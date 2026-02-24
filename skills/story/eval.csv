@@ -1,0 +1,9 @@
+id,should_trigger,prompt,expected_behaviors
+explicit-default,true,"Run /solopreneur:story","Reads observer log or git history|Selects a format based on available content|Delegates to content-strategist|Saves output to .solopreneur/stories/"
+explicit-tutorial,true,"Run /solopreneur:story tutorial","Uses tutorial format|Includes step-by-step structure|Delegates to content-strategist"
+explicit-case-study,true,"Run /solopreneur:story case study","Uses case study format|Includes before/after structure|Delegates to content-strategist"
+explicit-blog,true,"Run /solopreneur:story blog post about our design decisions","Uses blog post format|Focuses on decisions and pivots|Delegates to content-strategist"
+explicit-launch,true,"Run /solopreneur:story launch story","Uses launch story format|Includes product overview and CTA|Delegates to content-strategist"
+implicit-request,true,"Can you write up what we built?","Triggers story workflow|Gathers source material from git and artifacts|Selects appropriate format"
+negative-unrelated,false,"Write a tutorial for React hooks","Does NOT trigger story workflow|Recognizes this is not a project synthesis request"
+negative-code-review,false,"Review the story component in our app","Does NOT trigger story workflow|Recognizes story refers to code not the skill"

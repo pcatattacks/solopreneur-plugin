@@ -47,7 +47,7 @@ All available skills:
 | `/solopreneur:standup` | Generate a daily standup summary |
 | `/solopreneur:scaffold` | Design and build your own AI org |
 | `/solopreneur:explain` | Learn how any Claude Code concept works |
-| `/solopreneur:write-tutorial` | Turn the observer log into a blog post |
+| `/solopreneur:story` | Synthesize your project journey into a publishable narrative |
 
 ## Build Workflow
 
@@ -98,20 +98,20 @@ If an MCP server is not available, work without it - never fail because a tool i
 
 ## Observer Protocol
 
-The observer system automatically logs your workflow for later tutorial generation:
+The observer captures WHY (CEO decisions), not WHAT (git handles that).
 
-- **Hooks** capture file edits and commands automatically (no action needed)
-- **You** (Claude) should append a brief narrative entry to `.solopreneur/observer-log.md` after any significant decision, pivot, or skill completion using this format:
+**Automatic (hooks handle this):** When you ask the CEO a question via AskUserQuestion, a hook automatically logs their choice and reasoning to `.solopreneur/observer-log.md`. No action needed from you.
+
+**Best-effort (you do this):** After significant decisions that don't come through AskUserQuestion — pivots, rejected approaches, CEO reasoning stated in free text — append an entry to `.solopreneur/observer-log.md` directly using the Write tool:
 
 ```markdown
-## [CATEGORY] - Brief summary
-**Decision**: What was decided
-**Rationale**: Why
-**Outcome**: What happened next
+## [TIMESTAMP] - Brief summary
+**Choice**: What the CEO decided
+**Reasoning**: Why (use the CEO's words when possible)
 ---
 ```
 
-Categories: DISCOVERY, SPEC, DESIGN, BUILD, SHIP, REVIEW, DECISION, PIVOT
+These entries are the raw material for `/solopreneur:story`. The CEO's actual decisions and reasoning are what make a story authentic.
 
 ## Output Directories
 
@@ -127,6 +127,6 @@ All artifacts are saved under `.solopreneur/`:
 ├── builds/          # Build logs
 ├── releases/        # Release notes
 ├── standups/        # Standup summaries
-├── tutorials/       # Generated tutorials
+├── stories/         # Generated stories (tutorials, case studies, blog posts)
 └── observer-log.md  # Running observer log
 ```

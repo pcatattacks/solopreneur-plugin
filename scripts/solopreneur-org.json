@@ -39,7 +39,7 @@
     {
       "name": "Content Strategist",
       "model": "opus",
-      "skills": ["release-notes", "write-tutorial"],
+      "skills": ["release-notes", "story"],
       "mcps": [],
       "description": "Copy, tutorials & launch comms"
     }
@@ -53,7 +53,7 @@
     { "name": "review", "description": "Quality review" },
     { "name": "ship", "description": "Deploy & launch" },
     { "name": "release-notes", "description": "Audience announcements" },
-    { "name": "write-tutorial", "description": "Tutorial synthesis" }
+    { "name": "story", "description": "Project story synthesis" }
   ],
   "mcps": [
     { "name": "GitHub", "description": "Code & PR management" },
