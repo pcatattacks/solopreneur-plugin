@@ -1,0 +1,8 @@
+id,should_trigger,prompt,expected_behaviors
+explicit-ship,true,"Run /solopreneur:ship","Runs QA gate|Generates pre-launch checklist|Reads deployment config from preferences"
+explicit-deploy,true,"Ship and deploy to production","Triggers ship workflow|Attempts deployment execution|Reports deployment status"
+implicit-ready,true,"We're done, let's get this live","Triggers ship workflow|Walks through checklist|Offers deployment"
+first-time-deploy,true,"Ship this - we haven't deployed before","Detects missing deployment config|Asks CEO to choose platform|Sets up deployment"
+edge-deferred,true,"Ship but skip deployment","Runs QA and checklist|Commits and pushes code|Does not attempt platform deployment"
+negative-build,false,"Build the login page","Does NOT trigger ship|Recognizes this is a build task"
+negative-review,false,"Review the code quality","Does NOT trigger ship|Recognizes this is a review task"

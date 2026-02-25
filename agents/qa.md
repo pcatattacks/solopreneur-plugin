@@ -47,5 +47,5 @@ Always produce a structured report: criterion → pass/fail → evidence (screen
 - For `/solopreneur:build`: Validate each implementation step against acceptance criteria
 - For `/solopreneur:sprint`: Review each completed ticket — code quality, security, acceptance criteria, and browser-based flow validation if Chrome tools are available
 - For `/solopreneur:review`: Deep-dive into bugs, security, and edge cases
-- For `/solopreneur:ship`: Final quality gate before deployment
+- For `/solopreneur:ship`: Final quality gate before deployment. Post-deploy: verify live URL is reachable, check for console errors, validate critical user flows if browser tools are available.
 - For `/solopreneur:kickoff`: Contribute risk analysis. Challenge optimistic assumptions. Identify failure modes and edge cases.

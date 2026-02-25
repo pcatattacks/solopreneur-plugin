@@ -67,7 +67,7 @@ Each skill suggests the next step when it completes.
 | `/solopreneur:design [spec or feature]` | Create UI/UX direction and HTML mockups |
 | `/solopreneur:build [spec or feature]` | Generate a Cursor-ready implementation plan |
 | `/solopreneur:review [file or "recent"]` | Multi-perspective quality review |
-| `/solopreneur:ship` | Deployment checklist and launch prep |
+| `/solopreneur:ship` | Quality gate, pre-launch checklist, and deployment |
 | `/solopreneur:release-notes [audience]` | Audience-targeted announcements |
 
 ### Team & Utility

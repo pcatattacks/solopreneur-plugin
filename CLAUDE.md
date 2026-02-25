@@ -53,7 +53,7 @@ All available skills:
 | `/solopreneur:design` | Create UI/UX direction and HTML mockups |
 | `/solopreneur:build` | Plan for another agent or build directly with Claude |
 | `/solopreneur:review` | Multi-perspective quality review |
-| `/solopreneur:ship` | Deployment checklist and launch prep |
+| `/solopreneur:ship` | Quality gate, pre-launch checklist, and deployment |
 | `/solopreneur:release-notes` | Audience-targeted release announcements |
 | `/solopreneur:kickoff` | Collaborative agent team meetings |
 | `/solopreneur:sprint` | Execute a batch of backlog tickets in parallel |

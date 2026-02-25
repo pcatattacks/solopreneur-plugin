@@ -40,12 +40,53 @@ If building from a ticket file, set up an isolated branch before building:
 
 3. **Update the ticket file**: Set `status: in-progress` and `branch: ticket/{ID}` in the YAML frontmatter.
 
-4. **Adapt explanation to user's technical level**: If `.solopreneur/preferences.md` exists, read it for the CEO's git comfort level. Explain accordingly:
+4. **Adapt explanation to user's technical level**: If `.solopreneur/preferences.yaml` exists, read it for the CEO's git comfort level. Explain accordingly:
    - Technical: "Creating branch `ticket/MVP-001`"
    - Basic: "I'm creating a separate branch for this ticket"
    - Non-technical: "I'm saving your work in a separate space so it doesn't interfere with other work"
 
-   If preferences don't exist yet, ask the CEO: "Quick question — how comfortable are you with git? (I use it daily / I know the basics / What's git?)" and save their answer to `.solopreneur/preferences.md`.
+   If preferences don't exist yet, ask the CEO: "Quick question — how comfortable are you with git? (I use it daily / I know the basics / What's git?)" and save their answer to `.solopreneur/preferences.yaml`.
+
+---
+
+## Step 1.75: Deployment Strategy (first build only)
+
+Check if `.solopreneur/preferences.yaml` has a `deployment` key. If yes, skip this step entirely.
+
+If no deployment strategy exists yet, ask the CEO:
+
+> **Where should this run when it's ready?**
+> The engineer will set up deployment based on your tech stack. Common options:
+> 1. **Vercel** — Best for Next.js, React, static sites (free tier available)
+> 2. **Netlify** — Similar to Vercel, good for static sites and serverless
+> 3. **GitHub Pages** — Free, simple, static sites only
+> 4. **I'll figure it out later** — Skip for now, we'll set it up when you're ready to ship
+>
+> Not sure? The engineer can recommend one based on what we're building.
+
+If the CEO picks a platform or asks for a recommendation:
+1. Delegate to `@engineer` to configure the project for that platform:
+   - Install the platform CLI if needed (e.g., `npm i -g vercel`)
+   - Create platform config files (e.g., `vercel.json`, `netlify.toml`)
+   - If an MCP server exists for the platform (e.g., Vercel), add it to `.mcp.json`
+   - Link the project to the platform (`vercel link`, etc.)
+2. Save the deployment strategy to `.solopreneur/preferences.yaml`:
+   ```yaml
+   deployment:
+     platform: vercel  # or netlify, github-pages, fly, railway, custom, none
+     configured: true
+     notes: "Next.js app on Vercel, linked via CLI"
+     rollback: "Run `vercel rollback` or go to vercel.com/[project]/deployments and promote the previous deployment"
+   ```
+
+If the CEO picks "I'll figure it out later", save:
+```yaml
+deployment:
+  platform: none
+  configured: false
+```
+
+This step only runs once. Subsequent `/build` calls skip it because the preference exists.
 
 ---
 
@@ -66,6 +107,11 @@ If building from a ticket file, set up an isolated branch before building:
 
    ## Step 2: [Short description]
    ...
+
+   ## Deployment Notes (if first build)
+   **Platform**: [chosen platform]
+   **Config created**: [list of config files]
+   **Setup status**: [linked/configured/pending]
    ```
 
 2. The engineer should:

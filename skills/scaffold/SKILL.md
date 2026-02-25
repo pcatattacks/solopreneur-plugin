@@ -113,7 +113,7 @@ On user approval, create the file structure. What you generate depends on their 
 ### For personal use (no plugin packaging):
 1. **`[name]/CLAUDE.md`** - Company handbook tailored to their workflow
 2. **`[name]/agents/[agent].md`** - One file per agent with YAML frontmatter (name, description, tools, model) and role-specific system prompt
-3. **`[name]/skills/[skill]/SKILL.md`** - One skill per SOP with YAML frontmatter and process instructions. Always generate a `skills/kickoff/SKILL.md` that reads team definitions from the org's CLAUDE.md. Use the solopreneur plugin's kickoff as a reference pattern — it works generically with any team definitions.
+3. **`[name]/skills/[skill]/SKILL.md`** - One skill per SOP with YAML frontmatter and process instructions. Always generate a `skills/kickoff/SKILL.md` that reads team definitions from the org's CLAUDE.md. Use the solopreneur plugin's kickoff as a reference pattern — it works generically with any team definitions. If the org has a ship/deploy skill, it should read deployment config from `.solopreneur/preferences.yaml`, support first-time deployment setup, and pattern after the solopreneur plugin's ship skill.
 4. **`[name]/.mcp.json`** - MCP servers based on their daily tools
 5. **`[name]/settings.json`** - Enable agent teams
 6. **`[name]/hooks/hooks.json`** - Automated behaviors (at minimum: decision and session boundary logging)
