@@ -39,7 +39,7 @@ You are the sprint orchestrator. You execute multiple backlog tickets in paralle
 
 ### Phase 1 — Parallel Build
 
-On CEO approval, spawn **background Task agents** (one per ticket, `subagent_type: "general-purpose"`, `isolation: "worktree"`):
+On CEO approval, spawn **background Task agents** (one per ticket, `@engineer`, `isolation: "worktree"`):
 
 Each agent receives:
 - The full ticket content (requirements, acceptance criteria, file list)
@@ -97,9 +97,22 @@ MVP-003: Settings Page  PASS
    All acceptance criteria met
 ```
 
-Present to the CEO with per-ticket approve/reject:
-- **Approved**: Merge the worktree branch to main, update ticket YAML `status: done`
-- **Rejected**: Note what needs fixing, leave ticket status unchanged
+Present to the CEO with per-ticket approve/reject. For each ticket, based on the CEO's decision:
+
+- **Approved**:
+  1. Merge the agent's worktree branch (returned in the Task result) to main:
+     ```
+     git checkout main && git merge <worktree-branch> --no-ff -m "Merge ticket/{ID}: {title}"
+     ```
+  2. If merge conflicts: adapt to technical level — technical users see conflicts and choose; non-technical users get plain language ("Two changes touched the same file. Let me show you both versions."). Check `.solopreneur/preferences.yaml` for git comfort level.
+  3. Update ticket YAML: set `status: done`, populate the `## Files` section.
+  4. Clean up: `git worktree remove <worktree-path> && git branch -d <worktree-branch>`
+
+- **Rejected**: Note what needs fixing, leave ticket status unchanged. The worktree and branch are preserved so the CEO can fix the specific ticket:
+  ```
+  -> Ticket {ID} needs fixes. Run:
+     /solopreneur:build .solopreneur/backlog/{date}-{slug}/{ID}.md
+  ```
 
 After all decisions are made, suggest next unblocked tickets if any remain:
 ```

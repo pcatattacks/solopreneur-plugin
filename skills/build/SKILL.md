@@ -27,13 +27,15 @@ Wait for their answer before proceeding. If they say "plan", follow the **Plan P
 
 If building from a ticket file, set up an isolated branch before building:
 
-1. **Check for parallel builds**: Run `git branch` to see if any `ticket/*` branches exist that are not yet merged. If another ticket branch is active (checked out in the current worktree), create a new worktree instead:
-   ```
-   git worktree add .solopreneur/worktrees/{ID} -b ticket/{ID}
-   ```
-   Then work inside that worktree directory.
+1. **Check for active ticket branches**: Run `git branch` to see if any `ticket/*` branches exist that are not yet merged. If another ticket branch is currently checked out, ask the CEO:
+   > You're currently on branch `ticket/{OTHER-ID}`. To start this ticket, I need to switch branches.
+   > 1. **Switch now** — I'll save your current work and switch to a new branch for this ticket
+   > 2. **Finish the other ticket first** — Let's wrap up {OTHER-ID} before starting this one
+   > 3. **Build in parallel** — Use `/solopreneur:sprint` to build multiple tickets simultaneously
 
-2. **Normal case** (no active ticket branch): Create a branch for this ticket:
+   If the CEO chooses to switch: commit or stash any uncommitted changes on the current branch, then proceed.
+
+2. **Create the ticket branch**:
    ```
    git checkout -b ticket/{ID}
    ```
@@ -99,6 +101,7 @@ This step only runs once. Subsequent `/build` calls skip it because the preferen
 
    ## Context
    [What we're building and why. Reference the source spec/design if applicable.]
+   **Branch**: `ticket/{ID}` ← (only present for ticket builds)
 
    ## Step 1: [Short description]
    **Files**: `path/to/file.ext` (create|modify)
@@ -131,7 +134,20 @@ This step only runs once. Subsequent `/build` calls skip it because the preferen
    - Any decisions that need CEO input
    - Estimated complexity (Simple / Moderate / Complex)
 
-5. End with the handoff prompt:
+5. End with the handoff prompt (adapt for ticket builds):
+
+   **For ticket builds:**
+   ```
+   -> Next: Take this plan to your coding agent (Cursor, Windsurf, etc.) for execution:
+      Make sure you're on branch `ticket/{ID}`, then open:
+      .solopreneur/backlog/{date}-{slug}/{ID}-plan.md
+      Tell it: "Execute this plan step by step"
+
+      When the code is written, come back for review and merge:
+      /solopreneur:review .solopreneur/backlog/{date}-{slug}/{ID}.md
+   ```
+
+   **For non-ticket builds:**
    ```
    -> Next: Take this plan to your coding agent (Cursor, Windsurf, etc.) for execution:
       Open .solopreneur/plans/{filename} and tell it:
@@ -181,7 +197,7 @@ After the plan or direct build is complete:
    - For technical users: show the conflicts and ask how to resolve
    - For non-technical users: attempt auto-resolution; if that fails, explain in plain language: "Two changes touched the same file. Let me show you both versions so you can pick which one to keep."
 
-4. **Clean up**: Delete the ticket branch (`git branch -d ticket/{ID}`). If a worktree was created, remove it (`git worktree remove .solopreneur/worktrees/{ID}`).
+4. **Clean up**: Delete the ticket branch (`git branch -d ticket/{ID}`).
 
 5. **Suggest next ticket**: Read `backlog.md`, find tickets that are now unblocked (their `depends_on` tickets are all `done` or `tested`), and suggest:
    ```

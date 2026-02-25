@@ -47,7 +47,20 @@ If the ticket involves UI changes (references design mockups, creates HTML/CSS/f
 2. Delegate browser validation to `@qa` — visual walk-through, screenshots, console errors
 3. Optionally spawn `@designer` to compare against design mockups if they exist in `.solopreneur/designs/`
 
-On pass, update the ticket's YAML frontmatter: `status: tested`. On fail, list what needs fixing.
+On pass, update the ticket's YAML frontmatter: `status: tested`.
+
+If the ticket has a `branch` field in its YAML frontmatter (e.g., `branch: ticket/MVP-001`), offer to merge:
+> This ticket passes review. Want me to merge branch `ticket/{ID}` into main?
+
+If yes: merge with `git checkout main && git merge ticket/{ID} --no-ff -m "Merge ticket/{ID}: {title}"`, delete the branch (`git branch -d ticket/{ID}`), and update ticket status to `done`.
+
+If merge conflicts: adapt to technical level (check `.solopreneur/preferences.yaml`) — technical users see conflicts; non-technical users get plain-language explanation.
+
+On fail, list what needs fixing and suggest:
+```
+-> These issues need to be fixed before merging. Run:
+   /solopreneur:build .solopreneur/backlog/{date}-{slug}/{ID}.md
+```
 
 ## Plan Validation (after Cursor execution)
 
@@ -63,7 +76,18 @@ Compile all findings into a structured review:
 - **Suggestions**: Nice-to-have improvements
 - **Positives**: Things done well (always include at least one)
 
-End with the next step prompt:
+End with the next step prompt (adapt based on context):
+
+**If a ticket was just merged:**
+```
+-> Next: Ready to ship what we've built?
+   /solopreneur:ship
+
+   More tickets to build?
+   /solopreneur:sprint
+```
+
+**Otherwise (general review, no merge):**
 ```
 -> Next: Ready to ship? Run:
    /solopreneur:ship
