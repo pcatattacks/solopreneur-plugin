@@ -180,29 +180,14 @@ This step only runs once. Subsequent `/build` calls skip it because the preferen
 
 ---
 
-## Ticket Completion (ticket builds only)
+## Ticket Completion (direct builds only)
 
-After the plan or direct build is complete:
+After a direct build is complete (Plan Path ends at the handoff prompt — the ticket stays `in-progress` until reviewed):
 
-1. **Update the ticket**: Set `status: done` in the YAML frontmatter. Populate the `## Files` section with files created/modified.
+1. **Update the ticket**: Set `status: built` in the YAML frontmatter. Populate the `## Files` section with files created/modified.
 
-2. **Offer to merge**: Ask the CEO:
-   > This ticket is built on branch `ticket/{ID}`. Want me to merge it into the main branch?
-
-3. **If yes**: Merge with a descriptive commit:
+2. **Suggest review**: The ticket stays on its branch until review passes.
    ```
-   git checkout main && git merge ticket/{ID} --no-ff -m "Merge ticket/{ID}: {title}"
-   ```
-   If there are merge conflicts:
-   - For technical users: show the conflicts and ask how to resolve
-   - For non-technical users: attempt auto-resolution; if that fails, explain in plain language: "Two changes touched the same file. Let me show you both versions so you can pick which one to keep."
-
-4. **Clean up**: Delete the ticket branch (`git branch -d ticket/{ID}`).
-
-5. **Suggest next ticket**: Read `backlog.md`, find tickets that are now unblocked (their `depends_on` tickets are all `done` or `tested`), and suggest:
-   ```
-   -> Ticket {ID} is done! Next unblocked tickets:
-      /solopreneur:build .solopreneur/backlog/{dir}/{NEXT-ID}.md
-
-   Tickets that can be built in parallel: {list}
+   -> Ticket {ID} is built on branch `ticket/{ID}`. Let's review it:
+      /solopreneur:review .solopreneur/backlog/{dir}/{ID}.md
    ```

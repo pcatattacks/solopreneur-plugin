@@ -75,53 +75,44 @@ As each build agent completes, run **foreground subagent review** (sequential, o
    - Spacing, alignment, responsive behavior
    - Flag any deviations
 
-### Phase 3 — CEO Review
+### Phase 3 — Build Report
 
-Compile all results into a consolidated sprint review:
+Compile all results into a consolidated sprint report:
 
 ```
-Sprint Review: N tickets built
+Sprint Complete: N tickets built
 
-MVP-001: Login Form  PASS
+MVP-001: Login Form  ✓ BUILT
    Tests pass (12/12)
-   Form validation works [screenshot if available]
-   Password field allows paste (warning, non-blocking)
+   QA: No critical issues
 
-MVP-002: Dashboard  NEEDS ATTENTION
+MVP-002: Dashboard  ⚠ BUILT (with warnings)
    Tests pass (8/8)
-   Chart overflows on mobile [screenshot if available]
-   Missing loading state for async data
+   QA: Chart overflows on mobile
 
-MVP-003: Settings Page  PASS
+MVP-003: Settings Page  ✓ BUILT
    Tests pass (5/5)
-   All acceptance criteria met
+   QA: Clean
 ```
 
-Present to the CEO with per-ticket approve/reject. For each ticket, based on the CEO's decision:
+For each built ticket:
+1. Update ticket YAML: set `status: built`, set `branch: <worktree-branch>`, set `worktree: <worktree-path>` (from the Task agent's result).
+2. **Keep the worktree alive** — do NOT clean it up. The worktree is needed if `/review` finds issues and the CEO needs to fix in parallel.
 
-- **Approved**:
-  1. Merge the agent's worktree branch (returned in the Task result) to main:
-     ```
-     git checkout main && git merge <worktree-branch> --no-ff -m "Merge ticket/{ID}: {title}"
-     ```
-  2. If merge conflicts: adapt to technical level — technical users see conflicts and choose; non-technical users get plain language ("Two changes touched the same file. Let me show you both versions."). Check `.solopreneur/preferences.yaml` for git comfort level.
-  3. Update ticket YAML: set `status: done`, populate the `## Files` section.
-  4. Clean up: `git worktree remove <worktree-path> && git branch -d <worktree-branch>`
+If any build agents reported failures or critical QA issues, note these prominently — the CEO may want to fix before reviewing.
 
-- **Rejected**: Note what needs fixing, leave ticket status unchanged. The worktree and branch are preserved so the CEO can fix the specific ticket:
-  ```
-  -> Ticket {ID} needs fixes. Run:
-     /solopreneur:build .solopreneur/backlog/{date}-{slug}/{ID}.md
-  ```
-
-After all decisions are made, suggest next unblocked tickets if any remain:
+Suggest review:
 ```
--> Next: 2 more tickets are now unblocked. Run another sprint?
-   /solopreneur:sprint
+-> Next: Let's review and merge what was built:
+   /solopreneur:review sprint
 ```
 
-Or if all tickets are done:
+If some tickets failed to build:
 ```
--> Next: All tickets complete! Ready for a full review?
-   /solopreneur:review recent
+-> {N} tickets built successfully, {M} had issues.
+   Review the successful ones:
+   /solopreneur:review sprint
+
+   Fix the failed ones:
+   /solopreneur:build .solopreneur/backlog/{dir}/{ID}.md
 ```
