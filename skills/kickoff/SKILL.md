@@ -1,6 +1,7 @@
 ---
 name: kickoff
 description: Launch a collaborative team meeting using agent teams. Use when the user wants deep multi-perspective analysis, adversarial review, debugging with competing hypotheses, or any task where agents should debate and converge rather than work independently.
+argument-hint: "[team name] on [topic]"
 disable-model-invocation: true
 ---
 

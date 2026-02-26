@@ -1,6 +1,7 @@
 ---
 name: explain
 description: Explain how any Claude Code concept works in beginner-friendly language, with examples from this plugin. Use when you want to understand skills, agents, teams, MCP, hooks, plugins, evals, or the Claude+Cursor workflow.
+argument-hint: concept name (skills, agents, hooks, etc.)
 ---
 
 # Explain: $ARGUMENTS

@@ -1,6 +1,7 @@
 ---
 name: ship
 description: Deploy and launch a feature or product. Runs a quality gate, pre-launch checklist, and executes deployment. Use when the user is ready to ship.
+argument-hint: "optional: project context"
 disable-model-invocation: true
 ---
 

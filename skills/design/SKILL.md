@@ -1,6 +1,7 @@
 ---
 name: design
 description: Create design direction, HTML mockups, and UI/UX recommendations for a feature or product. Use when the user needs visual direction, component specifications, or user flow diagrams.
+argument-hint: spec or design directory path
 ---
 
 # Design Direction: $ARGUMENTS

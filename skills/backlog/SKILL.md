@@ -1,6 +1,7 @@
 ---
 name: backlog
 description: Break a spec or feature into prioritized, dependency-tracked tickets for implementation. Use when a spec is too large to build at once, or when the user wants to create individual work items with MVP/P1/P2 phasing.
+argument-hint: spec file path
 ---
 
 # Backlog: $ARGUMENTS

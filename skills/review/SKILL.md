@@ -1,6 +1,7 @@
 ---
 name: review
 description: Review code, specifications, or designs for quality, bugs, security, and best practices. Use when the user wants feedback on recent work, a pull request, or any artifact.
+argument-hint: file path or "sprint"
 ---
 
 # Review: $ARGUMENTS

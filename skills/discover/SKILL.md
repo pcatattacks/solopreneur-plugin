@@ -1,6 +1,7 @@
 ---
 name: discover
 description: Research and validate product ideas, market opportunities, or feature concepts. Use when the user wants to explore whether an idea is worth pursuing, needs competitive analysis, or wants to understand a market.
+argument-hint: an idea or market to explore
 ---
 
 # Discovery: $ARGUMENTS

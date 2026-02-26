@@ -1,6 +1,7 @@
 ---
 name: release-notes
 description: Generate audience-targeted release announcements. Specify the audience (customers, internal team, investors, social media) and optionally a version or scope. Use after shipping to announce what was built.
+argument-hint: audience (customers, engineers, etc.)
 ---
 
 # Release Notes: $ARGUMENTS

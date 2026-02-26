@@ -1,6 +1,7 @@
 ---
 name: spec
 description: Write a product specification (PRD) from a validated idea or feature request. Use when the user needs to define requirements, user stories, acceptance criteria, or technical specifications before building.
+argument-hint: idea description or discovery brief path
 ---
 
 # Product Specification: $ARGUMENTS

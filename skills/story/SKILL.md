@@ -1,6 +1,7 @@
 ---
 name: story
 description: Synthesize your project journey into a publishable narrative — tutorial, case study, blog post, or launch story. Pulls from git history, artifacts, and your decision log. Use when you want to write about how you built something.
+argument-hint: "optional: format and topic"
 disable-model-invocation: true
 ---
 

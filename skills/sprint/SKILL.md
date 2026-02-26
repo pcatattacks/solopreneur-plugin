@@ -1,6 +1,7 @@
 ---
 name: sprint
 description: Execute a batch of backlog tickets in parallel. Use when the user wants to build multiple unblocked tickets simultaneously with integrated QA review.
+argument-hint: "optional: ticket IDs to filter"
 disable-model-invocation: true
 ---
 

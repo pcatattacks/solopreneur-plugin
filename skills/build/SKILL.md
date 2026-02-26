@@ -1,6 +1,7 @@
 ---
 name: build
 description: Plan and execute code implementation for a feature or product. Can generate a plan file for Cursor or build directly with Claude. Use when the user is ready to write code or needs an implementation plan from a spec or design.
+argument-hint: ticket, spec, or feature description
 disable-model-invocation: true
 ---
 

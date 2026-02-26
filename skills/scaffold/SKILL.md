@@ -1,6 +1,7 @@
 ---
 name: scaffold
 description: Design and scaffold your own AI org structure with custom agents, skills, teams, hooks, and MCP servers. Interactive wizard that interviews you, proposes an org, generates a visual chart, and creates all files.
+argument-hint: "optional: prior context to skip"
 disable-model-invocation: true
 ---
 

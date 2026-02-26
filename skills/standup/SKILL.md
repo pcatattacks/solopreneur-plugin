@@ -1,6 +1,7 @@
 ---
 name: standup
 description: Generate a daily standup summary showing what was done, what is planned, and any blockers. Use when the user wants a status update or progress report.
+argument-hint: "optional: date or range"
 ---
 
 # Daily Standup
