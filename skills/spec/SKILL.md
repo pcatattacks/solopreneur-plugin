@@ -26,8 +26,8 @@ You are writing a PRD (Product Requirement Document) for the CEO. If `$ARGUMENTS
    - **Open Questions**: Anything that needs CEO input before building
 
 3. Validate with subagents in parallel:
-   - Send the `@engineer` subagent to validate **technical feasibility** of each requirement. Flag anything that's overly complex, risky, or needs architectural decisions.
-   - Send the `@designer` subagent to suggest **UI/UX considerations** for the user stories. What screens are needed? What user flows?
+   - Delegate to `@engineer` with the draft PRD. Task: validate technical feasibility of each requirement. For each: rate as feasible / needs-design-decision / risky. Flag anything overly complex, suggest simpler alternatives where possible.
+   - Delegate to `@designer` with the user stories section. Task: identify what screens and user flows are needed. For each user story, note which screens it touches and any UX concerns.
 
 4. Incorporate subagent feedback into the final PRD.
 

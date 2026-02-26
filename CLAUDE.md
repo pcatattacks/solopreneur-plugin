@@ -23,19 +23,44 @@ The following AI employees are available as subagents:
 - **Researcher** (`@researcher`): Market research, competitive analysis, trend identification
 - **Content Strategist** (`@content-strategist`): Copywriting, tutorials, launch comms, documentation
 
-## Team Meetings (Agent Teams)
+## Tool Access
 
-Named teams for `/solopreneur:kickoff`. Invoke with `/solopreneur:kickoff [team name] [topic]`:
+### MCP Servers
+Agents can use MCP servers when available. Check before using:
+- **Context7**: Up-to-date documentation for libraries and frameworks. Use when agents need current API references or docs that may have changed since training.
 
-1. **Discovery Sprint**: @researcher + @bizops + @engineer — Deep collaborative exploration of an idea. Use when you want agents to challenge each other's assumptions, not just produce independent analyses.
-2. **Build & QA**: @engineer + @qa + @designer — Adversarial code review, debugging with competing hypotheses, or implementation planning where trade-offs need debate.
-3. **Ship & Launch**: @engineer + @qa + @content-strategist — Launch coordination where messaging, known issues, and deployment need cross-team alignment.
+### Browser Tools
+Two browser tools can coexist. Detect by checking the tool set:
+- **Chrome DevTools MCP** (`mcp__chrome-devtools__*` tools): Always available via `.mcp.json`. Inspect DOM, take screenshots, debug layouts. Runs in an isolated browser profile — no access to the CEO's login sessions. Use for mockup inspection, layout debugging, and basic visual checks.
+- **Claude Chrome Extension** (`mcp__claude-in-chrome__*` tools): Optional. Connects to the CEO's real Chrome browser — shares login sessions, actions visible in real-time. Use for QA flow validation, testing authenticated pages, and visual verification.
 
-You can also assemble ad-hoc teams: `/solopreneur:kickoff @engineer @designer on [topic]`
+### CLI Tools
+- **GitHub (`gh` CLI)**: PR management, issue tracking, repo creation. Requires `gh auth login` — Claude will walk users through this on first use. Called via Bash, not MCP.
 
-Agent teams use more resources than standard skills (scales linearly with teammates). Use for deep collaboration; use lifecycle skills (`/discover`, `/review`, etc.) for structured independent analysis.
+## Output Directories
 
-## Product Lifecycle (Skills)
+All artifacts are saved under `.solopreneur/`:
+
+```
+.solopreneur/
+├── discoveries/     # Discovery briefs
+├── specs/           # Product requirement docs
+├── backlog/         # Prioritized tickets (per feature/project)
+├── designs/         # Design direction (brief + HTML mockups per feature)
+├── plans/           # Cursor-ready implementation plans
+├── releases/        # Release notes
+├── standups/        # Standup summaries
+├── stories/         # Generated stories (tutorials, case studies, blog posts)
+└── observer-log.md  # Running observer log
+```
+
+---
+
+## Workflow Context
+
+*Orchestrator reference for skill routing and coordination — subagents can skip this section.*
+
+### Product Lifecycle (Skills)
 
 The standard workflow flows through these skills in order. Each skill suggests the next step when it completes:
 
@@ -62,16 +87,28 @@ All available skills:
 | `/solopreneur:explain` | Learn how any Claude Code concept works |
 | `/solopreneur:story` | Synthesize your project journey into a publishable narrative |
 
-## Build Workflow
+### Team Meetings (Agent Teams)
+
+Named teams for `/solopreneur:kickoff`. Invoke with `/solopreneur:kickoff [team name] [topic]`:
+
+1. **Discovery Sprint**: @researcher + @bizops + @engineer — Deep collaborative exploration of an idea. Use when you want agents to challenge each other's assumptions, not just produce independent analyses.
+2. **Build & QA**: @engineer + @qa + @designer — Adversarial code review, debugging with competing hypotheses, or implementation planning where trade-offs need debate.
+3. **Ship & Launch**: @engineer + @qa + @content-strategist — Launch coordination where messaging, known issues, and deployment need cross-team alignment.
+
+You can also assemble ad-hoc teams: `/solopreneur:kickoff @engineer @designer on [topic]`
+
+Agent teams use more resources than standard skills (scales linearly with teammates). Use for deep collaboration; use lifecycle skills (`/discover`, `/review`, etc.) for structured independent analysis.
+
+### Build Workflow
 
 This plugin supports two build modes — the CEO chooses when running `/solopreneur:build`:
 
 1. **Plan only** — Claude plans, another agent executes. Claude writes a plan file to `.solopreneur/plans/`, the CEO takes it to Cursor, Windsurf, or any coding agent for execution. On return, Claude's QA agent validates against acceptance criteria.
 2. **Build directly** — Claude plans and executes. The `@engineer` subagent creates the plan for reference, then writes the code itself.
 
-Both modes produce plan files using the standard format: `Step → Files → Do → Acceptance`
+Both modes produce plan files using the standard format (defined in the conventions skill).
 
-## Version Control & Checkpointing
+### Version Control & Checkpointing
 
 You (Claude) manage ALL git operations for the CEO. They should never need to use git or GitHub directly.
 
@@ -92,23 +129,11 @@ You (Claude) manage ALL git operations for the CEO. They should never need to us
 - If already a git repo, respect the existing setup and don't modify .gitignore or other config without asking
 
 **GitHub (when sharing):**
-- If the user wants to share their work, check if `gh` CLI is installed and authenticated
-- If not installed, explain: "To share this on GitHub, we need a small tool called GitHub CLI. Want me to help you set it up?"
-- Walk through `gh auth login` (browser-based, one click)
-- Handle all repo creation and push operations via `gh repo create` and `git push`
+- If the user wants to share, use `gh` CLI for repo creation and pushing. Walk through `gh auth login` if not authenticated.
 
-## Tool Access
+### Chrome Extension Setup Check
 
-### MCP Servers
-Agents can use MCP servers when available. Check before using:
-- **Context7**: Up-to-date documentation for libraries and frameworks. Use when agents need current API references or docs that may have changed since training.
-
-### Browser Tools
-Two browser tools can coexist. Detect by checking the tool set:
-- **Chrome DevTools MCP** (`mcp__chrome-devtools__*` tools): Always available via `.mcp.json`. Inspect DOM, take screenshots, debug layouts. Runs in an isolated browser profile — no access to the CEO's login sessions. Use for mockup inspection, layout debugging, and basic visual checks.
-- **Claude Chrome Extension** (`mcp__claude-in-chrome__*` tools): Optional. Connects to the CEO's real Chrome browser — shares login sessions, actions visible in real-time. Use for QA flow validation, testing authenticated pages, and visual verification.
-
-**Claude Chrome Extension setup check**: Before any skill delegates browser-based QA on UI work, check if the Claude Chrome Extension is available. If not:
+Before any skill delegates browser-based QA on UI work, check if the Claude Chrome Extension is available. If not:
 1. Check `.solopreneur/preferences.yaml` for `claude-chrome-extension: skip`. If present, silently use Chrome DevTools MCP only.
 2. If no preference recorded, ask the CEO via AskUserQuestion:
    - "Yes, set up Claude Chrome Extension" → run `/chrome` for one-time setup, then continue
@@ -116,10 +141,7 @@ Two browser tools can coexist. Detect by checking the tool set:
    - "Don't ask again" → write `claude-chrome-extension: skip` to `.solopreneur/preferences.yaml`, then continue
 3. Never block on this — Chrome DevTools MCP is always a working fallback.
 
-### CLI Tools
-- **GitHub (`gh` CLI)**: PR management, issue tracking, repo creation. Requires `gh auth login` — Claude will walk users through this on first use. Called via Bash, not MCP.
-
-## Observer Protocol
+### Observer Protocol
 
 The observer captures WHY (CEO decisions), not WHAT (git handles that).
 
@@ -135,20 +157,3 @@ The observer captures WHY (CEO decisions), not WHAT (git handles that).
 ```
 
 These entries are the raw material for `/solopreneur:story`. The CEO's actual decisions and reasoning are what make a story authentic.
-
-## Output Directories
-
-All artifacts are saved under `.solopreneur/`:
-
-```
-.solopreneur/
-├── discoveries/     # Discovery briefs
-├── specs/           # Product requirement docs
-├── backlog/         # Prioritized tickets (per feature/project)
-├── designs/         # Design direction (brief + HTML mockups per feature)
-├── plans/           # Cursor-ready implementation plans
-├── releases/        # Release notes
-├── standups/        # Standup summaries
-├── stories/         # Generated stories (tutorials, case studies, blog posts)
-└── observer-log.md  # Running observer log
-```

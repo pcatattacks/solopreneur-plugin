@@ -10,10 +10,7 @@ You are coordinating a launch for the CEO. Time to ship.
 
 ## Step 1: Final Quality Gate
 
-Delegate to the `@qa` subagent for a final review:
-- Run existing test suites if available (`npm test`, `pytest`, etc.)
-- Check for any critical or warning-level issues
-- If QA finds critical issues, STOP and present them to the CEO before proceeding
+Delegate to `@qa` with the project's entry point and test commands. Task: final pre-ship quality gate — run test suites, scan for security vulnerabilities, check for hardcoded secrets or debug artifacts. Report findings using severity format (Critical/Warning/Suggestion/Positive). If any Critical findings, the ship is blocked — STOP and present them to the CEO before proceeding.
 
 ## Step 2: Pre-Launch Checklist
 

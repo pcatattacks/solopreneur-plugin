@@ -17,28 +17,28 @@ You are conducting a quality review. Determine what type of artifact is being re
 ## Code Review
 
 Delegate in parallel:
-- `@engineer`: Architecture review - code structure, patterns, maintainability, performance
-- `@qa`: Bug hunting - security vulnerabilities, edge cases, error handling, test coverage
+- `@engineer`: Architecture review — code structure, patterns, maintainability, performance. Rate every finding using severity format (Critical/Warning/Suggestion/Positive).
+- `@qa`: Bug hunting — security vulnerabilities, edge cases, error handling, test coverage. Rate every finding using severity format.
 
 ## Spec Review
 
 Delegate in parallel:
-- `@bizops`: Business viability - does this make commercial sense? Are requirements prioritized correctly?
-- `@engineer`: Technical feasibility - can this be built? Are estimates realistic? Any missing requirements?
+- `@bizops`: Business viability — does this make commercial sense? Are requirements prioritized correctly? Provide a go/no-go per requirement.
+- `@engineer`: Technical feasibility — can this be built as specified? Flag complexity risks, estimate effort, note missing requirements. Rate each requirement: feasible / complex / risky.
 
 ## Design Review
 
 If reviewing a design directory, read `design-brief.md` for flows and visual direction. If HTML mockups exist, open them in the browser (Chrome DevTools MCP if available) to inspect the actual layouts.
 
 Delegate in parallel:
-- `@designer`: Usability - is the flow intuitive? Are there accessibility issues? If HTML mockups exist, inspect them for visual consistency and responsive behavior.
-- `@engineer`: Implementability - can this be built as designed? Review HTML mockups for feasible component structure. Any technical constraints?
+- `@designer`: Usability review — is the flow intuitive? Accessibility issues? If HTML mockups exist, inspect for visual consistency and responsive behavior. Rate findings using severity format.
+- `@engineer`: Implementability — can this be built as designed? Flag any technical constraints. Rate findings using severity format.
 
 ## Ticket Review
 
 Read the ticket file for acceptance criteria and the `## Files` section for what was built. Delegate in parallel:
-- `@engineer`: Validate implementation against each acceptance criterion. Check code quality and architecture.
-- `@qa`: Test edge cases, security, error handling specific to this ticket's scope.
+- `@engineer`: Validate implementation against each acceptance criterion. Check code quality and architecture. Rate findings using severity format.
+- `@qa`: Test edge cases, security, error handling specific to this ticket's scope. Rate findings using severity format.
 
 ### Browser Validation (UI tickets)
 
@@ -79,8 +79,8 @@ No tickets ready for review. Build first:
 ### Phase 1 — Parallel Code Review
 
 For each built ticket, spawn **background** review agents in parallel:
-- `@engineer`: Validate implementation against acceptance criteria, check architecture and code quality.
-- `@qa`: Test edge cases, security, error handling specific to this ticket's scope.
+- `@engineer`: Validate implementation against acceptance criteria, check architecture and code quality. Rate findings using severity format.
+- `@qa`: Test edge cases, security, error handling for this ticket. Rate findings using severity format.
 
 This means 2 agents per ticket (up to 6 agents for 3 tickets), all running simultaneously.
 

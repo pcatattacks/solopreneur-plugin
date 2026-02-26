@@ -12,8 +12,8 @@ You are running a discovery sprint for the CEO. Your goal is to determine whethe
 1. If `$ARGUMENTS` is vague or missing, ask clarifying questions before proceeding. Do not generate a full brief from vague input like "something with AI."
 
 2. Delegate research in parallel:
-   - Send the `@researcher` subagent to analyze the **competitive landscape**: existing solutions, top 3-5 competitors, their positioning, pricing, strengths, weaknesses, and user sentiment.
-   - Send the `@bizops` subagent to assess **business viability**: market size (TAM/SAM/SOM), pricing opportunities, revenue model options, and go-to-market considerations.
+   - Delegate to `@researcher` with the idea description and target audience. Task: competitive landscape analysis of top 3-5 existing solutions — their positioning, pricing, strengths, weaknesses, and user sentiment. Include confidence levels for key claims.
+   - Delegate to `@bizops` with the idea description and target audience. Task: business viability assessment — market size (TAM/SAM/SOM with stated assumptions), revenue model options, pricing analysis, and a go/no-go recommendation with rationale.
 
 3. Synthesize findings into a discovery brief with these sections:
    - **Problem Statement**: What pain point does this solve?
