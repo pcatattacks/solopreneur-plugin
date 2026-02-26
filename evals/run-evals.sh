@@ -117,6 +117,7 @@ get_negative_patterns() {
     review)   echo "Critical|Warning|Suggestion|Positive|Severity" ;;
     backlog)  echo "Backlog|MVP|P1|P2|Depend|Acceptance Criteria|ticket" ;;
     scaffold) echo "Your AI Org|Employees.*Agents|SOPs.*Skills|org chart" ;;
+    sprint)   echo "Sprint Complete|tickets built|BUILT|status: built" ;;
     *)        echo "" ;;
   esac
 }

@@ -42,7 +42,7 @@ Read files from `.solopreneur/` directories:
 - `discoveries/` — What ideas were explored, what was validated
 - `specs/` — What was planned, what requirements were set
 - `designs/` — What the UX looks like, what design decisions were made
-- `builds/` — What was actually built
+- `plans/` — Implementation plans and what was built
 - `releases/` — What was shipped
 
 These provide the concrete details that give the story substance.

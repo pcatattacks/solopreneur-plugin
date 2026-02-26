@@ -106,14 +106,68 @@ python3 scripts/visualize-org.py --config [config-file].json --output [plugin-na
 
 Tell the user to open the HTML file in their browser. Explain: "This chart shows your entire AI team - who they are, what they can do, and what tools they use. Hover over an employee to see their connections. Hover over a team to see who's in it."
 
+## Step 3.5: Consult Claude Code Best Practices
+
+Before generating any files, delegate to the `claude-code-guide` subagent for authoritative guidance:
+
+> "I'm building a Claude Code plugin with custom agents and skills for a [CEO's domain] workflow. I need:
+>
+> 1. **Complete frontmatter specs**: All supported YAML frontmatter fields for custom agents (agents/*.md) and custom skills (skills/*/SKILL.md). For each field: name, type, required/optional, default value, and when to use it.
+>
+> 2. **Agent design best practices**: How should agent markdown bodies be structured? What makes an effective agent description for routing? How should tools be scoped? When to use different model tiers? What should go in the agent body vs what should be in skills?
+>
+> 3. **Skill design best practices**: How should skills be structured for maintainability? When to use `context: fork` vs running in main context? When to use `disable-model-invocation`? How to structure workflow steps and agent delegation? How to write effective next-step prompts?
+>
+> 4. **Plugin architecture patterns**: What are proven patterns for multi-agent plugins? Common anti-patterns to avoid? How should agents and skills compose together? When to use the `skills` field on agents vs inline instructions?
+>
+> 5. **Example configurations**: 2-3 example agent and skill files showing best practices for different use cases.
+>
+> Provide specific, actionable guidance I can apply when generating files."
+
+Use the response as the authoritative reference for all file generation in Step 4. This ensures:
+- Generated files use the latest correct format (even if Claude Code adds new fields)
+- Architecture follows proven patterns (not just valid syntax)
+- Users get an optimally structured org without needing to understand the underlying platform
+
 ## Step 4: Generate Files
 
 On user approval, create the file structure. What you generate depends on their sharing preference:
 
 ### For personal use (no plugin packaging):
 1. **`[name]/CLAUDE.md`** - Company handbook tailored to their workflow
-2. **`[name]/agents/[agent].md`** - One file per agent with YAML frontmatter (name, description, tools, model) and role-specific system prompt
-3. **`[name]/skills/[skill]/SKILL.md`** - One skill per SOP with YAML frontmatter and process instructions. Always generate a `skills/kickoff/SKILL.md` that reads team definitions from the org's CLAUDE.md. Use the solopreneur plugin's kickoff as a reference pattern — it works generically with any team definitions. If the org has a ship/deploy skill, it should read deployment config from `.solopreneur/preferences.yaml`, support first-time deployment setup, and pattern after the solopreneur plugin's ship skill.
+2. **`[name]/agents/[agent].md`** — One file per agent. Use the frontmatter fields from the claude-code-guide specs (Step 3.5). At minimum, every agent needs:
+   - `name` (required): lowercase-with-hyphens identifier
+   - `description` (required): when Claude should delegate to this agent — be specific, this is Claude's "API docs" for routing
+   - `tools`: restrict to what the agent actually needs (principle of least privilege)
+   - `model`: use `sonnet` for routine workers (QA, research), `inherit` or `opus` for complex reasoning (architecture, strategy)
+
+   The markdown body is the agent's system prompt. Include:
+   - Role identity (1-2 sentences: who they are, what they specialize in)
+   - Working principles (3-5 bullets: how they approach problems)
+   - Output format (if the agent produces structured output)
+
+   Make each agent self-sufficient — its body should contain enough methodology that it can operate autonomously with just a task prompt. Don't rely on the delegation prompt to carry all the instructions.
+
+   **Architecture guidance** (from Claude Code docs):
+   - **Agent bodies should be rich**, not thin. Include detailed methodology: checklists, workflow steps, quality standards, output formats. Official examples all have substantial bodies. Thin agents are the anti-pattern.
+   - **Skills provide reusable content**: reference knowledge (conventions, patterns) or step-by-step task workflows.
+   - Use the `skills` field on agents to share reference material that multiple agents need.
+   - Keep agents focused on their domain expertise — one agent per specialty.
+3. **`[name]/skills/[skill]/SKILL.md`** — One skill per workflow or SOP. Use the frontmatter fields from the claude-code-guide specs (Step 3.5). Common fields:
+   - `name`: display name (defaults to directory name if omitted)
+   - `description`: when to use this skill — Claude uses this to decide auto-invocation
+   - `disable-model-invocation: true`: for skills that should only run when explicitly called
+   - `user-invocable: false`: for internal reference skills that agents load but users don't invoke
+   - `allowed-tools`: restrict tool access when the skill shouldn't write files or run commands
+
+   The markdown body defines the workflow. Structure as:
+   - Input parsing (what `$ARGUMENTS` expects)
+   - Process steps (what to do, in order)
+   - Agent delegation (which agents to spawn and what they handle)
+   - Output format (what artifacts to produce)
+   - Next step prompt (suggest the next skill in the workflow)
+
+   Always generate a `skills/kickoff/SKILL.md` that reads team definitions from the org's CLAUDE.md. Use the solopreneur plugin's kickoff as a reference pattern — it works generically with any team definitions. If the org has a ship/deploy skill, it should read deployment config from preferences, support first-time deployment setup, and pattern after the solopreneur plugin's ship skill.
 4. **`[name]/.mcp.json`** - MCP servers based on their daily tools
 5. **`[name]/settings.json`** - Enable agent teams
 6. **`[name]/hooks/hooks.json`** - Automated behaviors (at minimum: decision and session boundary logging)

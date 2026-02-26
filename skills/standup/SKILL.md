@@ -17,7 +17,7 @@ Generate a standup summary by gathering information from multiple sources.
      - `.solopreneur/specs/` - product specs
      - `.solopreneur/designs/` - design docs
      - `.solopreneur/plans/` - build plans (check for completion checkboxes)
-     - `.solopreneur/builds/` - build logs
+     - `.solopreneur/plans/` - implementation plans
      - `.solopreneur/releases/` - release notes
 
 2. **Check plan progress**:

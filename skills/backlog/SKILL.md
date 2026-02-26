@@ -57,7 +57,7 @@ Design: `.solopreneur/designs/{design-dir}/` (if exists)
 ## MVP
 | ID | Title | Status | Depends On | Type | Size |
 |----|-------|--------|------------|------|------|
-| MVP-001 | ... | not-started | — | eng | M |
+| MVP-001 | ... | pending | — | eng | M |
 
 ## P1
 | ID | Title | Status | Depends On | Type | Size |
@@ -82,7 +82,7 @@ id: MVP-001
 title: Short descriptive title
 priority: MVP
 type: eng
-status: not-started
+status: pending
 depends_on: []
 blocks: [MVP-002]
 design_ref:

@@ -147,7 +147,6 @@ All artifacts are saved under `.solopreneur/`:
 ├── backlog/         # Prioritized tickets (per feature/project)
 ├── designs/         # Design direction (brief + HTML mockups per feature)
 ├── plans/           # Cursor-ready implementation plans
-├── builds/          # Build logs
 ├── releases/        # Release notes
 ├── standups/        # Standup summaries
 ├── stories/         # Generated stories (tutorials, case studies, blog posts)

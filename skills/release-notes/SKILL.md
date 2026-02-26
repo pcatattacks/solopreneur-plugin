@@ -14,7 +14,7 @@ You are generating release announcements. Parse `$ARGUMENTS` for:
 1. Gather context:
    - Read recent git log for commits and changes
    - Read any specs in `.solopreneur/specs/` relevant to recent work
-   - Read any build logs in `.solopreneur/builds/` or plans in `.solopreneur/plans/`
+   - Read any plans in `.solopreneur/plans/`
    - Check for existing release notes in `.solopreneur/releases/`
 
 2. Delegate to the `@content-strategist` subagent to generate audience-appropriate content:
@@ -42,3 +42,13 @@ You are generating release announcements. Parse `$ARGUMENTS` for:
 3. Save to `.solopreneur/releases/{date}-{audience}-{slug}.md` (create the directory if needed).
 
 4. Present the release notes to the CEO for review before publishing.
+
+5. End with the next step prompt:
+   ```
+   -> Release notes ready. What's next?
+      Start your next feature:
+      /solopreneur:discover [next idea]
+
+      Or tell the story of what you just built:
+      /solopreneur:story
+   ```
