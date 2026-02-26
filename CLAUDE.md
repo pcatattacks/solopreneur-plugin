@@ -51,7 +51,8 @@ All artifacts are saved under `.solopreneur/`:
 ├── releases/        # Release notes
 ├── standups/        # Standup summaries
 ├── stories/         # Generated stories (tutorials, case studies, blog posts)
-└── observer-log.md  # Running observer log
+├── observer-log.md  # Running observer log (recent entries)
+└── observer-archives/  # Rotated older observer entries (monthly)
 ```
 
 ---
@@ -141,19 +142,43 @@ Before any skill delegates browser-based QA on UI work, check if the Claude Chro
    - "Don't ask again" → write `claude-chrome-extension: skip` to `.solopreneur/preferences.yaml`, then continue
 3. Never block on this — Chrome DevTools MCP is always a working fallback.
 
+### Preferences
+
+`.solopreneur/preferences.yaml` stores CEO preferences that persist across sessions. Canonical schema:
+
+```yaml
+git_comfort_level: "I use it daily" | "I know the basics" | "What's git?"
+deployment:
+  platform: "vercel" | "netlify" | "github-pages" | "custom" | "none"
+  configured: true | false
+  notes: "Platform-specific deployment instructions"
+  rollback: "Platform-specific rollback steps"
+claude-chrome-extension: "skip"
+```
+
+Skills that write: `/build` (git_comfort_level, deployment), `/ship` (deployment.rollback). The Chrome Extension check writes `claude-chrome-extension`. Always read before writing to avoid overwriting other keys.
+
 ### Observer Protocol
 
-The observer captures WHY (CEO decisions), not WHAT (git handles that).
+The observer captures WHY (CEO decisions), not WHAT (git handles that). These entries are the raw material for `/solopreneur:story`.
 
-**Automatic (hooks handle this):** When you ask the CEO a question via AskUserQuestion, a hook automatically logs their choice and reasoning to `.solopreneur/observer-log.md`. No action needed from you.
+**Automatic (hooks handle this):** When you ask the CEO a question via AskUserQuestion, a hook logs the decision to `.solopreneur/observer-log.md` with the choice, alternatives, and option context. No action needed from you.
 
-**Best-effort (you do this):** After significant decisions that don't come through AskUserQuestion — pivots, rejected approaches, CEO reasoning stated in free text — append an entry to `.solopreneur/observer-log.md` directly using the Write tool:
+**Manual (you do this):** The hook only captures structured Q&A — it misses the CEO's actual reasoning. After any of these triggers, append an entry to `.solopreneur/observer-log.md`:
+
+- CEO explains WHY they chose something ("I picked X because...")
+- CEO rejects an approach ("Let's not do Y, it's too complex")
+- CEO pivots direction ("Actually, let's switch to...")
+- CEO states a preference ("I always want to..." / "Never do...")
+
+Use this exact format:
 
 ```markdown
 ## [TIMESTAMP] - Brief summary
 **Choice**: What the CEO decided
-**Reasoning**: Why (use the CEO's words when possible)
+**Alternatives**: What was rejected (if applicable)
+**Reasoning**: Why, in the CEO's own words
 ---
 ```
 
-These entries are the raw material for `/solopreneur:story`. The CEO's actual decisions and reasoning are what make a story authentic.
+The CEO's actual words are what make a story authentic — paraphrase only if their statement is very long. Briefly tell the CEO what you're logging and why before writing (e.g., "I'm saving that decision to your observer log so we can reference it later").

@@ -30,7 +30,7 @@ If `$ARGUMENTS` provides a title, topic, or focus area, use it to narrow scope.
 Gather material from three sources (in order of storytelling value):
 
 ### 1. Decision Log (CEO's voice — most valuable)
-Read `.solopreneur/observer-log.md`. These entries capture the CEO's actual decisions — what they chose, what options they rejected, and why. This is the raw material that makes a story authentic. If the log is sparse or empty, that's fine — the other sources compensate.
+Read `.solopreneur/observer-log.md`. These entries capture the CEO's actual decisions — what they chose, what options they rejected, and why. This is the raw material that makes a story authentic. If the log is sparse or empty, that's fine — the other sources compensate. Also check `.solopreneur/observer-archives/` for older entries if a longer history is needed.
 
 ### 2. Git History (timeline + milestones)
 ```bash
