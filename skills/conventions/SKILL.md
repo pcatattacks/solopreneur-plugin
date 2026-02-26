@@ -49,6 +49,15 @@ built         → tested        (QA passes in review)
 tested        → done          (merged to main in review)
 ```
 
+### Where Transitions Happen
+
+Skills contain the operational instructions for the orchestrator. If the state machine changes, update these locations:
+
+- `pending → in-progress`: build/SKILL.md (line 43), sprint delegates to build
+- `in-progress → built`: build/SKILL.md (line 187), sprint/SKILL.md (line 99)
+- `built → tested`: review/SKILL.md (line 51)
+- `tested → done`: review/SKILL.md (lines 58, 99)
+
 ## Review Severity Format
 
 When producing review findings, rate every issue:
