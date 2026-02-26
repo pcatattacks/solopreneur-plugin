@@ -259,7 +259,7 @@ Your AI team is ready! Here's how to use it:
 
 Your team will handle everything from there. If you ever want to understand
 how something works, just ask:
-   /[name]:explain [concept]
+   /[name]:help [topic]
 ```
 
 If they chose to share, also explain:

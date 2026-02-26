@@ -85,7 +85,7 @@ All available skills:
 | `/solopreneur:sprint` | Execute a batch of backlog tickets in parallel |
 | `/solopreneur:standup` | Generate a daily standup summary |
 | `/solopreneur:scaffold` | Design and build your own AI org |
-| `/solopreneur:explain` | Learn how any Claude Code concept works |
+| `/solopreneur:help` | Get oriented — see your AI team, check project status, find what to do next |
 | `/solopreneur:story` | Synthesize your project journey into a publishable narrative |
 
 ### Team Meetings (Agent Teams)

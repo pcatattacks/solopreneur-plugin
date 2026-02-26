@@ -3,44 +3,56 @@
   "agents": [
     {
       "name": "Engineer",
-      "model": "opus",
-      "skills": ["backlog", "build", "review", "ship"],
-      "mcps": ["GitHub", "Chrome DevTools"],
+      "model": "inherit",
+      "skills": ["spec", "backlog", "build", "review", "ship"],
+      "knowledge_skills": ["conventions"],
+      "mcps": ["Chrome DevTools"],
+      "cli_tools": ["GitHub"],
       "description": "Architecture & implementation"
     },
     {
       "name": "Designer",
-      "model": "opus",
-      "skills": ["backlog", "design", "review"],
+      "model": "inherit",
+      "skills": ["spec", "backlog", "design", "review"],
+      "knowledge_skills": ["conventions", "design-system"],
       "mcps": ["Chrome DevTools"],
+      "cli_tools": [],
       "description": "UI/UX & HTML mockups"
     },
     {
       "name": "BizOps",
-      "model": "opus",
-      "skills": ["discover", "release-notes"],
+      "model": "inherit",
+      "skills": ["discover", "review", "release-notes"],
+      "knowledge_skills": [],
       "mcps": [],
+      "cli_tools": [],
       "description": "Market analysis & strategy"
     },
     {
       "name": "QA",
       "model": "sonnet",
       "skills": ["review", "ship"],
-      "mcps": ["GitHub", "Chrome DevTools"],
+      "knowledge_skills": ["conventions"],
+      "mcps": ["Chrome DevTools"],
+      "cli_tools": ["GitHub"],
       "description": "Testing & security"
     },
     {
       "name": "Researcher",
       "model": "sonnet",
       "skills": ["discover"],
+      "knowledge_skills": [],
       "mcps": ["Context7"],
+      "cli_tools": [],
       "description": "Competitive analysis & trends"
     },
     {
       "name": "Content Strategist",
-      "model": "opus",
+      "model": "inherit",
       "skills": ["release-notes", "story"],
+      "knowledge_skills": [],
       "mcps": [],
+      "cli_tools": [],
       "description": "Copy, tutorials & launch comms"
     }
   ],
@@ -54,18 +66,28 @@
     { "name": "ship", "description": "Deploy & launch" },
     { "name": "release-notes", "description": "Audience announcements" },
     { "name": "story", "description": "Project story synthesis" },
-    { "name": "sprint", "description": "Parallel ticket execution" },
-    { "name": "kickoff", "description": "Collaborative team meetings" }
+    { "name": "sprint", "description": "Parallel ticket execution", "agents": ["Engineer", "QA", "Designer"] },
+    { "name": "kickoff", "description": "Collaborative team meetings" },
+    { "name": "scaffold", "description": "Design your own AI org" },
+    { "name": "help", "description": "Get oriented & project status" },
+    { "name": "standup", "description": "Daily summary" }
   ],
   "mcps": [
-    { "name": "GitHub", "description": "Code & PR management" },
     { "name": "Context7", "description": "Up-to-date docs" },
     { "name": "Chrome DevTools", "description": "Browser DOM inspection" }
+  ],
+  "cli_tools": [
+    { "name": "GitHub", "description": "Code & PR management (gh CLI)" }
   ],
   "teams": [
     { "name": "Discovery Sprint", "members": ["Researcher", "BizOps", "Engineer"] },
     { "name": "Build & QA", "members": ["Engineer", "QA", "Designer"] },
     { "name": "Ship & Launch", "members": ["Engineer", "QA", "Content Strategist"] }
   ],
-  "lifecycle": ["discover", "spec", "backlog", "design", "build", "review", "ship", "release-notes"]
+  "lifecycle": ["discover", "spec", "backlog", "design", "build", "review", "ship", "release-notes"],
+  "alternate_paths": [
+    { "name": "sprint", "description": "Batch-execute multiple tickets in parallel", "replaces": ["build"] },
+    { "name": "kickoff", "description": "Team meeting — use at any point", "type": "anytime" },
+    { "name": "standup", "description": "Daily summary", "type": "anytime" }
+  ]
 }

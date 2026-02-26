@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solopreneur &mdash; AI Org Chart</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111627;
+    --card: #161c30;
+    --card-hover: #1c2340;
+    --border: #232a44;
+    --border-light: #2d365a;
+    --text: #e8ecf4;
+    --text-secondary: #a0aac0;
+    --text-dim: #6b7694;
+    --orchestrator: #94a3b8;
+    --accent-purple: #c084fc;
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --chip-w: 130px;
+  }
+
+  html { scroll-behavior: smooth }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    font-size: 15px;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  ::-webkit-scrollbar { width: 5px }
+  ::-webkit-scrollbar-track { background: var(--bg) }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px }
+
+  .page { max-width: 760px; margin: 0 auto; padding: 0 28px 64px }
+
+  /* ── Animations ── */
+  .reveal {
+    opacity: 0; transform: translateY(14px);
+    transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0) }
+
+  /* ── Dimming ── */
+  .page.filtering .dimmable { opacity: 0.1; transition: opacity 0.25s var(--ease) }
+  .page.filtering .dimmable.hl { opacity: 1 }
+
+  /* ════ HERO ════ */
+  .hero { padding: 64px 0 44px; position: relative }
+  .hero::after {
+    content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+  .hero-simple { padding: 48px 0 36px }
+  .pill {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.72rem; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 5px 14px; border-radius: 100px;
+    border: 1px solid var(--border);
+    color: var(--text-dim); margin-bottom: 16px;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 4.2rem);
+    font-weight: 400; line-height: 1.08;
+    background: linear-gradient(135deg, #a78bfa 0%, #818cf8 40%, #6366f1 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 6px;
+  }
+  .hero-tagline {
+    font-size: 1.15rem; color: var(--text-secondary);
+    font-weight: 400; margin-bottom: 16px;
+  }
+  .hero-desc {
+    font-size: 0.95rem; color: var(--text-dim);
+    margin-bottom: 28px; line-height: 1.7;
+  }
+
+  /* Install steps */
+  .install-steps { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px }
+  .install-step {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 9px 12px 9px 14px;
+  }
+  .install-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem; font-weight: 600;
+    color: var(--text-dim); width: 14px; flex-shrink: 0;
+  }
+  .install-step code {
+    font-family: var(--font-mono);
+    font-size: 0.82rem; color: var(--text);
+    flex: 1; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+  .copy-btn {
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 5px; color: var(--text-dim);
+    cursor: pointer; padding: 4px 8px;
+    display: flex; align-items: center;
+    transition: all 0.2s var(--ease); flex-shrink: 0;
+  }
+  .copy-btn:hover { border-color: var(--text-secondary); color: var(--text-secondary) }
+  .copy-btn.copied { border-color: #10b981; color: #10b981 }
+  .copy-btn svg { width: 13px; height: 13px }
+
+  .hero-link-wrap { text-align: center }
+  .hero-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 0.82rem; color: var(--text-dim);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .hero-link:hover { color: var(--text-secondary) }
+  .hero-link svg { width: 15px; height: 15px; opacity: 0.6 }
+
+  /* ════ SECTIONS ════ */
+  .section { padding: 48px 0 0 }
+  .section-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 6px;
+  }
+  .section-heading {
+    font-family: var(--font-display);
+    font-size: 1.55rem; font-weight: 400;
+    color: var(--text); margin-bottom: 6px;
+    line-height: 1.25;
+  }
+  .section-desc {
+    font-size: 0.92rem; color: var(--text-dim);
+    margin-bottom: 24px; line-height: 1.65;
+  }
+
+  /* ════ HOW IT WORKS ════ */
+  .hiw-flow {
+    display: flex; align-items: center; justify-content: center;
+    gap: 14px; padding: 4px 0; flex-wrap: wrap;
+  }
+  .hiw-node {
+    text-align: center; padding: 10px 16px;
+    border-radius: 10px; font-size: 0.82rem; font-weight: 500;
+  }
+  .hiw-you {
+    background: linear-gradient(135deg, rgba(167,139,250,0.08), rgba(99,102,241,0.08));
+    border: 1px solid rgba(167,139,250,0.2); color: #a78bfa;
+  }
+  .hiw-claude {
+    background: rgba(148,163,184,0.06);
+    border: 1px solid rgba(148,163,184,0.15); color: var(--orchestrator);
+  }
+  .hiw-node .hiw-label {
+    font-size: 0.62rem; color: var(--text-dim);
+    display: block; margin-bottom: 1px;
+    font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .hiw-agents-node {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    display: flex; gap: 5px; padding: 10px 14px;
+    border-radius: 10px;
+  }
+  .hiw-agents-node .mini-dot { width: 9px; height: 9px; border-radius: 50% }
+  .hiw-arrow { color: var(--text-dim); font-family: var(--font-mono); font-size: 0.85rem }
+
+  /* ════ AGENT CARDS ════ */
+  .agent-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }
+  @media (max-width: 600px) { .agent-grid { grid-template-columns: repeat(2, 1fr) } }
+
+  .agent-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+    cursor: pointer; transition: all 0.25s var(--ease);
+    position: relative; overflow: hidden;
+  }
+  .agent-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--agent-color); opacity: 0.6;
+  }
+  .agent-card:hover {
+    border-color: var(--agent-color); background: var(--card-hover);
+    transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+  }
+  .agent-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px }
+  .agent-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--agent-color); flex-shrink: 0 }
+  .agent-name { font-weight: 600; font-size: 0.88rem; flex: 1 }
+  .agent-role { font-size: 0.8rem; color: var(--text-dim); line-height: 1.4 }
+  .panel-model-badge {
+    font-family: var(--font-mono);
+    font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.03em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 4px;
+    display: inline-block;
+  }
+  .panel-model-explicit { background: rgba(129,140,248,0.12); color: #818cf8 }
+  .panel-model-inherit { background: rgba(148,163,184,0.08); color: var(--text-dim) }
+
+  /* ════ WORKFLOW ════ */
+  .workflow { position: relative; padding-left: 32px }
+  .workflow::before {
+    content: ''; position: absolute;
+    left: 10px; top: 0; bottom: 0; width: 2px;
+    background: linear-gradient(180deg, #06b6d4 0%, #ec4899 35%, #3b82f6 55%, #10b981 80%, #8b5cf6 100%);
+    opacity: 0.2; border-radius: 2px;
+  }
+
+  .phase-label {
+    position: relative;
+    font-family: var(--font-mono);
+    font-size: 0.65rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--phase-color, var(--text-dim));
+    padding: 20px 0 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .phase-label::before {
+    content: ''; position: absolute;
+    left: -22px; top: 50%; transform: translateY(30%);
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--phase-color, var(--text-dim)); opacity: 0.4;
+  }
+  .phase-label::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--phase-color, var(--border)), transparent);
+    opacity: 0.2;
+  }
+
+  .step-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 20px;
+    margin-bottom: 8px; cursor: pointer;
+    transition: all 0.25s var(--ease); position: relative;
+  }
+  .step-card:hover {
+    border-color: var(--border-light); background: var(--card-hover);
+    transform: translateX(3px);
+  }
+  .step-card::before {
+    content: ''; position: absolute;
+    left: -26px; top: 20px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border-light); transition: background 0.2s;
+  }
+  .step-card:hover::before { background: var(--text-secondary) }
+
+  .step-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px }
+  .step-skill { font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600; color: var(--text) }
+  .step-desc { font-size: 0.82rem; color: var(--text-dim) }
+
+  .step-agents { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border) }
+  .step-agent-row {
+    display: flex; align-items: baseline; gap: 10px;
+    padding: 3px 0; font-size: 0.8rem;
+  }
+  .step-agent-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    width: var(--chip-w); flex-shrink: 0;
+    font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500;
+    color: var(--agent-color);
+  }
+  .step-agent-chip .cdot { width: 5px; height: 5px; border-radius: 50%; background: var(--agent-color) }
+  .step-agent-role { color: var(--text-secondary); font-size: 0.82rem; line-height: 1.4 }
+
+  /* Sprint branch */
+  .sprint-branch {
+    background: var(--surface); border: 2px dashed var(--border);
+    border-radius: 12px; padding: 18px 20px;
+    margin: 12px 0; position: relative;
+  }
+  .sprint-branch::before {
+    content: ''; position: absolute;
+    left: -26px; top: 24px;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border-light);
+  }
+  .sprint-or {
+    font-family: var(--font-mono);
+    font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim);
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .sprint-or::before, .sprint-or::after {
+    content: ''; flex: 1; height: 1px;
+    background: var(--border);
+  }
+  .sprint-header {
+    font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600;
+    color: var(--text); margin-bottom: 2px;
+  }
+  .sprint-desc { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5 }
+
+  /* ════ VALUE PROP CARDS ════ */
+  .vp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+  @media (max-width: 540px) { .vp-grid { grid-template-columns: 1fr } }
+
+  .vp-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 18px 20px;
+    cursor: pointer; transition: all 0.25s var(--ease);
+  }
+  .vp-card:hover { border-color: var(--border-light); background: var(--card-hover) }
+  .vp-icon { font-size: 1.3rem; margin-bottom: 8px }
+  .vp-name {
+    font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .vp-desc { font-size: 0.82rem; color: var(--text-dim); line-height: 1.5 }
+  .vp-agents { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px }
+  .vp-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 500;
+    padding: 2px 7px; border-radius: 4px;
+    background: rgba(255,255,255,0.03); color: var(--chip-color, var(--text-dim));
+  }
+  .vp-chip .cdot { width: 4px; height: 4px; border-radius: 50%; background: var(--chip-color, var(--text-dim)) }
+
+  /* ════ TEAMS ════ */
+  .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }
+  @media (max-width: 600px) { .team-grid { grid-template-columns: 1fr } }
+
+  .team-card {
+    background: transparent; border: 1px dashed var(--border);
+    border-radius: 10px; padding: 16px 18px;
+    cursor: pointer; transition: all 0.25s var(--ease);
+  }
+  .team-card:hover { border-color: var(--border-light); border-style: solid; background: var(--card) }
+  .team-name { font-weight: 600; font-size: 0.88rem; margin-bottom: 4px }
+  .team-purpose { font-size: 0.78rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.45 }
+  .team-members { display: flex; flex-wrap: wrap; gap: 4px }
+  .team-member {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 0.7rem; font-weight: 500;
+    padding: 2px 8px 2px 6px; border-radius: 5px;
+    background: rgba(255,255,255,0.03); color: var(--member-color);
+  }
+  .team-member .cdot { width: 5px; height: 5px; border-radius: 50%; background: var(--member-color) }
+
+  /* ════ FOOTER ════ */
+  .footer {
+    text-align: center; padding: 48px 0 0; position: relative;
+  }
+  .footer::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+  }
+  .footer-name { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px }
+  .footer-links { display: flex; gap: 20px; justify-content: center; font-size: 0.82rem; flex-wrap: wrap }
+  .footer-links a { color: var(--text-dim); text-decoration: none; transition: color 0.2s }
+  .footer-links a:hover { color: var(--text-secondary) }
+
+  /* ════ DETAIL PANEL ════ */
+  .panel-scrim {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    opacity: 0; pointer-events: none; transition: opacity 0.25s var(--ease); z-index: 100;
+  }
+  .panel-scrim.open { opacity: 1; pointer-events: auto }
+  .panel {
+    position: fixed; top: 0; right: 0;
+    width: min(420px, 90vw); height: 100vh;
+    background: var(--surface); border-left: 1px solid var(--border);
+    transform: translateX(100%); transition: transform 0.3s var(--ease);
+    z-index: 101; display: flex; flex-direction: column;
+    box-shadow: -8px 0 40px rgba(0,0,0,0.4);
+  }
+  .panel.open { transform: translateX(0) }
+  .panel-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+  }
+  .panel-header-left { display: flex; align-items: center; gap: 10px }
+  .panel-type-badge {
+    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+  }
+  .panel-type-agent { background: rgba(59,130,246,0.12); color: #60a5fa }
+  .panel-type-skill { background: rgba(139,92,246,0.12); color: #a78bfa }
+  .panel-type-team { background: rgba(129,140,248,0.12); color: #a5b4fc }
+  .panel-title-text { font-weight: 600; font-size: 1.05rem }
+  .panel-close {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text-dim); cursor: pointer; width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; transition: all 0.15s;
+  }
+  .panel-close:hover { border-color: var(--text-secondary); color: var(--text) }
+  .panel-body {
+    padding: 20px; overflow-y: auto; flex: 1;
+    font-size: 0.88rem; line-height: 1.7; color: var(--text-secondary);
+  }
+  .panel-meta {
+    background: var(--bg); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px;
+  }
+  .panel-meta-row { display: flex; gap: 8px; margin: 4px 0; font-size: 0.82rem; align-items: baseline }
+  .panel-meta-label {
+    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-dim); width: 54px; flex-shrink: 0;
+  }
+  .panel-section-title {
+    font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--text-dim); margin: 16px 0 8px;
+  }
+  .panel-skill-item { padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.84rem }
+  .panel-skill-item:last-child { border-bottom: none }
+  .panel-skill-name { font-family: var(--font-mono); font-weight: 600; color: var(--text); font-size: 0.82rem }
+  .panel-skill-role { color: var(--text-dim); font-size: 0.8rem }
+</style>
+</head>
+<body>
+<div class="page" id="page">
+
+  
+  <div class="hero">
+    <div class="pill reveal">Claude Code Plugin</div>
+    <h1 class="hero-title reveal">Solopreneur</h1>
+    <p class="hero-tagline reveal">Your Virtual AI Company</p>
+    <p class="hero-desc reveal">A Claude Code plugin that gives you a full AI team &mdash; specialized agents, guided workflows, and decision memory. Ship products faster as a team of one.</p>
+    <div class="install-steps reveal">
+      <div class="install-step">
+        <span class="install-num">1</span>
+        <code id="cmd1">/plugin marketplace add pcatattacks/solopreneur-plugin</code>
+        <button class="copy-btn" onclick="copyCmd('cmd1',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+      </div>
+      <div class="install-step">
+        <span class="install-num">2</span>
+        <code id="cmd2">/plugin install solopreneur@solopreneur</code>
+        <button class="copy-btn" onclick="copyCmd('cmd2',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+      </div>
+      <div class="install-step">
+        <span class="install-num">3</span>
+        <code id="cmd3">/solopreneur:help</code>
+        <button class="copy-btn" onclick="copyCmd('cmd3',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+      </div>
+    </div>
+    <div class="hero-link-wrap reveal">
+      <a class="hero-link" href="https://github.com/pcatattacks/solopreneur-plugin" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="section">
+    <div class="section-eyebrow reveal">How it works</div>
+    <div class="section-heading reveal">You lead. Claude orchestrates. Agents execute.</div>
+    <div class="section-desc reveal">You're the CEO. Claude coordinates your AI team through a guided workflow &mdash; delegating to specialized agents, then reporting back.</div>
+    <div class="hiw-flow reveal">
+      <div class="hiw-node hiw-you"><span class="hiw-label">You</span>CEO</div>
+      <span class="hiw-arrow">&rarr;</span>
+      <div class="hiw-node hiw-claude"><span class="hiw-label">Claude</span>Orchestrator</div>
+      <span class="hiw-arrow">&rarr;</span>
+      <div class="hiw-agents-node">
+        <span class="mini-dot" style="background:#f59e0b"></span><span class="mini-dot" style="background:#8b5cf6"></span><span class="mini-dot" style="background:#ec4899"></span><span class="mini-dot" style="background:#3b82f6"></span><span class="mini-dot" style="background:#10b981"></span><span class="mini-dot" style="background:#06b6d4"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Your AI team -->
+  <div class="section" id="team-section">
+    <div class="section-eyebrow reveal">Your AI team</div>
+    <div class="section-heading reveal">6 specialized agents</div>
+    <div class="section-desc reveal">Each agent brings deep expertise. Hover to see where they contribute across the workflow.</div>
+    <div class="agent-grid" id="agent-grid"></div>
+  </div>
+
+  <!-- The workflow -->
+  <div class="section" id="workflow-section">
+    <div class="section-eyebrow reveal">The workflow</div>
+    <div class="section-heading reveal">Idea to launch in 8 steps</div>
+    <div class="section-desc reveal">A guided lifecycle from research through release. Each step knows who to call and what they should do.</div>
+    <div class="workflow" id="workflow"></div>
+  </div>
+
+  <!-- Beyond the lifecycle -->
+  <div class="section" id="beyond-section">
+    <div class="section-eyebrow reveal">Beyond the lifecycle</div>
+    <div class="section-heading reveal">What makes Solopreneur different</div>
+    <div class="section-desc reveal">The lifecycle gets your product built. These capabilities make the whole experience smarter.</div>
+    <div class="vp-grid" id="vp-grid"></div>
+  </div>
+
+  <!-- Agent teams -->
+  <div class="section" id="teams-section">
+    <div class="section-eyebrow reveal">Agent teams</div>
+    <div class="section-heading reveal">Collaborative meetings</div>
+    <div class="section-desc reveal">Pre-configured teams for common workflows via <code style="font-family:var(--font-mono);color:#a78bfa">/kickoff</code>. You can also assemble ad-hoc teams by naming any agents.</div>
+    <div class="team-grid" id="team-grid"></div>
+  </div>
+
+  
+  <div class="footer">
+    <div class="footer-name reveal">Built by <strong>Pranav Dhingra</strong></div>
+    <div class="footer-links reveal">
+      <a href="https://pranavdhingra.com" target="_blank" rel="noopener">Portfolio</a>
+      <a href="https://linkedin.com/in/pranav-dhingra" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/pcatattacks" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </div>
+</div>
+
+<!-- Detail panel -->
+<div class="panel-scrim" id="panelScrim"></div>
+<div class="panel" id="panel">
+  <div class="panel-header">
+    <div class="panel-header-left">
+      <span class="panel-type-badge" id="panelBadge"></span>
+      <span class="panel-title-text" id="panelTitle"></span>
+    </div>
+    <button class="panel-close" id="panelClose">&times;</button>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+</div>
+
+<script>
+// ════════════════════════
+// DATA (injected from Python)
+// ════════════════════════
+const AGENTS = [{"id": "engineer", "name": "Engineer", "color": "#3b82f6", "model": "inherit", "desc": "Architecture & implementation", "tools": ["GitHub CLI"], "skills": ["backlog", "build", "review", "ship", "spec"], "knowledge_skills": ["conventions"], "mcps": [], "cli_tools": ["GitHub"], "detail_description": "Senior software engineer specializing in architecture, implementation, debugging, and code review. Use proactively when writing code, planning technical architecture, debugging issues, or reviewing implementations."}, {"id": "designer", "name": "Designer", "color": "#ec4899", "model": "inherit", "desc": "UI/UX & user flows", "tools": ["Chrome DevTools"], "skills": ["backlog", "design", "review", "spec"], "knowledge_skills": ["conventions", "design-system"], "mcps": ["Chrome DevTools"], "cli_tools": [], "detail_description": "Product designer specializing in UI/UX, user flows, HTML mockups, and design systems. Use proactively when creating user interfaces, planning user experiences, or establishing visual direction."}, {"id": "bizops", "name": "BizOps", "color": "#f59e0b", "model": "inherit", "desc": "Market Analysis & pricing strategy", "tools": [], "skills": ["discover", "review"], "knowledge_skills": [], "mcps": [], "cli_tools": [], "detail_description": "Business operations specialist covering market analysis, pricing strategy, go-to-market planning, and competitive intelligence. Use proactively when evaluating business viability, analyzing markets, or planning launches."}, {"id": "qa", "name": "QA", "color": "#10b981", "model": "sonnet", "desc": "Testing & bug hunting", "tools": ["GitHub CLI"], "skills": ["review", "ship"], "knowledge_skills": ["conventions"], "mcps": [], "cli_tools": ["GitHub"], "detail_description": "Quality assurance specialist for testing, bug hunting, security review, and validation. Use proactively after code changes, before deployments, or when verifying correctness."}, {"id": "researcher", "name": "Researcher", "color": "#06b6d4", "model": "sonnet", "desc": "Competitive Analysis & user research synthesis", "tools": ["Context7"], "skills": ["discover"], "knowledge_skills": [], "mcps": ["Context7"], "cli_tools": [], "detail_description": "Market researcher specializing in competitive analysis, user research synthesis, trend identification, and opportunity mapping. Use proactively when exploring new ideas, analyzing competitors, or understanding market dynamics."}, {"id": "content-strategist", "name": "Content Strategist", "color": "#8b5cf6", "model": "inherit", "desc": "Messaging & copywriting", "tools": [], "skills": ["release-notes"], "knowledge_skills": [], "mcps": [], "cli_tools": [], "detail_description": "Content strategist specializing in messaging, copywriting, tutorials, documentation, and launch communications. Use proactively when creating content, writing documentation, or crafting user-facing text."}];
+const LIFECYCLE = [{"skill": "discover", "desc": "Research and validate product ideas", "phase": 0, "agents": [{"id": "bizops", "name": "BizOps", "color": "#f59e0b", "role": "Market Analysis & pricing strategy"}, {"id": "researcher", "name": "Researcher", "color": "#06b6d4", "role": "Competitive Analysis & user research synthesis"}]}, {"skill": "spec", "desc": "Write a product specification (PRD) f...", "phase": 0, "agents": [{"id": "designer", "name": "Designer", "color": "#ec4899", "role": "UI/UX & user flows"}, {"id": "engineer", "name": "Engineer", "color": "#3b82f6", "role": "Architecture & implementation"}]}, {"skill": "backlog", "desc": "Implementation", "phase": 1, "agents": [{"id": "designer", "name": "Designer", "color": "#ec4899", "role": "UI/UX & user flows"}, {"id": "engineer", "name": "Engineer", "color": "#3b82f6", "role": "Architecture & implementation"}]}, {"skill": "design", "desc": "Create design direction", "phase": 1, "agents": [{"id": "designer", "name": "Designer", "color": "#ec4899", "role": "UI/UX & user flows"}]}, {"skill": "build", "desc": "Plan and execute code implementation ...", "phase": 2, "agents": [{"id": "engineer", "name": "Engineer", "color": "#3b82f6", "role": "Architecture & implementation"}]}, {"skill": "review", "desc": "Quality & bugs", "phase": 2, "agents": [{"id": "bizops", "name": "BizOps", "color": "#f59e0b", "role": "Market Analysis & pricing strategy"}, {"id": "designer", "name": "Designer", "color": "#ec4899", "role": "UI/UX & user flows"}, {"id": "engineer", "name": "Engineer", "color": "#3b82f6", "role": "Architecture & implementation"}, {"id": "qa", "name": "QA", "color": "#10b981", "role": "Testing & bug hunting"}]}, {"skill": "ship", "desc": "Deploy and launch a feature or product", "phase": 3, "agents": [{"id": "engineer", "name": "Engineer", "color": "#3b82f6", "role": "Architecture & implementation"}, {"id": "qa", "name": "QA", "color": "#10b981", "role": "Testing & bug hunting"}]}, {"skill": "release-notes", "desc": "Generate audience-targeted release an...", "phase": 3, "agents": [{"id": "content-strategist", "name": "Content Strategist", "color": "#8b5cf6", "role": "Messaging & copywriting"}]}];
+const PHASES = [{"label": "Discovery", "color": "#06b6d4"}, {"label": "Planning", "color": "#ec4899"}, {"label": "Execution", "color": "#3b82f6"}, {"label": "Launch", "color": "#10b981"}];
+const VP_CARDS = [{"icon": "⚡", "skill": "sprint", "name": "/sprint", "desc": "Execute a batch of backlog tickets in...", "agents": ["engineer", "qa", "designer"]}, {"icon": "🧠", "skill": "observer", "name": "Decision memory", "desc": "Every choice you make is logged with your reasoning. Not what changed (git handles that) — but WHY you chose it.", "agents": ["orchestrator"]}, {"icon": "📖", "skill": "story", "name": "/story", "desc": "Synthesize your project journey into ...", "agents": ["content-strategist"]}, {"icon": "🏗️", "skill": "scaffold", "name": "/scaffold", "desc": "Design and scaffold your own AI org s...", "agents": ["orchestrator"]}, {"icon": "📋", "skill": "standup", "name": "/standup", "desc": "Generate a daily standup summary show...", "agents": ["orchestrator"]}, {"icon": "❓", "skill": "help", "name": "/help", "desc": "What To Do Next", "agents": ["orchestrator"]}];
+const TEAMS = [{"name": "Discovery Sprint", "purpose": "", "members": [{"id": "researcher", "name": "Researcher", "color": "#06b6d4"}, {"id": "bizops", "name": "BizOps", "color": "#f59e0b"}, {"id": "engineer", "name": "Engineer", "color": "#3b82f6"}]}, {"name": "Build & QA", "purpose": "", "members": [{"id": "engineer", "name": "Engineer", "color": "#3b82f6"}, {"id": "qa", "name": "QA", "color": "#10b981"}, {"id": "designer", "name": "Designer", "color": "#ec4899"}]}, {"name": "Ship & Launch", "purpose": "", "members": [{"id": "engineer", "name": "Engineer", "color": "#3b82f6"}, {"id": "qa", "name": "QA", "color": "#10b981"}, {"id": "content-strategist", "name": "Content Strategist", "color": "#8b5cf6"}]}];
+const DETAIL_DATA = {"agent-bizops": {"type": "agent", "name": "BizOps", "model": "inherit", "desc": "Business operations specialist covering market analysis, pricing strategy, go-to-market planning, and competitive intelligence. Use proactively when evaluating business viability, analyzing markets, or planning launches.", "tools": [], "skills": ["discover", "review"], "color": "#f59e0b"}, "agent-content-strategist": {"type": "agent", "name": "Content Strategist", "model": "inherit", "desc": "Content strategist specializing in messaging, copywriting, tutorials, documentation, and launch communications. Use proactively when creating content, writing documentation, or crafting user-facing text.", "tools": [], "skills": ["release-notes"], "color": "#8b5cf6"}, "agent-designer": {"type": "agent", "name": "Designer", "model": "inherit", "desc": "Product designer specializing in UI/UX, user flows, HTML mockups, and design systems. Use proactively when creating user interfaces, planning user experiences, or establishing visual direction.", "tools": ["Chrome DevTools"], "skills": ["backlog", "design", "review", "spec"], "color": "#ec4899"}, "agent-engineer": {"type": "agent", "name": "Engineer", "model": "inherit", "desc": "Senior software engineer specializing in architecture, implementation, debugging, and code review. Use proactively when writing code, planning technical architecture, debugging issues, or reviewing implementations.", "tools": ["GitHub (CLI)"], "skills": ["backlog", "build", "review", "ship", "spec"], "color": "#3b82f6"}, "agent-qa": {"type": "agent", "name": "QA", "model": "sonnet", "desc": "Quality assurance specialist for testing, bug hunting, security review, and validation. Use proactively after code changes, before deployments, or when verifying correctness.", "tools": ["GitHub (CLI)"], "skills": ["review", "ship"], "color": "#10b981"}, "agent-researcher": {"type": "agent", "name": "Researcher", "model": "sonnet", "desc": "Market researcher specializing in competitive analysis, user research synthesis, trend identification, and opportunity mapping. Use proactively when exploring new ideas, analyzing competitors, or understanding market dynamics.", "tools": ["Context7"], "skills": ["discover"], "color": "#06b6d4"}, "skill-backlog": {"type": "skill", "name": "/backlog", "desc": "Break a spec or feature into prioritized, dependency-tracked tickets for implementation. Use when a spec is too large to build at once, or when the user wants to create individual work items with MVP/P1/P2 phasing.", "usedBy": ["Designer", "Engineer"], "phase": "Planning"}, "skill-build": {"type": "skill", "name": "/build", "desc": "Plan and execute code implementation for a feature or product. Can generate a plan file for Cursor or build directly with Claude. Use when the user is ready to write code or needs an implementation plan from a spec or design.", "usedBy": ["Engineer"], "phase": "Execution"}, "skill-conventions": {"type": "skill", "name": "/conventions", "desc": "Shared conventions for the solopreneur workflow. Preloaded into agents via the skills frontmatter field.", "usedBy": [], "phase": ""}, "skill-design": {"type": "skill", "name": "/design", "desc": "Create design direction, HTML mockups, and UI/UX recommendations for a feature or product. Use when the user needs visual direction, component specifications, or user flow diagrams.", "usedBy": ["Designer"], "phase": "Planning"}, "skill-design-system": {"type": "skill", "name": "/design-system", "desc": "DaisyUI + Tailwind CDN design system spec. Preloaded into design-related agents and referenced by design skills.", "usedBy": [], "phase": ""}, "skill-discover": {"type": "skill", "name": "/discover", "desc": "Research and validate product ideas, market opportunities, or feature concepts. Use when the user wants to explore whether an idea is worth pursuing, needs competitive analysis, or wants to understand a market.", "usedBy": ["BizOps", "Researcher"], "phase": "Discovery"}, "skill-help": {"type": "skill", "name": "/help", "desc": "Get oriented with the solopreneur plugin — see your AI team, check project status, and get suggestions for what to do next. Use when you're getting started or need a refresher.", "usedBy": [], "phase": ""}, "skill-kickoff": {"type": "skill", "name": "/kickoff", "desc": "Launch a collaborative team meeting using agent teams. Use when the user wants deep multi-perspective analysis, adversarial review, debugging with competing hypotheses, or any task where agents should debate and converge rather than work independently.", "usedBy": [], "phase": ""}, "skill-release-notes": {"type": "skill", "name": "/release-notes", "desc": "Generate audience-targeted release announcements. Specify the audience (customers, internal team, investors, social media) and optionally a version or scope. Use after shipping to announce what was built.", "usedBy": ["Content Strategist"], "phase": "Launch"}, "skill-review": {"type": "skill", "name": "/review", "desc": "Review code, specifications, or designs for quality, bugs, security, and best practices. Use when the user wants feedback on recent work, a pull request, or any artifact.", "usedBy": ["BizOps", "Designer", "Engineer", "QA"], "phase": "Execution"}, "skill-scaffold": {"type": "skill", "name": "/scaffold", "desc": "Design and scaffold your own AI org structure with custom agents, skills, teams, hooks, and MCP servers. Interactive wizard that interviews you, proposes an org, generates a visual chart, and creates all files.", "usedBy": [], "phase": ""}, "skill-ship": {"type": "skill", "name": "/ship", "desc": "Deploy and launch a feature or product. Runs a quality gate, pre-launch checklist, and executes deployment. Use when the user is ready to ship.", "usedBy": ["Engineer", "QA"], "phase": "Launch"}, "skill-spec": {"type": "skill", "name": "/spec", "desc": "Write a product specification (PRD) from a validated idea or feature request. Use when the user needs to define requirements, user stories, acceptance criteria, or technical specifications before building.", "usedBy": ["Designer", "Engineer"], "phase": "Discovery"}, "skill-sprint": {"type": "skill", "name": "/sprint", "desc": "Execute a batch of backlog tickets in parallel. Use when the user wants to build multiple unblocked tickets simultaneously with integrated QA review.", "usedBy": [], "phase": ""}, "skill-standup": {"type": "skill", "name": "/standup", "desc": "Generate a daily standup summary showing what was done, what is planned, and any blockers. Use when the user wants a status update or progress report.", "usedBy": [], "phase": ""}, "skill-story": {"type": "skill", "name": "/story", "desc": "Synthesize your project journey into a publishable narrative — tutorial, case study, blog post, or launch story. Pulls from git history, artifacts, and your decision log. Use when you want to write about how you built something.", "usedBy": [], "phase": ""}, "team-0": {"type": "team", "name": "Discovery Sprint", "members": ["Researcher", "BizOps", "Engineer"], "desc": ""}, "team-1": {"type": "team", "name": "Build & QA", "members": ["Engineer", "QA", "Designer"], "desc": ""}, "team-2": {"type": "team", "name": "Ship & Launch", "members": ["Engineer", "QA", "Content Strategist"], "desc": ""}};
+const SPRINT = {"name": "sprint", "description": "Batch-execute multiple tickets in parallel", "replaces": ["build"]};
+const COLOR_MAP = {"BizOps": "#f59e0b", "Content Strategist": "#8b5cf6", "Designer": "#ec4899", "Engineer": "#3b82f6", "QA": "#10b981", "Researcher": "#06b6d4"};
+
+const AM = {};
+AGENTS.forEach(a => AM[a.id] = a);
+
+// ════════════════════════
+// RENDER
+// ════════════════════════
+
+// Agents
+const agentGrid = document.getElementById('agent-grid');
+AGENTS.forEach(a => {
+  const d = document.createElement('div');
+  d.className = 'agent-card dimmable reveal';
+  d.dataset.agent = a.id;
+  d.style.setProperty('--agent-color', a.color);
+  d.innerHTML = '<div class="agent-top"><span class="agent-dot"></span><span class="agent-name">' + a.name + '</span></div><div class="agent-role">' + a.desc + '</div>';
+  d.addEventListener('click', () => openAgentPanel(a.id));
+  d.addEventListener('mouseenter', () => hlAgent(a.id));
+  d.addEventListener('mouseleave', clearHl);
+  agentGrid.appendChild(d);
+});
+
+// Workflow
+const wf = document.getElementById('workflow');
+let curPhase = -1;
+LIFECYCLE.forEach((step, i) => {
+  if (step.phase !== curPhase) {
+    curPhase = step.phase;
+    const ph = document.createElement('div');
+    ph.className = 'phase-label reveal';
+    const phDef = PHASES[step.phase] || { label: 'Phase ' + step.phase, color: '#94a3b8' };
+    ph.style.setProperty('--phase-color', phDef.color);
+    ph.textContent = phDef.label;
+    wf.appendChild(ph);
+  }
+  const card = document.createElement('div');
+  card.className = 'step-card dimmable reveal';
+  card.dataset.skill = step.skill;
+  step.agents.forEach(sa => card.setAttribute('data-agent-' + sa.id, '1'));
+
+  const agHtml = step.agents.map(sa => {
+    return '<div class="step-agent-row"><span class="step-agent-chip" style="--agent-color:' + sa.color + '"><span class="cdot"></span>' + sa.name + '</span><span class="step-agent-role">' + sa.role + '</span></div>';
+  }).join('');
+
+  card.innerHTML = '<div class="step-header"><span class="step-skill">/' + step.skill + '</span><span class="step-desc">' + step.desc + '</span></div>' + (agHtml ? '<div class="step-agents">' + agHtml + '</div>' : '');
+  card.addEventListener('click', () => openSkillPanel(step.skill));
+  card.addEventListener('mouseenter', () => hlSkill(step.skill));
+  card.addEventListener('mouseleave', clearHl);
+  wf.appendChild(card);
+
+  // Sprint branch after /build
+  if (step.skill === 'build' && SPRINT) {
+    const branch = document.createElement('div');
+    branch.className = 'sprint-branch dimmable reveal';
+    branch.dataset.skill = 'sprint';
+    // Figure out sprint agents from data
+    const sprintAgentIds = ['engineer','qa','designer'].filter(id => AM[id]);
+    sprintAgentIds.forEach(id => branch.setAttribute('data-agent-' + id, '1'));
+
+    let sprintAgentHtml = '';
+    sprintAgentIds.forEach(id => {
+      const ag = AM[id];
+      if (ag) {
+        sprintAgentHtml += '<div class="step-agent-row"><span class="step-agent-chip" style="--agent-color:' + ag.color + '"><span class="cdot"></span>' + ag.name + '</span><span class="step-agent-role">' + ag.desc + '</span></div>';
+      }
+    });
+
+    branch.innerHTML = '<div class="sprint-or">or batch-execute with</div>' +
+      '<div class="sprint-header">/sprint</div>' +
+      '<div class="sprint-desc">' + (SPRINT.description || 'Batch-execute multiple tickets in parallel') + '</div>' +
+      (sprintAgentHtml ? '<div class="step-agents" style="border:0;padding:0;margin:0">' + sprintAgentHtml + '</div>' : '');
+    branch.style.cursor = 'pointer';
+    branch.addEventListener('click', () => openVpPanel('sprint'));
+    branch.addEventListener('mouseenter', () => hlSkill('sprint'));
+    branch.addEventListener('mouseleave', clearHl);
+    wf.appendChild(branch);
+  }
+});
+
+// Value prop cards
+const vpGrid = document.getElementById('vp-grid');
+VP_CARDS.forEach(vp => {
+  const d = document.createElement('div');
+  d.className = 'vp-card reveal';
+  d.dataset.skill = vp.skill;
+
+  const chips = vp.agents.map(id => {
+    if (id === 'orchestrator') return '<span class="vp-chip" style="--chip-color:var(--orchestrator)"><span class="cdot"></span>Orchestrator</span>';
+    const ag = AM[id];
+    if (!ag) {
+      // Try matching by name
+      const found = AGENTS.find(a => a.name.toLowerCase().replace(/\s+/g,'-') === id || a.name.toLowerCase() === id);
+      if (found) return '<span class="vp-chip" style="--chip-color:' + found.color + '"><span class="cdot"></span>' + found.name + '</span>';
+      return '<span class="vp-chip" style="--chip-color:var(--orchestrator)"><span class="cdot"></span>' + id + '</span>';
+    }
+    return '<span class="vp-chip" style="--chip-color:' + ag.color + '"><span class="cdot"></span>' + ag.name + '</span>';
+  }).join('');
+
+  d.innerHTML = '<div class="vp-icon">' + vp.icon + '</div><div class="vp-name">' + vp.name + '</div><div class="vp-desc">' + vp.desc + '</div><div class="vp-agents">' + chips + '</div>';
+  d.addEventListener('click', () => openVpPanel(vp.skill));
+  vpGrid.appendChild(d);
+});
+
+// Teams
+const teamGrid = document.getElementById('team-grid');
+TEAMS.forEach((t, i) => {
+  const d = document.createElement('div');
+  d.className = 'team-card dimmable reveal';
+  d.dataset.team = i;
+  t.members.forEach(m => d.setAttribute('data-agent-' + m.id, '1'));
+  const mHtml = t.members.map(m => {
+    return '<span class="team-member" style="--member-color:' + m.color + '"><span class="cdot"></span>' + m.name + '</span>';
+  }).join('');
+  d.innerHTML = '<div class="team-name">' + t.name + '</div><div class="team-purpose">' + (t.purpose || '') + '</div><div class="team-members">' + mHtml + '</div>';
+  d.addEventListener('click', () => openTeamPanel(i));
+  d.addEventListener('mouseenter', () => hlTeam(i));
+  d.addEventListener('mouseleave', clearHl);
+  teamGrid.appendChild(d);
+});
+
+// ════════════════════════
+// HIGHLIGHTING
+// ════════════════════════
+function hlAgent(id) {
+  document.getElementById('page').classList.add('filtering');
+  document.querySelectorAll('[data-agent="' + id + '"]').forEach(el => el.classList.add('hl'));
+  document.querySelectorAll('[data-agent-' + id + ']').forEach(el => el.classList.add('hl'));
+}
+function hlSkill(sk) {
+  document.getElementById('page').classList.add('filtering');
+  document.querySelectorAll('[data-skill="' + sk + '"]').forEach(el => el.classList.add('hl'));
+  const step = LIFECYCLE.find(s => s.skill === sk);
+  if (step) step.agents.forEach(sa => document.querySelectorAll('[data-agent="' + sa.id + '"]').forEach(el => el.classList.add('hl')));
+  if (sk === 'sprint') {
+    ['engineer','qa','designer'].forEach(id => document.querySelectorAll('[data-agent="' + id + '"]').forEach(el => el.classList.add('hl')));
+  }
+}
+function hlTeam(idx) {
+  document.getElementById('page').classList.add('filtering');
+  document.querySelectorAll('[data-team="' + idx + '"]').forEach(el => el.classList.add('hl'));
+  TEAMS[idx].members.forEach(m => {
+    document.querySelectorAll('[data-agent="' + m.id + '"]').forEach(el => el.classList.add('hl'));
+    document.querySelectorAll('[data-agent-' + m.id + ']').forEach(el => el.classList.add('hl'));
+  });
+}
+function clearHl() {
+  document.getElementById('page').classList.remove('filtering');
+  document.querySelectorAll('.hl').forEach(el => el.classList.remove('hl'));
+}
+
+// ════════════════════════
+// DETAIL PANEL
+// ════════════════════════
+const panel = document.getElementById('panel');
+const panelScrim = document.getElementById('panelScrim');
+const panelBadge = document.getElementById('panelBadge');
+const panelTitle = document.getElementById('panelTitle');
+const panelBody = document.getElementById('panelBody');
+
+function openPanel(type, title, html) {
+  panelBadge.textContent = type;
+  panelBadge.className = 'panel-type-badge panel-type-' + type;
+  panelTitle.textContent = title;
+  panelBody.innerHTML = html;
+  panel.classList.add('open');
+  panelScrim.classList.add('open');
+}
+function closePanel() { panel.classList.remove('open'); panelScrim.classList.remove('open') }
+document.getElementById('panelClose').addEventListener('click', closePanel);
+panelScrim.addEventListener('click', closePanel);
+document.addEventListener('keydown', ev => { if (ev.key === 'Escape') closePanel() });
+
+function openAgentPanel(id) {
+  const a = AM[id]; if (!a) return;
+  const dd = DETAIL_DATA['agent-' + id];
+  const lSkills = LIFECYCLE.filter(s => s.agents.some(sa => sa.id === id));
+  const aTeams = TEAMS.filter(t => t.members.some(m => m.id === id));
+  const modelVal = a.model || 'inherit';
+  const modelHtml = (modelVal && modelVal !== 'inherit' && modelVal !== 'null')
+    ? '<span class="panel-model-badge panel-model-explicit">Claude ' + modelVal.charAt(0).toUpperCase() + modelVal.slice(1) + '</span>'
+    : '<span class="panel-model-badge panel-model-inherit">Inherits from conversation</span>';
+  let h = '<div class="panel-meta">' +
+    '<div class="panel-meta-row"><span class="panel-meta-label">Model</span>' + modelHtml + '</div>' +
+    '<div class="panel-meta-row"><span class="panel-meta-label">Role</span>' + (dd ? dd.desc : a.desc) + '</div>';
+  if (a.tools && a.tools.length) h += '<div class="panel-meta-row"><span class="panel-meta-label">Tools</span>' + a.tools.join(', ') + '</div>';
+  if (aTeams.length) h += '<div class="panel-meta-row"><span class="panel-meta-label">Teams</span>' + aTeams.map(t=>t.name).join(', ') + '</div>';
+  h += '</div>';
+  if (lSkills.length) {
+    h += '<div class="panel-section-title">Lifecycle roles</div>';
+    lSkills.forEach(s => {
+      const r = s.agents.find(sa => sa.id === id);
+      h += '<div class="panel-skill-item"><span class="panel-skill-name">/' + s.skill + '</span><div class="panel-skill-role">' + (r ? r.role : '') + '</div></div>';
+    });
+  }
+  openPanel('agent', a.name, h);
+}
+
+function openSkillPanel(sk) {
+  const step = LIFECYCLE.find(s => s.skill === sk); if (!step) return;
+  const phDef = PHASES[step.phase] || { label: '', color: '#94a3b8' };
+  let h = '<div class="panel-meta"><div class="panel-meta-row"><span class="panel-meta-label">Phase</span>' + phDef.label + '</div><div class="panel-meta-row"><span class="panel-meta-label">Purpose</span>' + step.desc + '</div></div>';
+  if (step.agents.length) {
+    h += '<div class="panel-section-title">Agents involved</div>';
+    step.agents.forEach(sa => {
+      h += '<div class="panel-skill-item"><span class="panel-skill-name" style="color:' + sa.color + '">' + sa.name + '</span><div class="panel-skill-role">' + sa.role + '</div></div>';
+    });
+  }
+  openPanel('skill', '/' + sk, h);
+}
+
+function openVpPanel(sk) {
+  const vp = VP_CARDS.find(v => v.skill === sk); if (!vp) return;
+  const agentNames = vp.agents.map(id => {
+    if (id === 'orchestrator') return 'Orchestrator (Claude)';
+    const ag = AM[id];
+    return ag ? ag.name : id;
+  });
+  let h = '<div class="panel-meta"><div class="panel-meta-row"><span class="panel-meta-label">Type</span>Utility Skill</div><div class="panel-meta-row"><span class="panel-meta-label">Purpose</span>' + vp.desc + '</div><div class="panel-meta-row"><span class="panel-meta-label">Agents</span>' + agentNames.join(', ') + '</div></div>';
+  openPanel('skill', vp.name, h);
+}
+
+function openTeamPanel(idx) {
+  const t = TEAMS[idx]; if (!t) return;
+  let h = '<div class="panel-meta"><div class="panel-meta-row"><span class="panel-meta-label">Purpose</span>' + (t.purpose || '') + '</div><div class="panel-meta-row"><span class="panel-meta-label">Invoke</span><code style="font-family:var(--font-mono);font-size:0.82rem;color:#a78bfa">/kickoff ' + t.name.toLowerCase() + '</code></div></div>';
+  h += '<div class="panel-section-title">Members</div>';
+  t.members.forEach(m => {
+    h += '<div class="panel-skill-item"><span class="panel-skill-name" style="color:' + m.color + '">' + m.name + '</span><div class="panel-skill-role">' + (AM[m.id] ? AM[m.id].desc : '') + '</div></div>';
+  });
+  openPanel('team', t.name, h);
+}
+
+// ════════════════════════
+// COPY
+// ════════════════════════
+function copyCmd(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
+    btn.classList.add('copied');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>'; }, 2000);
+  });
+}
+
+// ════════════════════════
+// ANIMATIONS
+// ════════════════════════
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const parent = entry.target.parentElement;
+      const siblings = Array.from(parent.querySelectorAll(':scope > .reveal'));
+      const idx = siblings.indexOf(entry.target);
+      setTimeout(() => entry.target.classList.add('visible'), Math.max(0, idx) * 50);
+      obs.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.05, rootMargin: '0px 0px -10px 0px' });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+setTimeout(() => document.querySelectorAll('.reveal:not(.visible)').forEach(el => el.classList.add('visible')), 2000);
+</script>
+</body>
+</html>
