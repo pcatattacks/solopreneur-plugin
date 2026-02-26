@@ -95,47 +95,21 @@ This step only runs once. Subsequent `/build` calls skip it because the preferen
 
 ## Plan Path
 
-1. Delegate to the `@engineer` subagent to create a plan file. The plan must follow this exact format:
+1. Delegate to the `@engineer` subagent to create a plan file following the standard plan format (from conventions). The engineer should break the work into 3-8 sequential steps with instructions specific enough that another agent can execute without additional context. Build-specific additions to the plan:
+   - Include `**Branch**: \`ticket/{ID}\`` in the Context section (ticket builds only)
+   - Add a `## Deployment Notes` section if deployment was just configured (platform, config files created, setup status)
 
-   ```markdown
-   # Plan: [Feature Name]
-
-   ## Context
-   [What we're building and why. Reference the source spec/design if applicable.]
-   **Branch**: `ticket/{ID}` ← (only present for ticket builds)
-
-   ## Step 1: [Short description]
-   **Files**: `path/to/file.ext` (create|modify)
-   **Do**: [Clear, specific instructions for what code to write. Include key function signatures, data structures, or logic.]
-   **Acceptance**: [Concrete criteria to verify this step is done correctly.]
-
-   ## Step 2: [Short description]
-   ...
-
-   ## Deployment Notes (if first build)
-   **Platform**: [chosen platform]
-   **Config created**: [list of config files]
-   **Setup status**: [linked/configured/pending]
-   ```
-
-2. The engineer should:
-   - Break the work into 3-8 sequential steps
-   - List all files to create or modify with their paths
-   - Include specific enough instructions that another agent can execute without additional context
-   - Add acceptance criteria that the QA agent can later validate against
-   - Note any dependencies to install
-
-3. Save the plan:
+2. Save the plan:
    - If building from a ticket: save co-located as `.solopreneur/backlog/{dir}/{ID}-plan.md`
    - Otherwise: save to `.solopreneur/plans/build-{feature-slug}.md` (create the directory if needed)
 
-4. Present a summary of the plan to the CEO:
+3. Present a summary of the plan to the CEO:
    - Number of steps
    - Files that will be created/modified
    - Any decisions that need CEO input
    - Estimated complexity (Simple / Moderate / Complex)
 
-5. End with the handoff prompt (adapt for ticket builds):
+4. End with the handoff prompt (adapt for ticket builds):
 
    **For ticket builds:**
    ```
@@ -163,7 +137,7 @@ This step only runs once. Subsequent `/build` calls skip it because the preferen
 ## Direct Path
 
 1. Delegate to the `@engineer` subagent to **plan and execute the implementation directly**. The engineer should:
-   - First, create the same structured plan (3-8 steps with files, instructions, and acceptance criteria)
+   - First, create a plan following the standard plan format (from conventions), with the same build-specific additions as the Plan Path
    - Save the plan: if building from a ticket, co-locate as `.solopreneur/backlog/{dir}/{ID}-plan.md`; otherwise save to `.solopreneur/plans/build-{feature-slug}.md`
    - Then execute each step: create/modify files, install dependencies, write the actual code
    - After each step, briefly report progress to the CEO
@@ -173,22 +147,14 @@ This step only runs once. Subsequent `/build` calls skip it because the preferen
    - Any decisions that were made along the way
    - Anything that needs CEO input or attention
 
-3. End with the review prompt:
-   ```
-   -> Next: Let's review what was built:
-      /solopreneur:review
-   ```
-
----
-
-## Ticket Completion (direct builds only)
-
-After a direct build is complete (Plan Path ends at the handoff prompt — the ticket stays `in-progress` until reviewed):
-
-1. **Update the ticket**: Set `status: built` in the YAML frontmatter. Populate the `## Files` section with files created/modified.
-
-2. **Suggest review**: The ticket stays on its branch until review passes.
+3. **If building from a ticket**: Update the ticket YAML — set `status: built`, populate the `## Files` section with files created/modified. Then suggest review:
    ```
    -> Ticket {ID} is built on branch `ticket/{ID}`. Let's review it:
       /solopreneur:review .solopreneur/backlog/{dir}/{ID}.md
+   ```
+
+4. **If not a ticket build**: End with the review prompt:
+   ```
+   -> Next: Let's review what was built:
+      /solopreneur:review
    ```

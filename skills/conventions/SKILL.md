@@ -54,7 +54,7 @@ tested        → done          (merged to main in review)
 Skills contain the operational instructions for the orchestrator. If the state machine changes, update these locations:
 
 - `pending → in-progress`: build/SKILL.md (line 43), sprint delegates to build
-- `in-progress → built`: build/SKILL.md (line 187), sprint/SKILL.md (line 99)
+- `in-progress → built`: build/SKILL.md (line 150), sprint/SKILL.md (line 99)
 - `built → tested`: review/SKILL.md (line 51)
 - `tested → done`: review/SKILL.md (lines 58, 99)
 
