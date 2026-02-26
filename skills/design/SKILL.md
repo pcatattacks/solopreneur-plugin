@@ -35,17 +35,7 @@ For each screen in the inventory, delegate to a `@designer` subagent to produce 
 - The design brief (for shared visual direction and component patterns)
 - The specific screen name and description from the inventory
 
-Each HTML file must:
-- Include DaisyUI CSS and Tailwind via CDN:
-  ```html
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@5/daisyui.css" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  ```
-- Use DaisyUI semantic classes for polished defaults (`btn`, `card`, `navbar`, `modal`, `table`, etc.)
-- Use realistic placeholder data (real names, prices, dates — not lorem ipsum)
-- Include basic interactivity where helpful (tab switches, modals, dropdowns via inline JS)
-- Have no external dependencies beyond DaisyUI + Tailwind CDN
-- Be openable via `file://` in any browser
+Each HTML file must follow the design system conventions (DaisyUI + Tailwind CDN, realistic data, no external dependencies, openable via `file://`).
 
 Save each screen to `.solopreneur/designs/{date}-{slug}/{screen-name}.html`.
 

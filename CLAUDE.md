@@ -154,9 +154,11 @@ deployment:
   notes: "Platform-specific deployment instructions"
   rollback: "Platform-specific rollback steps"
 claude-chrome-extension: "skip"
+sprint:
+  max_parallel_tickets: 3  # default; override per-run with --parallel N
 ```
 
-Skills that write: `/build` (git_comfort_level, deployment), `/ship` (deployment.rollback). The Chrome Extension check writes `claude-chrome-extension`. Always read before writing to avoid overwriting other keys.
+Skills that write: `/build` (git_comfort_level, deployment), `/ship` (deployment.rollback), `/sprint` (sprint.max_parallel_tickets). The Chrome Extension check writes `claude-chrome-extension`. Always read before writing to avoid overwriting other keys.
 
 ### Observer Protocol
 

@@ -1,7 +1,7 @@
 ---
 name: sprint
 description: Execute a batch of backlog tickets in parallel. Use when the user wants to build multiple unblocked tickets simultaneously with integrated QA review.
-argument-hint: "optional: ticket IDs to filter"
+argument-hint: "optional: ticket IDs and/or --parallel N"
 disable-model-invocation: true
 ---
 
@@ -25,7 +25,7 @@ You are the sprint orchestrator. You execute multiple backlog tickets in paralle
 
 4. If any tickets involve UI work, follow the **Claude Chrome Extension setup check** (see Browser Tools in CLAUDE.md) before proceeding.
 
-5. Cap at **3 tickets max**. If more are unblocked, pick highest priority (lowest ticket number first).
+5. Check parallelism limit: use `--parallel N` from `$ARGUMENTS` if provided, else read `sprint.max_parallel_tickets` from `.solopreneur/preferences.yaml`, else default to **3**. Cap at that limit. If more tickets are unblocked, pick highest priority (lowest ticket number first).
 
 6. Present the plan to the CEO with AskUserQuestion:
    ```
@@ -57,7 +57,7 @@ Each agent receives:
   **Notes**: [anything the CEO should know]
   ```
 
-Max 3 agents running simultaneously. If there are exactly 1-2 tickets, that's fine — the sprint still works, just not parallel.
+Cap agents at the parallelism limit from Phase 0. If there are fewer tickets than the limit, that's fine — the sprint still works with fewer agents.
 
 ### Phase 2 — QA Review
 
