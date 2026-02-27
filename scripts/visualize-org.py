@@ -899,7 +899,7 @@ def generate_html(config, marketing=False):
   .pill {{
     display: inline-block;
     font-family: var(--font-mono);
-    font-size: 0.72rem; font-weight: 500;
+    font-size: 0.76rem; font-weight: 500;
     letter-spacing: 0.08em; text-transform: uppercase;
     padding: 5px 14px; border-radius: 100px;
     border: 1px solid var(--border);
@@ -931,7 +931,7 @@ def generate_html(config, marketing=False):
   }}
   .install-num {{
     font-family: var(--font-mono);
-    font-size: 0.65rem; font-weight: 600;
+    font-size: 0.75rem; font-weight: 600;
     color: var(--text-dim); width: 14px; flex-shrink: 0;
   }}
   .install-step code {{
@@ -977,9 +977,9 @@ def generate_html(config, marketing=False):
   .section {{ padding: 48px 0 0 }}
   .section-eyebrow {{
     font-family: var(--font-mono);
-    font-size: 0.7rem; font-weight: 500;
+    font-size: 0.75rem; font-weight: 500;
     letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--text-dim); margin-bottom: 6px;
+    color: var(--text-dim); margin-bottom: 8px;
   }}
   .section-heading {{
     font-family: var(--font-display);
@@ -1010,9 +1010,9 @@ def generate_html(config, marketing=False):
     border: 1px solid rgba(148,163,184,0.15); color: var(--orchestrator);
   }}
   .hiw-node .hiw-label {{
-    font-size: 0.62rem; color: var(--text-dim);
-    display: block; margin-bottom: 1px;
-    font-family: var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 0.75rem; color: var(--text-dim);
+    display: block; margin-bottom: 2px;
+    font-family: var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase;
   }}
   .hiw-agents-node {{
     background: rgba(255,255,255,0.02);
@@ -1024,12 +1024,12 @@ def generate_html(config, marketing=False):
   .hiw-arrow {{ color: var(--text-dim); font-family: var(--font-mono); font-size: 0.85rem }}
 
   /* ════ AGENT CARDS ════ */
-  .agent-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }}
+  .agent-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px }}
   @media (max-width: 600px) {{ .agent-grid {{ grid-template-columns: repeat(2, 1fr) }} }}
 
   .agent-card {{
     background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px 16px;
+    border-radius: 10px; padding: 16px 18px;
     cursor: pointer; transition: all 0.25s var(--ease);
     position: relative; overflow: hidden;
   }}
@@ -1041,15 +1041,15 @@ def generate_html(config, marketing=False):
     border-color: var(--agent-color); background: var(--card-hover);
     transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.3);
   }}
-  .agent-top {{ display: flex; align-items: center; gap: 8px; margin-bottom: 5px }}
+  .agent-top {{ display: flex; align-items: center; gap: 8px; margin-bottom: 6px }}
   .agent-dot {{ width: 8px; height: 8px; border-radius: 50%; background: var(--agent-color); flex-shrink: 0 }}
-  .agent-name {{ font-weight: 600; font-size: 0.88rem; flex: 1 }}
-  .agent-role {{ font-size: 0.8rem; color: var(--text-dim); line-height: 1.4 }}
+  .agent-name {{ font-weight: 600; font-size: 0.92rem; flex: 1 }}
+  .agent-role {{ font-size: 0.84rem; color: var(--text-secondary); line-height: 1.5 }}
   .panel-model-badge {{
     font-family: var(--font-mono);
-    font-size: 0.68rem; font-weight: 600;
-    letter-spacing: 0.03em; text-transform: uppercase;
-    padding: 2px 7px; border-radius: 4px;
+    font-size: 0.75rem; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 4px;
     display: inline-block;
   }}
   .panel-model-explicit {{ background: rgba(129,140,248,0.12); color: #818cf8 }}
@@ -1067,10 +1067,10 @@ def generate_html(config, marketing=False):
   .phase-label {{
     position: relative;
     font-family: var(--font-mono);
-    font-size: 0.65rem; font-weight: 600;
-    letter-spacing: 0.12em; text-transform: uppercase;
+    font-size: 0.75rem; font-weight: 500;
+    letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--phase-color, var(--text-dim));
-    padding: 20px 0 10px;
+    padding: 22px 0 12px;
     display: flex; align-items: center; gap: 10px;
   }}
   .phase-label::before {{
@@ -1087,8 +1087,8 @@ def generate_html(config, marketing=False):
 
   .step-card {{
     background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 16px 20px;
-    margin-bottom: 8px; cursor: pointer;
+    border-radius: 10px; padding: 18px 22px;
+    margin-bottom: 10px; cursor: pointer;
     transition: all 0.25s var(--ease); position: relative;
   }}
   .step-card:hover {{
@@ -1105,21 +1105,21 @@ def generate_html(config, marketing=False):
 
   .step-header {{ display: flex; align-items: baseline; gap: 10px; margin-bottom: 2px }}
   .step-skill {{ font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600; color: var(--text) }}
-  .step-desc {{ font-size: 0.82rem; color: var(--text-dim) }}
+  .step-desc {{ font-size: 0.82rem; color: var(--text-secondary) }}
 
   .step-agents {{ margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border) }}
   .step-agent-row {{
     display: flex; align-items: baseline; gap: 10px;
-    padding: 3px 0; font-size: 0.8rem;
+    padding: 5px 0; font-size: 0.82rem;
   }}
   .step-agent-chip {{
     display: inline-flex; align-items: center; gap: 5px;
     width: var(--chip-w); flex-shrink: 0;
-    font-family: var(--font-mono); font-size: 0.72rem; font-weight: 500;
+    font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500;
     color: var(--agent-color);
   }}
   .step-agent-chip .cdot {{ width: 5px; height: 5px; border-radius: 50%; background: var(--agent-color) }}
-  .step-agent-role {{ color: var(--text-secondary); font-size: 0.82rem; line-height: 1.4 }}
+  .step-agent-role {{ color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5 }}
 
   /* Sprint branch */
   .sprint-branch {{
@@ -1135,8 +1135,8 @@ def generate_html(config, marketing=False):
   }}
   .sprint-or {{
     font-family: var(--font-mono);
-    font-size: 0.68rem; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase;
+    font-size: 0.75rem; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
     color: var(--text-dim);
     display: flex; align-items: center; gap: 10px;
     margin-bottom: 10px;
@@ -1149,10 +1149,10 @@ def generate_html(config, marketing=False):
     font-family: var(--font-mono); font-size: 0.9rem; font-weight: 600;
     color: var(--text); margin-bottom: 2px;
   }}
-  .sprint-desc {{ font-size: 0.82rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.5 }}
+  .sprint-desc {{ font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.5 }}
 
   /* ════ VALUE PROP CARDS ════ */
-  .vp-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px }}
+  .vp-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px }}
   @media (max-width: 540px) {{ .vp-grid {{ grid-template-columns: 1fr }} }}
 
   .vp-card {{
@@ -1166,33 +1166,33 @@ def generate_html(config, marketing=False):
     font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;
     color: var(--text); margin-bottom: 4px;
   }}
-  .vp-desc {{ font-size: 0.82rem; color: var(--text-dim); line-height: 1.5 }}
-  .vp-agents {{ display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px }}
+  .vp-desc {{ font-size: 0.82rem; color: var(--text-secondary); line-height: 1.55 }}
+  .vp-agents {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px }}
   .vp-chip {{
     display: inline-flex; align-items: center; gap: 4px;
-    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 500;
-    padding: 2px 7px; border-radius: 4px;
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500;
+    padding: 3px 9px; border-radius: 4px;
     background: rgba(255,255,255,0.03); color: var(--chip-color, var(--text-dim));
   }}
   .vp-chip .cdot {{ width: 4px; height: 4px; border-radius: 50%; background: var(--chip-color, var(--text-dim)) }}
 
   /* ════ TEAMS ════ */
-  .team-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }}
+  .team-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px }}
   @media (max-width: 600px) {{ .team-grid {{ grid-template-columns: 1fr }} }}
 
   .team-card {{
     background: transparent; border: 1px dashed var(--border);
-    border-radius: 10px; padding: 16px 18px;
+    border-radius: 10px; padding: 18px 20px;
     cursor: pointer; transition: all 0.25s var(--ease);
   }}
   .team-card:hover {{ border-color: var(--border-light); border-style: solid; background: var(--card) }}
   .team-name {{ font-weight: 600; font-size: 0.88rem; margin-bottom: 4px }}
-  .team-purpose {{ font-size: 0.78rem; color: var(--text-dim); margin-bottom: 10px; line-height: 1.45 }}
-  .team-members {{ display: flex; flex-wrap: wrap; gap: 4px }}
+  .team-purpose {{ font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.55 }}
+  .team-members {{ display: flex; flex-wrap: wrap; gap: 6px }}
   .team-member {{
     display: inline-flex; align-items: center; gap: 4px;
-    font-size: 0.7rem; font-weight: 500;
-    padding: 2px 8px 2px 6px; border-radius: 5px;
+    font-size: 0.78rem; font-weight: 500;
+    padding: 3px 10px 3px 8px; border-radius: 5px;
     background: rgba(255,255,255,0.03); color: var(--member-color);
   }}
   .team-member .cdot {{ width: 5px; height: 5px; border-radius: 50%; background: var(--member-color) }}
@@ -1231,8 +1231,8 @@ def generate_html(config, marketing=False):
   }}
   .panel-header-left {{ display: flex; align-items: center; gap: 10px }}
   .panel-type-badge {{
-    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600;
-    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 9px; border-radius: 4px;
   }}
   .panel-type-agent {{ background: rgba(59,130,246,0.12); color: #60a5fa }}
   .panel-type-skill {{ background: rgba(139,92,246,0.12); color: #a78bfa }}
@@ -1254,19 +1254,19 @@ def generate_html(config, marketing=False):
   }}
   .panel-meta-row {{ display: flex; gap: 8px; margin: 4px 0; font-size: 0.82rem; align-items: baseline }}
   .panel-meta-label {{
-    font-family: var(--font-mono); font-size: 0.62rem; font-weight: 600;
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
     letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--text-dim); width: 54px; flex-shrink: 0;
+    color: var(--text-dim); width: 62px; flex-shrink: 0;
   }}
   .panel-section-title {{
-    font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600;
+    font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
     letter-spacing: 0.1em; text-transform: uppercase;
     color: var(--text-dim); margin: 16px 0 8px;
   }}
   .panel-skill-item {{ padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.84rem }}
   .panel-skill-item:last-child {{ border-bottom: none }}
   .panel-skill-name {{ font-family: var(--font-mono); font-weight: 600; color: var(--text); font-size: 0.82rem }}
-  .panel-skill-role {{ color: var(--text-dim); font-size: 0.8rem }}
+  .panel-skill-role {{ color: var(--text-secondary); font-size: 0.8rem }}
 </style>
 </head>
 <body>
