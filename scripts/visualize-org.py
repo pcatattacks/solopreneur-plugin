@@ -743,7 +743,24 @@ def generate_html(config, marketing=False):
 
     escaped_name = e(name)
 
+    # -- OG meta tags (marketing mode only) --
+    if marketing:
+        og_tags = """
+<meta name="description" content="A Claude Code plugin that gives you a full AI team — engineer, designer, researcher, QA, and more. Ship products faster as a team of one.">
+<meta property="og:title" content="Solopreneur — Your Virtual AI Company">
+<meta property="og:description" content="A Claude Code plugin that gives you a full AI team — engineer, designer, researcher, QA, and more. Ship products faster as a team of one.">
+<meta property="og:image" content="https://pcatattacks.github.io/solopreneur-plugin/og-image.png">
+<meta property="og:url" content="https://pcatattacks.github.io/solopreneur-plugin/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Solopreneur — Your Virtual AI Company">
+<meta name="twitter:description" content="A Claude Code plugin that gives you a full AI team — engineer, designer, researcher, QA, and more. Ship products faster as a team of one.">
+<meta name="twitter:image" content="https://pcatattacks.github.io/solopreneur-plugin/og-image.png">"""
+    else:
+        og_tags = ""
+
     # -- Hero / header section --
+    copy_svg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>'
     if marketing:
         hero_html = f"""
   <div class="hero">
@@ -751,23 +768,25 @@ def generate_html(config, marketing=False):
     <h1 class="hero-title reveal">{escaped_name}</h1>
     <p class="hero-tagline reveal">Your Virtual AI Company</p>
     <p class="hero-desc reveal">A Claude Code plugin that gives you a full AI team &mdash; specialized agents, guided workflows, and decision memory. Ship products faster as a team of one.</p>
+    <p class="hero-install-label reveal">Open Claude Code in your terminal and run:</p>
     <div class="install-steps reveal">
       <div class="install-step">
         <span class="install-num">1</span>
         <code id="cmd1">/plugin marketplace add pcatattacks/solopreneur-plugin</code>
-        <button class="copy-btn" onclick="copyCmd('cmd1',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+        <button class="copy-btn" onclick="copyCmd('cmd1',this)">{copy_svg}</button>
       </div>
       <div class="install-step">
         <span class="install-num">2</span>
         <code id="cmd2">/plugin install solopreneur@solopreneur</code>
-        <button class="copy-btn" onclick="copyCmd('cmd2',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+        <button class="copy-btn" onclick="copyCmd('cmd2',this)">{copy_svg}</button>
       </div>
       <div class="install-step">
         <span class="install-num">3</span>
         <code id="cmd3">/solopreneur:help</code>
-        <button class="copy-btn" onclick="copyCmd('cmd3',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></button>
+        <button class="copy-btn" onclick="copyCmd('cmd3',this)">{copy_svg}</button>
       </div>
     </div>
+    <p class="install-prereq reveal">New to Claude Code? <a href="https://code.claude.com/docs/en/quickstart" target="_blank" rel="noopener">Start here &rarr;</a></p>
     <div class="hero-link-wrap reveal">
       <a class="hero-link" href="https://github.com/pcatattacks/solopreneur-plugin" target="_blank" rel="noopener">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
@@ -835,6 +854,7 @@ def generate_html(config, marketing=False):
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{escaped_name} &mdash; AI Org Chart</title>
+{og_tags}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -919,8 +939,21 @@ def generate_html(config, marketing=False):
   }}
   .hero-desc {{
     font-size: 0.95rem; color: var(--text-dim);
-    margin-bottom: 28px; line-height: 1.7;
+    margin-bottom: 24px; line-height: 1.7;
   }}
+  .hero-install-label {{
+    font-size: 0.85rem; color: var(--text-secondary);
+    margin-bottom: 10px; font-weight: 500;
+  }}
+  .install-prereq {{
+    text-align: center; margin-top: 16px; margin-bottom: 12px;
+    font-size: 0.85rem; color: var(--text-dim);
+  }}
+  .install-prereq a {{
+    color: #a78bfa; text-decoration: none;
+    transition: color 0.2s;
+  }}
+  .install-prereq a:hover {{ color: #c4b5fd }}
 
   /* Install steps */
   .install-steps {{ display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px }}
@@ -1306,8 +1339,6 @@ def generate_html(config, marketing=False):
     <div class="workflow" id="workflow"></div>
   </div>
 
-  {beyond_section_html}
-
   <!-- Agent teams -->
   <div class="section" id="teams-section">
     <div class="section-eyebrow reveal">Agent teams</div>
@@ -1315,6 +1346,8 @@ def generate_html(config, marketing=False):
     <div class="section-desc reveal">Pre-configured teams for common workflows via <code style="font-family:var(--font-mono);color:#a78bfa">/kickoff</code>. You can also assemble ad-hoc teams by naming any agents.</div>
     <div class="team-grid" id="team-grid"></div>
   </div>
+
+  {beyond_section_html}
 
   {footer_html}
 </div>
