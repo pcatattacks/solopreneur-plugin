@@ -46,10 +46,13 @@ Present the suggestion conversationally: "Here's where you left off: [context]. 
 
 ### 3. Generate and open the org chart
 
-Run the org chart visualization so the user can see their AI team:
+Run the org chart visualization so the user can see their AI team.
 
+**Finding the script:** The `visualize-org.py` script is at `scripts/visualize-org.py` relative to this plugin's root. You loaded this SKILL.md from a specific path — go up two directories from it (`skills/help/SKILL.md` → `skills/help/` → `skills/` → plugin root) to find the plugin root directory containing `agents/`, `skills/`, and `scripts/`.
+
+**Running it** (substitute the actual plugin root path):
 ```bash
-python3 scripts/visualize-org.py --plugin-dir . --output /tmp/solopreneur-org-chart.html && open /tmp/solopreneur-org-chart.html
+python3 <plugin-root>/scripts/visualize-org.py --plugin-dir <plugin-root> --output /tmp/solopreneur-org-chart.html && open /tmp/solopreneur-org-chart.html
 ```
 
 Tell the user: "I've opened your AI team's org chart in your browser. It shows all your employees, what skills they handle, what tools they use, and how the workflow connects them. Hover over anyone to see their connections, or click for details."

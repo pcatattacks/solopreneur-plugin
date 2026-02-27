@@ -782,6 +782,7 @@ def generate_html(config, marketing=False):
       <a href="https://pranavdhingra.com" target="_blank" rel="noopener">Portfolio</a>
       <a href="https://linkedin.com/in/pranav-dhingra" target="_blank" rel="noopener">LinkedIn</a>
       <a href="https://github.com/pcatattacks" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/pcatattacks/solopreneur-plugin" target="_blank" rel="noopener" style="color:#fbbf24">&#9733; Star</a>
     </div>
   </div>"""
     else:
@@ -794,6 +795,18 @@ def generate_html(config, marketing=False):
   <div class="footer">
     <div class="footer-name reveal">Built with the <a href="https://github.com/pcatattacks/solopreneur-plugin" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:none">Solopreneur plugin</a> for Claude Code</div>
   </div>"""
+
+    # Star CTA (marketing mode only — shown after VP section)
+    star_svg = '<svg viewBox="0 0 24 24"><path d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.787 1.4 8.168L12 19.896l-7.334 3.269 1.4-8.168L.132 9.21l8.2-1.192z"/></svg>'
+    if marketing:
+        star_cta_html = f"""
+    <div class="star-cta reveal">
+      <a href="https://github.com/pcatattacks/solopreneur-plugin" target="_blank" rel="noopener">
+        {star_svg} Star on GitHub
+      </a>
+    </div>"""
+    else:
+        star_cta_html = ""
 
     # Build the mini-dots for the HiW flow from actual agent data
     hiw_dots = ""
@@ -823,8 +836,8 @@ def generate_html(config, marketing=False):
     --border: #232a44;
     --border-light: #2d365a;
     --text: #e8ecf4;
-    --text-secondary: #a0aac0;
-    --text-dim: #6b7694;
+    --text-secondary: #b4bdd4;
+    --text-dim: #8893ad;
     --orchestrator: #94a3b8;
     --accent-purple: #c084fc;
     --font-display: 'Instrument Serif', Georgia, serif;
@@ -863,7 +876,7 @@ def generate_html(config, marketing=False):
   .page.filtering .dimmable.hl {{ opacity: 1 }}
 
   /* ════ HERO ════ */
-  .hero {{ padding: 64px 0 44px; position: relative }}
+  .hero {{ padding: 64px 0 28px; position: relative }}
   .hero::after {{
     content: ''; position: absolute; bottom: 0; left: 0; right: 0;
     height: 1px;
@@ -933,6 +946,19 @@ def generate_html(config, marketing=False):
   }}
   .hero-link:hover {{ color: var(--text-secondary) }}
   .hero-link svg {{ width: 15px; height: 15px; opacity: 0.6 }}
+
+  .star-cta {{
+    text-align: center; padding: 32px 0 0;
+  }}
+  .star-cta a {{
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 0.85rem; color: var(--text-dim);
+    text-decoration: none; transition: color 0.25s, border-color 0.25s;
+    padding: 8px 20px; border-radius: 8px;
+    border: 1px solid var(--border);
+  }}
+  .star-cta a:hover {{ color: #fbbf24; border-color: rgba(251,191,36,0.35) }}
+  .star-cta a svg {{ width: 15px; height: 15px; fill: currentColor }}
 
   /* ════ SECTIONS ════ */
   .section {{ padding: 48px 0 0 }}
@@ -1160,7 +1186,7 @@ def generate_html(config, marketing=False):
 
   /* ════ FOOTER ════ */
   .footer {{
-    text-align: center; padding: 48px 0 0; position: relative;
+    text-align: center; padding: 48px 0 0; margin-top: 24px; position: relative;
   }}
   .footer::before {{
     content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
@@ -1272,7 +1298,7 @@ def generate_html(config, marketing=False):
     <div class="section-eyebrow reveal">Beyond the lifecycle</div>
     <div class="section-heading reveal">What makes {escaped_name} different</div>
     <div class="section-desc reveal">The lifecycle gets your product built. These capabilities make the whole experience smarter.</div>
-    <div class="vp-grid" id="vp-grid"></div>
+    <div class="vp-grid" id="vp-grid"></div>{star_cta_html}
   </div>
 
   <!-- Agent teams -->

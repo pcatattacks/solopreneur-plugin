@@ -101,11 +101,13 @@ config = {
 }
 ```
 
+The `visualize-org.py` script is in this plugin's `scripts/` directory — go up two directories from this SKILL.md (`skills/scaffold/SKILL.md` → plugin root) to find it. Run:
+
 ```bash
-python3 scripts/visualize-org.py --config [config-file].json --output [plugin-name]-org-chart.html
+python3 <plugin-root>/scripts/visualize-org.py --config <config-file>.json --output /tmp/<plugin-name>-org-chart.html && open /tmp/<plugin-name>-org-chart.html
 ```
 
-Tell the user to open the HTML file in their browser. Explain: "This chart shows your entire AI team - who they are, what they can do, and what tools they use. Hover over an employee to see their connections. Hover over a team to see who's in it."
+Tell the user: "This chart shows your entire AI team — who they are, what they can do, and how the workflow connects them. Click on any card for details."
 
 ## Step 3.5: Consult Claude Code Best Practices
 
@@ -172,10 +174,10 @@ On user approval, create the file structure. What you generate depends on their 
 4. **`[name]/.mcp.json`** - MCP servers based on their daily tools
 5. **`[name]/settings.json`** - Enable agent teams
 6. **`[name]/hooks/hooks.json`** - Automated behaviors (at minimum: decision and session boundary logging)
-7. **`[name]/scripts/observer-log.sh`** - Copy from this plugin's `scripts/` for automated logging
-8. **`[name]/evals/run-evals.sh`** - Copy from this plugin's `skills/scaffold/templates/evals/run-evals.sh` (make executable with `chmod +x`)
-9. **`[name]/evals/rubric.md`** - Copy from this plugin's `skills/scaffold/templates/evals/rubric.md`
-10. **`[name]/evals/README.md`** - Copy from this plugin's `skills/scaffold/templates/evals/README.md`
+7. **`[name]/scripts/observer-log.sh`** - Copy from `scripts/observer-log.sh` in the plugin root (go up two directories from this SKILL.md)
+8. **`[name]/evals/run-evals.sh`** - Copy from `skills/scaffold/templates/evals/run-evals.sh` (same plugin root; make executable with `chmod +x`)
+9. **`[name]/evals/rubric.md`** - Copy from `skills/scaffold/templates/evals/rubric.md` (same plugin root)
+10. **`[name]/evals/README.md`** - Copy from `skills/scaffold/templates/evals/README.md` (same plugin root)
 11. **`[name]/skills/[top-skill]/eval.csv`** - Generate starter eval CSV (see eval guidance below)
 
 ### For sharing (full plugin):
