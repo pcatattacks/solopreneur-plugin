@@ -1,8 +1,8 @@
 ---
 name: qa
 description: Quality assurance specialist for testing, bug hunting, security review, and validation. Use proactively after code changes, before deployments, or when verifying correctness.
+color: red
 tools: Read, Bash, Grep, Glob
-model: sonnet
 skills:
   - conventions
 memory: project

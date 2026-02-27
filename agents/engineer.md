@@ -1,6 +1,7 @@
 ---
 name: engineer
 description: Senior software engineer specializing in architecture, implementation, debugging, and code review. Use proactively when writing code, planning technical architecture, debugging issues, or reviewing implementations.
+color: blue
 tools: Read, Write, Edit, Bash, Grep, Glob
 skills:
   - conventions

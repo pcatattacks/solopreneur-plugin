@@ -1,6 +1,7 @@
 ---
 name: designer
 description: Product designer specializing in UI/UX, user flows, HTML mockups, and design systems. Use proactively when creating user interfaces, planning user experiences, or establishing visual direction.
+color: purple
 tools: Read, Write, Bash, Grep, Glob
 skills:
   - conventions

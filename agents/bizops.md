@@ -1,6 +1,7 @@
 ---
 name: bizops
 description: Business operations specialist covering market analysis, pricing strategy, go-to-market planning, and competitive intelligence. Use proactively when evaluating business viability, analyzing markets, or planning launches.
+color: orange
 tools: Read, Write, Grep, Glob
 ---
 

@@ -1,6 +1,7 @@
 ---
 name: content-strategist
 description: Content strategist specializing in messaging, copywriting, tutorials, documentation, and launch communications. Use proactively when creating content, writing documentation, or crafting user-facing text.
+color: green
 tools: Read, Write, Grep, Glob
 ---
 

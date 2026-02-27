@@ -808,6 +808,19 @@ def generate_html(config, marketing=False):
     else:
         star_cta_html = ""
 
+    # Beyond-the-lifecycle section (marketing mode only — custom orgs skip this)
+    if marketing:
+        beyond_section_html = f"""
+  <!-- Beyond the lifecycle -->
+  <div class="section" id="beyond-section">
+    <div class="section-eyebrow reveal">Beyond the lifecycle</div>
+    <div class="section-heading reveal">What makes {escaped_name} different</div>
+    <div class="section-desc reveal">The lifecycle gets your product built. These capabilities make the whole experience smarter.</div>
+    <div class="vp-grid" id="vp-grid"></div>{star_cta_html}
+  </div>"""
+    else:
+        beyond_section_html = ""
+
     # Build the mini-dots for the HiW flow from actual agent data
     hiw_dots = ""
     for agent in agents[:8]:
@@ -1293,13 +1306,7 @@ def generate_html(config, marketing=False):
     <div class="workflow" id="workflow"></div>
   </div>
 
-  <!-- Beyond the lifecycle -->
-  <div class="section" id="beyond-section">
-    <div class="section-eyebrow reveal">Beyond the lifecycle</div>
-    <div class="section-heading reveal">What makes {escaped_name} different</div>
-    <div class="section-desc reveal">The lifecycle gets your product built. These capabilities make the whole experience smarter.</div>
-    <div class="vp-grid" id="vp-grid"></div>{star_cta_html}
-  </div>
+  {beyond_section_html}
 
   <!-- Agent teams -->
   <div class="section" id="teams-section">
@@ -1418,7 +1425,7 @@ LIFECYCLE.forEach((step, i) => {{
 
 // Value prop cards
 const vpGrid = document.getElementById('vp-grid');
-VP_CARDS.forEach(vp => {{
+if (vpGrid) VP_CARDS.forEach(vp => {{
   const d = document.createElement('div');
   d.className = 'vp-card reveal';
   d.dataset.skill = vp.skill;

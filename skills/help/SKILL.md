@@ -15,12 +15,12 @@ The user wants to get oriented with the solopreneur plugin. Show them their AI t
 If the user specified a topic, jump to the relevant section:
 
 - **"skills"** → Skip to Step 4 (skill reference table)
-- **"team"** → Skip to Step 3 (generate and open org chart)
+- **"team"** → Skip to Step 3 (show team + org chart)
 - **"workflow"** or **"lifecycle"** → Explain the product lifecycle pipeline, then show the skill table
-- **"getting started"** → Run full onboarding (Steps 2-5)
+- **"getting started"** → Run full onboarding (Steps 2, 4, 5)
 - **Anything else** → Treat as a question; answer it using the context below, then offer the full onboarding
 
-If no arguments, run the full onboarding experience (Steps 2-5).
+If no arguments, run the full onboarding experience (Steps 2, 4, 5). Do NOT auto-generate the org chart — just mention it's available via `/solopreneur:help team`.
 
 ### 2. Detect project state and suggest next step
 
@@ -44,18 +44,26 @@ Check the `.solopreneur/` directory to figure out where the user is in their jou
 
 Present the suggestion conversationally: "Here's where you left off: [context]. I'd suggest [next step] — want to do that?"
 
-### 3. Generate and open the org chart
+### 3. Show team + org chart (only on `/help team`)
 
-Run the org chart visualization so the user can see their AI team.
+This step ONLY runs when the user explicitly asks for "team" (e.g., `/solopreneur:help team`). It is NOT part of the default onboarding flow.
 
-**Finding the script:** The `visualize-org.py` script is at `scripts/visualize-org.py` relative to this plugin's root. You loaded this SKILL.md from a specific path — go up two directories from it (`skills/help/SKILL.md` → `skills/help/` → `skills/` → plugin root) to find the plugin root directory containing `agents/`, `skills/`, and `scripts/`.
+**Smart caching:** Before generating, check if a cached org chart already exists:
 
-**Running it** (substitute the actual plugin root path):
+1. Check if `.solopreneur/org-chart.html` exists
+2. If it exists, compare its last-modified timestamp against the newest file in the plugin's `agents/` and `skills/` directories (go up two directories from this SKILL.md to find the plugin root)
+3. If the cache is newer than all source files → just open it: `open .solopreneur/org-chart.html`
+4. If any source file is newer, or the cache doesn't exist → regenerate (see below)
+
+**Generating the org chart:**
+
+The `visualize-org.py` script is at `scripts/visualize-org.py` relative to this plugin's root. Go up two directories from this SKILL.md (`skills/help/SKILL.md` → `skills/help/` → `skills/` → plugin root) to find it.
+
 ```bash
-python3 <plugin-root>/scripts/visualize-org.py --plugin-dir <plugin-root> --output /tmp/solopreneur-org-chart.html && open /tmp/solopreneur-org-chart.html
+mkdir -p .solopreneur && python3 <plugin-root>/scripts/visualize-org.py --plugin-dir <plugin-root> --marketing --output .solopreneur/org-chart.html && open .solopreneur/org-chart.html
 ```
 
-Tell the user: "I've opened your AI team's org chart in your browser. It shows all your employees, what skills they handle, what tools they use, and how the workflow connects them. Hover over anyone to see their connections, or click for details."
+Tell the user: "I've opened your AI team's org chart in your browser. It shows all your employees, what skills they handle, what tools they use, and how the workflow connects them. Click on any card for details."
 
 If the `open` command fails (non-macOS), try `xdg-open` instead. If both fail, just tell the user the file path.
 
@@ -89,6 +97,8 @@ Present a compact reference:
 | `/solopreneur:story` | Turn your building journey into a narrative | `/solopreneur:story blog post` |
 | `/solopreneur:scaffold` | Design your own AI org from scratch | `/solopreneur:scaffold "I am a freelance designer"` |
 | `/solopreneur:help` | You're here! | `/solopreneur:help skills` |
+
+Want to see your team visually? Run `/solopreneur:help team` to open the interactive org chart.
 
 ### 5. Mention Claude Code concepts
 
