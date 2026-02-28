@@ -5,5 +5,5 @@ implicit-batch,true,"Build all the unblocked tickets","Routes to sprint|Identifi
 implicit-mvp,true,"Let's knock out the MVP","Routes to sprint|Finds MVP-priority tickets|Proposes parallel build"
 edge-single,true,"Run /solopreneur:sprint with only 1 unblocked ticket in backlog","Works with single ticket|Runs build without parallelism|Still runs QA review"
 edge-no-backlog,true,"Run /solopreneur:sprint with no backlog directory","Detects missing backlog|Guides user to run /solopreneur:backlog first|Does not attempt to build"
-negative-no-tickets,true,"Run /solopreneur:sprint with all tickets blocked or done","Reports no actionable tickets|Suggests next steps|Does not spawn build agents"
+edge-all-done,true,"Run /solopreneur:sprint with all tickets blocked or done","Reports no actionable tickets|Suggests next steps|Does not spawn build agents"
 negative-non-build,false,"Sprint on the research","Does not route to sprint|Research is not ticket-based build work"

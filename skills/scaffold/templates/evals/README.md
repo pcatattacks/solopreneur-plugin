@@ -17,7 +17,7 @@ bash evals/run-evals.sh
 
 ## How It Works
 
-1. The runner discovers all `skills/*/eval.csv` files
+1. The runner discovers all `eval.csv` files in `skills/` and `.claude/skills/`
 2. For each test case, it invokes `claude --print` with the test prompt
 3. An LLM judge grades the output against expected behaviors using `evals/rubric.md`
 4. Results are saved to `.eval-runs/` and a summary prints to terminal
@@ -68,6 +68,12 @@ EVAL_MODEL=opus JUDGE_MODEL=opus bash evals/run-evals.sh
 
 # Use a cheaper model for invocation, better model for grading
 EVAL_MODEL=haiku JUDGE_MODEL=sonnet bash evals/run-evals.sh
+
+# Set timeout per skill invocation (default: 900s = 15 min; 0 = no timeout)
+EVAL_TIMEOUT=600 bash evals/run-evals.sh
+
+# Set timeout per judge call (default: 120s = 2 min)
+JUDGE_TIMEOUT=60 bash evals/run-evals.sh
 ```
 
 ## Leveling Up: Hybrid Grading

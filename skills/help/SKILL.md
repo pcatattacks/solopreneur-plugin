@@ -1,7 +1,7 @@
 ---
 name: help
 description: Get oriented with the solopreneur plugin — see your AI team, check project status, and get suggestions for what to do next. Use when you're getting started or need a refresher.
-argument-hint: "optional: topic (skills, team, workflow, getting started)"
+argument-hint: "optional: topic (skills, team, workflow, evals, getting started)"
 ---
 
 # Help: $ARGUMENTS
@@ -17,6 +17,7 @@ If the user specified a topic, jump to the relevant section:
 - **"skills"** → Skip to Step 4 (skill reference table)
 - **"team"** → Skip to Step 3 (show team + org chart)
 - **"workflow"** or **"lifecycle"** → Explain the product lifecycle pipeline, then show the skill table
+- **"evals"** or **"testing"** → Skip to Step 6 (eval system guide)
 - **"getting started"** → Run full onboarding (Steps 2, 4, 5)
 - **Anything else** → Treat as a question; answer it using the context below, then offer the full onboarding
 
@@ -103,6 +104,53 @@ Want to see your team visually? Run `/solopreneur:help team` to open the interac
 ### 5. Mention Claude Code concepts
 
 End with: "If you want to understand how skills, agents, hooks, or MCP servers work under the hood, just ask me directly — I can look up the Claude Code documentation for you."
+
+### 6. Eval system guide (only on `/help evals` or `/help testing`)
+
+This step ONLY runs when the user explicitly asks for "evals" or "testing". It is NOT part of the default onboarding flow.
+
+Present the eval system as a way to systematically improve skills:
+
+**What evals are:**
+
+Your plugin includes an automated testing system. Each skill has test cases that check whether it produces the right output. An LLM judge grades each test against specific expected behaviors.
+
+**Quick commands:**
+
+```bash
+# See what tests exist (no cost — just shows test cases)
+bash evals/run-evals.sh --dry
+
+# Run evals for a specific skill
+bash evals/run-evals.sh [skill-name]
+
+# Run all evals
+bash evals/run-evals.sh
+
+# Use a stronger model for more thorough testing
+EVAL_MODEL=opus bash evals/run-evals.sh [skill-name]
+```
+
+**The improvement loop:**
+
+1. Run evals for a skill: `bash evals/run-evals.sh [skill]`
+2. Read the judge feedback in `.eval-runs/[skill]/[test-id].judge.json`
+3. Refine the skill's SKILL.md based on what failed
+4. Re-run evals to verify the fix
+
+**Adding new test cases:**
+
+Each skill's `eval.csv` defines its tests. The format is:
+
+```csv
+id,should_trigger,prompt,expected_behaviors
+```
+
+- **Positive tests** (`should_trigger=true`): Check the skill produces the right output
+- **Negative tests** (`should_trigger=false`): Check the skill doesn't falsely trigger
+- **Expected behaviors**: Pipe-separated, specific and countable (e.g., "Identifies at least 3 competitors")
+
+See `evals/README.md` for detailed guidance on writing good test cases.
 
 ## Tone
 

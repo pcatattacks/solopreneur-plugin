@@ -14,6 +14,8 @@
 # Environment variables:
 #   EVAL_MODEL   Model for skill invocation (default: sonnet)
 #   JUDGE_MODEL  Model for rubric grading (default: sonnet)
+#   EVAL_TIMEOUT Seconds per skill invocation (default: 900 = 15 min; 0 = no timeout)
+#   JUDGE_TIMEOUT Seconds per judge call (default: 120 = 2 min; 0 = no timeout)
 #
 # Safety: Actual runs execute inside a temporary git worktree with
 # --dangerously-skip-permissions so skills can write files and spawn subagents.
@@ -28,6 +30,30 @@ RUBRIC_FILE="$SCRIPT_DIR/rubric.md"
 
 EVAL_MODEL="${EVAL_MODEL:-sonnet}"
 JUDGE_MODEL="${JUDGE_MODEL:-sonnet}"
+EVAL_TIMEOUT="${EVAL_TIMEOUT:-900}"
+JUDGE_TIMEOUT="${JUDGE_TIMEOUT:-120}"
+
+# Check dependencies
+for cmd in python3 git; do
+  if ! command -v "$cmd" &>/dev/null; then
+    echo "Required command not found: $cmd" >&2
+    exit 1
+  fi
+done
+if ! command -v claude &>/dev/null; then
+  echo "Claude CLI not found. Install: https://docs.anthropic.com/en/docs/claude-code" >&2
+  exit 1
+fi
+
+# Detect timeout command (macOS: gtimeout from coreutils, Linux: timeout)
+TIMEOUT_CMD=""
+if [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null || [ "$JUDGE_TIMEOUT" -gt 0 ] 2>/dev/null; then
+  if command -v timeout &>/dev/null; then
+    TIMEOUT_CMD="timeout"
+  elif command -v gtimeout &>/dev/null; then
+    TIMEOUT_CMD="gtimeout"
+  fi
+fi
 
 # Parse arguments - support both "skill --dry" and "--dry skill" and "--dry" alone
 SKILL_FILTER="all"
@@ -55,19 +81,28 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${DIM}  eval model: $EVAL_MODEL | judge model: $JUDGE_MODEL${NC}"
 echo ""
 
-# Find eval CSVs (always from the real plugin dir, not the worktree)
+# Find eval CSVs - check both plugin-style (skills/) and project-style (.claude/skills/)
 if [ "$SKILL_FILTER" = "all" ]; then
-  CSV_FILES=$(find "$PLUGIN_DIR/skills" -name "eval.csv" 2>/dev/null | sort)
+  CSV_FILES=""
+  for search_dir in "$PLUGIN_DIR/skills" "$PLUGIN_DIR/.claude/skills"; do
+    if [ -d "$search_dir" ]; then
+      CSV_FILES="$CSV_FILES $(find "$search_dir" -name "eval.csv" 2>/dev/null)"
+    fi
+  done
+  CSV_FILES=$(echo "$CSV_FILES" | tr ' ' '\n' | sort | grep -v '^$')
 else
-  CSV_FILES="$PLUGIN_DIR/skills/${SKILL_FILTER}/eval.csv"
-  if [ ! -f "$CSV_FILES" ]; then
-    echo -e "${RED}No eval file found: $CSV_FILES${NC}"
+  if [ -f "$PLUGIN_DIR/skills/${SKILL_FILTER}/eval.csv" ]; then
+    CSV_FILES="$PLUGIN_DIR/skills/${SKILL_FILTER}/eval.csv"
+  elif [ -f "$PLUGIN_DIR/.claude/skills/${SKILL_FILTER}/eval.csv" ]; then
+    CSV_FILES="$PLUGIN_DIR/.claude/skills/${SKILL_FILTER}/eval.csv"
+  else
+    echo -e "${RED}No eval file found for: $SKILL_FILTER${NC}"
     exit 1
   fi
 fi
 
 if [ -z "$CSV_FILES" ]; then
-  echo -e "${RED}No eval.csv files found in skills/*/${NC}"
+  echo -e "${RED}No eval.csv files found in skills/ or .claude/skills/${NC}"
   exit 1
 fi
 
@@ -83,12 +118,20 @@ WORKTREE_BRANCH=""
 RUN_DIR="$PLUGIN_DIR"  # Where claude is invoked from (worktree during real runs)
 
 setup_worktree() {
+  # Clean up stale eval branches from previous crashed runs
+  git -C "$PLUGIN_DIR" branch --list 'eval-sandbox-*' 2>/dev/null | tr -d ' ' | while read -r branch; do
+    [ -z "$branch" ] && continue
+    git -C "$PLUGIN_DIR" worktree remove --force "$branch" 2>/dev/null || true
+    git -C "$PLUGIN_DIR" branch -q -D "$branch" 2>/dev/null || true
+  done
+
   WORKTREE_BRANCH="eval-sandbox-$$"
   WORKTREE_DIR=$(mktemp -d "${TMPDIR:-/tmp}/eval-sandbox.XXXXXX")
 
   echo -e "${DIM}  Setting up sandbox worktree...${NC}"
   git -C "$PLUGIN_DIR" worktree add -q -b "$WORKTREE_BRANCH" "$WORKTREE_DIR" HEAD
   RUN_DIR="$WORKTREE_DIR"
+
   echo -e "${DIM}  Sandbox: $WORKTREE_DIR${NC}"
   echo ""
 }
@@ -125,15 +168,21 @@ grade_with_rubric() {
   local output=$3
   local output_file=$4
 
-  RUBRIC_TEMPLATE=$(cat "$RUBRIC_FILE")
-  RUBRIC_PROMPT=$(echo "$RUBRIC_TEMPLATE" | \
-    sed "s|{SKILL_NAME}|$skill_name|g" | \
-    sed "s|{EXPECTED_BEHAVIORS}|$expected|g")
-  # Append the skill output at the end (avoid sed issues with output content)
-  RUBRIC_PROMPT=$(echo "$RUBRIC_PROMPT" | sed "s|{SKILL_OUTPUT}|<see below>|g")
+  RUBRIC_PROMPT=$(python3 -c "
+import sys
+template = open(sys.argv[1]).read()
+result = template.replace('{SKILL_NAME}', sys.argv[2])
+result = result.replace('{EXPECTED_BEHAVIORS}', sys.argv[3])
+result = result.replace('{SKILL_OUTPUT}', '<see below>')
+print(result)
+" "$RUBRIC_FILE" "$skill_name" "$expected")
   FULL_JUDGE_PROMPT=$(printf "%s\n\n--- SKILL OUTPUT ---\n%s" "$RUBRIC_PROMPT" "$output")
 
-  JUDGE_RESPONSE=$(echo "$FULL_JUDGE_PROMPT" | claude --print --model "$JUDGE_MODEL" 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}')
+  if [ -n "$TIMEOUT_CMD" ] && [ "$JUDGE_TIMEOUT" -gt 0 ] 2>/dev/null; then
+    JUDGE_RESPONSE=$(echo "$FULL_JUDGE_PROMPT" | $TIMEOUT_CMD "$JUDGE_TIMEOUT" claude --print --model "$JUDGE_MODEL" 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}')
+  else
+    JUDGE_RESPONSE=$(echo "$FULL_JUDGE_PROMPT" | claude --print --model "$JUDGE_MODEL" 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}')
+  fi
 
   # Extract JSON from judge response (may have markdown fences)
   echo "$JUDGE_RESPONSE" | python3 -c "
@@ -211,8 +260,16 @@ for CSV_FILE in $CSV_FILES; do
     mkdir -p "$SKILL_RUN_DIR"
     OUTPUT_FILE="$SKILL_RUN_DIR/${ID}.md"
 
-    # Invoke skill inside the sandboxed worktree
-    echo "$PROMPT" | claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --dangerously-skip-permissions > "$OUTPUT_FILE" 2>&1 || true
+    # Invoke skill inside the sandboxed worktree (max-turns prevents runaway execution)
+    SKILL_EXIT=0
+    if [ -n "$TIMEOUT_CMD" ] && [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null; then
+      echo "$PROMPT" | $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+    else
+      echo "$PROMPT" | claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+    fi
+    if [ "$SKILL_EXIT" -eq 124 ]; then
+      echo -e "    ${YELLOW}TIMEOUT${NC} after ${EVAL_TIMEOUT}s"
+    fi
     OUTPUT=$(cat "$OUTPUT_FILE")
 
     # Grade with rubric (same path for positive and negative tests)

@@ -1,5 +1,5 @@
 id,should_trigger,prompt,expected_behaviors
-explicit-from-spec,true,"Run /solopreneur:backlog .solopreneur/specs/recipe-app.md","Reads spec for context|Creates backlog with MVP/P1/P2 grouping|Creates individual ticket files with acceptance criteria|Includes dependency graph|Shows parallel groups|Saves to .solopreneur/backlog/"
+explicit-from-idea,true,"Run /solopreneur:backlog for a recipe app with these features: recipe search by ingredient, weekly meal planner with drag-and-drop, auto-generated grocery lists, and user profiles with dietary preferences","Creates backlog with MVP/P1/P2 grouping|Creates individual ticket files with acceptance criteria|Includes dependency graph|Shows parallel groups|Saves to .solopreneur/backlog/"
 explicit-single,true,"Create a ticket for adding user profile avatars","Creates single ticket file with acceptance criteria|Infers type as eng or eng+design|Includes YAML frontmatter with id and priority|Updates or creates backlog.md"
 implicit-breakdown,true,"This spec is huge, can we break it into smaller pieces?","Triggers backlog workflow|Proposes ticket breakdown for approval|Groups tickets by priority phase|Identifies dependencies between tickets"
 negative-build,false,"Build the login page","Does NOT trigger backlog workflow|Recognizes this is a build/implementation task"

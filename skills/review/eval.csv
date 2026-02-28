@@ -1,6 +1,6 @@
 id,should_trigger,prompt,expected_behaviors
 explicit-code,true,"Run /solopreneur:review src/auth/middleware.ts","Delegates to engineer and QA in parallel|Checks for security issues in auth code|Rates findings by severity|Includes at least one positive finding"
-explicit-spec,true,"Run /solopreneur:review .solopreneur/specs/habit-tracker.md","Delegates to bizops and engineer|Evaluates business viability|Checks technical feasibility"
+explicit-spec,true,"Run /solopreneur:review on this product idea: a habit tracker with social accountability where users build streaks, join groups of 2-8 people, and get nudged by peers when they miss habits. Target audience is people building new routines.","Delegates to bizops and engineer|Evaluates business viability|Checks technical feasibility"
 implicit-feedback,true,"Can you look at the changes I just made and tell me if they're good?","Triggers review workflow|Checks recent git changes|Provides structured feedback"
-explicit-plan,true,"Run /solopreneur:review .solopreneur/plans/build-auth.md","Validates completed steps against acceptance criteria|Updates plan checkboxes|Reports pass/fail per step"
+explicit-recent,true,"Run /solopreneur:review recent","Checks recent git changes|Provides structured feedback|Rates findings by severity"
 negative-build,false,"Build a login page for me","Does NOT trigger review|Recognizes this is a build task"

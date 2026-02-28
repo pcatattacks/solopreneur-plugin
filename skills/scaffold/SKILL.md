@@ -264,6 +264,12 @@ The markdown body defines the workflow. Structure as:
    - Show available skills in a table
    - On `/help team`: generate and cache the org chart visualization to `[output-dir]/org-chart.html`. Use smart caching — check if the cached file exists and is newer than all agent/skill files before regenerating.
    - Reference the `visualize-org.py` script using the "go up two directories from SKILL.md" pattern
+   - On `/help evals` or `/help testing`: explain the eval system and how to use it to improve skills. Include:
+     - What evals are (automated tests that check skill output against expected behaviors)
+     - Commands: `bash evals/run-evals.sh --dry` (see tests), `bash evals/run-evals.sh [skill]` (run), `EVAL_MODEL=opus` (stronger model)
+     - The improvement loop: run eval → read judge feedback → refine skill → re-run
+     - How to add test cases to `eval.csv` files
+     - Adapt language to user's technical level: non-technical users get "think of evals as a checklist that automatically tests your AI team"; technical users get the command reference
 
 If the org has a ship/deploy skill, it should read deployment config from preferences, support first-time deployment setup, and pattern after the solopreneur plugin's ship skill.
 
@@ -327,6 +333,19 @@ Where `[output-dir]` is the org's output directory (e.g., `.pm/`, `.agency/`). D
 ### Hooks explanation
 
 Explain to the user: "Hooks automatically capture your decisions when your AI team asks you questions. This builds a decision journal you can reference later — useful for writing about your process or understanding why you made certain choices."
+
+### Initialize git repository
+
+After generating all files, initialize a git repo and create an initial commit so that version control and evals work immediately:
+
+```bash
+cd [name]
+git init
+git add -A
+git commit -m "Initial scaffold: [org name] AI team"
+```
+
+If the project is already inside a git repo, skip this step. Explain to the user: "I've set up version control so I can save checkpoints of your work and the eval system has a safe sandbox to run in."
 
 ## Step 5: Test & Next Steps
 
