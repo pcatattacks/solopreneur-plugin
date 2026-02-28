@@ -10,10 +10,14 @@
 #   bash evals/run-evals.sh discover         # Run evals for discover skill only
 #   bash evals/run-evals.sh --dry            # Dry run (show test cases without executing)
 #   bash evals/run-evals.sh discover --dry   # Dry run for one skill
+#   bash evals/run-evals.sh --eval-model haiku --judge-model haiku  # Fast mode
 #
-# Environment variables:
-#   EVAL_MODEL   Model for skill invocation (default: sonnet)
-#   JUDGE_MODEL  Model for rubric grading (default: sonnet)
+# Flags:
+#   --dry                Dry run (show test cases without executing)
+#   --eval-model MODEL   Model for skill invocation (default: sonnet, env: EVAL_MODEL)
+#   --judge-model MODEL  Model for rubric grading (default: sonnet, env: JUDGE_MODEL)
+#
+# Environment variables (CLI flags take precedence):
 #   EVAL_TIMEOUT Seconds per skill invocation (default: 900 = 15 min; 0 = no timeout)
 #   JUDGE_TIMEOUT Seconds per judge call (default: 120 = 2 min; 0 = no timeout)
 #
@@ -55,15 +59,17 @@ if [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null || [ "$JUDGE_TIMEOUT" -gt 0 ] 2>/dev/nu
   fi
 fi
 
-# Parse arguments - support both "discover --dry" and "--dry discover" and "--dry" alone
+# Parse arguments
 SKILL_FILTER="all"
 DRY_RUN=false
-for arg in "$@"; do
-  if [ "$arg" = "--dry" ]; then
-    DRY_RUN=true
-  else
-    SKILL_FILTER="$arg"
-  fi
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --dry) DRY_RUN=true ;;
+    --eval-model) EVAL_MODEL="$2"; shift ;;
+    --judge-model) JUDGE_MODEL="$2"; shift ;;
+    *) SKILL_FILTER="$1" ;;
+  esac
+  shift
 done
 
 # Colors
@@ -217,11 +223,16 @@ for CSV_FILE in $CSV_FILES; do
     OUTPUT_FILE="$SKILL_RUN_DIR/${ID}.md"
 
     # Invoke skill inside the sandboxed worktree (max-turns prevents runaway execution)
+    # Append eval-mode system prompt to skip interactive questions
+    EVAL_MODE_ARGS=()
+    if [ -f "$SCRIPT_DIR/eval-mode.txt" ]; then
+      EVAL_MODE_ARGS=(--append-system-prompt-file "$SCRIPT_DIR/eval-mode.txt")
+    fi
     SKILL_EXIT=0
     if [ -n "$TIMEOUT_CMD" ] && [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null; then
-      echo "$PROMPT" | $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+      echo "$PROMPT" | $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions "${EVAL_MODE_ARGS[@]}" > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     else
-      echo "$PROMPT" | claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+      echo "$PROMPT" | claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions "${EVAL_MODE_ARGS[@]}" > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     fi
     if [ "$SKILL_EXIT" -eq 124 ]; then
       echo -e "    ${YELLOW}TIMEOUT${NC} after ${EVAL_TIMEOUT}s"

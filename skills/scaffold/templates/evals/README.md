@@ -13,6 +13,9 @@ bash evals/run-evals.sh [skill-name]
 
 # Run all evals
 bash evals/run-evals.sh
+
+# Fast mode with cheaper models
+bash evals/run-evals.sh --eval-model haiku --judge-model haiku
 ```
 
 ## How It Works
@@ -24,6 +27,12 @@ bash evals/run-evals.sh
 5. Exit code is non-zero if any test fails (CI-friendly)
 
 Runs execute inside a temporary git worktree for safety — your working directory is never modified.
+
+## Eval Mode
+
+Skills that ask clarifying questions (e.g., "confirm with the user", "wait for approval") would block in `--print` mode. The runner automatically appends an eval-mode system prompt (`evals/eval-mode.txt`) that instructs Claude to skip interactive questions and proceed with reasonable defaults.
+
+If you add skills with approval gates, customize `evals/eval-mode.txt` to include skill-specific defaults.
 
 ## CSV Format
 
@@ -60,10 +69,28 @@ negative-write,false,"Write the intro paragraph for my blog post","Does NOT trig
 - Start with 3-5 behaviors per positive test
 - For negative tests: "Does NOT trigger [skill]|Recognizes this is a [other task]"
 
-## Environment Variables
+## Configuration
+
+### CLI Flags
 
 ```bash
-# Override models (default: sonnet for both)
+# Override models via flags (takes precedence over env vars)
+bash evals/run-evals.sh --eval-model haiku --judge-model sonnet
+
+# Combine with skill filter and dry run
+bash evals/run-evals.sh my-skill --eval-model haiku --dry
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--dry` | Show test cases without executing | off |
+| `--eval-model MODEL` | Model for skill invocation | sonnet |
+| `--judge-model MODEL` | Model for rubric grading | sonnet |
+
+### Environment Variables
+
+```bash
+# Override models (flags take precedence if both are set)
 EVAL_MODEL=opus JUDGE_MODEL=opus bash evals/run-evals.sh
 
 # Use a cheaper model for invocation, better model for grading
