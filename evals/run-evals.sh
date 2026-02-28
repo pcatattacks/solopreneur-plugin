@@ -29,7 +29,7 @@ set -euo pipefail
 
 PLUGIN_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-EVAL_RUNS_DIR="$PLUGIN_DIR/.eval-runs"
+EVAL_RUNS_BASE="$PLUGIN_DIR/.eval-runs"
 RUBRIC_FILE="$SCRIPT_DIR/rubric.md"
 
 EVAL_MODEL="${EVAL_MODEL:-sonnet}"
@@ -144,6 +144,8 @@ cleanup_worktree() {
 if [ "$DRY_RUN" = false ]; then
   setup_worktree
   trap cleanup_worktree EXIT
+  RUN_TIMESTAMP=$(date +%Y-%m-%dT%H-%M-%S)
+  EVAL_RUNS_DIR="$EVAL_RUNS_BASE/$RUN_TIMESTAMP"
   mkdir -p "$EVAL_RUNS_DIR"
 fi
 
@@ -223,6 +225,7 @@ for CSV_FILE in $CSV_FILES; do
     OUTPUT_FILE="$SKILL_RUN_DIR/${ID}.md"
 
     # Invoke skill inside the sandboxed worktree (max-turns prevents runaway execution)
+    # cd into the worktree so file writes land there, not in the real project
     # Append eval-mode system prompt to skip interactive questions
     EVAL_MODE_ARGS=()
     if [ -f "$SCRIPT_DIR/eval-mode.txt" ]; then
@@ -230,9 +233,9 @@ for CSV_FILE in $CSV_FILES; do
     fi
     SKILL_EXIT=0
     if [ -n "$TIMEOUT_CMD" ] && [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null; then
-      echo "$PROMPT" | $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions "${EVAL_MODE_ARGS[@]}" > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+      echo "$PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     else
-      echo "$PROMPT" | claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions "${EVAL_MODE_ARGS[@]}" > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+      echo "$PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     fi
     if [ "$SKILL_EXIT" -eq 124 ]; then
       echo -e "    ${YELLOW}TIMEOUT${NC} after ${EVAL_TIMEOUT}s"
@@ -359,6 +362,16 @@ else
   echo ""
   echo -e "  Total: $((TOTAL_PASS + TOTAL_FAIL)) | ${GREEN}Pass: $TOTAL_PASS${NC} | ${RED}Fail: $TOTAL_FAIL${NC}"
   echo ""
+
+  # Save summary to run dir and update latest symlink
+  printf "%-12s %-22s %-10s %-8s %-6s %s\n" "Skill" "Test ID" "Type" "Result" "Score" "Notes" > "$EVAL_RUNS_DIR/summary.txt"
+  echo -e "$SUMMARY_LINES" | sed 's/\x1b\[[0-9;]*m//g' | while IFS='|' read -r skill id type result score notes; do
+    [ -z "$skill" ] && continue
+    printf "%-12s %-22s %-10s %-8s %-6s %s\n" "$skill" "$id" "$type" "$result" "$score" "$notes"
+  done >> "$EVAL_RUNS_DIR/summary.txt"
+  echo "Total: $((TOTAL_PASS + TOTAL_FAIL)) | Pass: $TOTAL_PASS | Fail: $TOTAL_FAIL" >> "$EVAL_RUNS_DIR/summary.txt"
+  ln -sfn "$RUN_TIMESTAMP" "$EVAL_RUNS_BASE/latest"
+
   echo -e "  Artifacts saved to: ${DIM}$EVAL_RUNS_DIR/${NC}"
 fi
 
