@@ -229,12 +229,19 @@ bash evals/run-evals.sh
 
 # Run evals for a specific skill
 bash evals/run-evals.sh discover
+
+# Run all skills in parallel (faster for full suite)
+bash evals/run-evals.sh --parallel
+
+# Parallel + fast mode
+bash evals/run-evals.sh --parallel --eval-model haiku --judge-model haiku
 ```
 
-Override models via environment variables:
+Override models via environment variables or CLI flags:
 
 ```bash
 EVAL_MODEL=opus JUDGE_MODEL=opus bash evals/run-evals.sh
+bash evals/run-evals.sh --eval-model haiku --judge-model haiku
 ```
 
 ## File Structure

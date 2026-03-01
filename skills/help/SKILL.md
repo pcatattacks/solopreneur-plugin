@@ -127,6 +127,9 @@ bash evals/run-evals.sh [skill-name]
 # Run all evals
 bash evals/run-evals.sh
 
+# Run all skills in parallel (faster for full suite)
+bash evals/run-evals.sh --parallel
+
 # Use a stronger model for more thorough testing
 EVAL_MODEL=opus bash evals/run-evals.sh [skill-name]
 ```

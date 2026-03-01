@@ -16,6 +16,12 @@ bash evals/run-evals.sh
 
 # Fast mode with cheaper models
 bash evals/run-evals.sh --eval-model haiku --judge-model haiku
+
+# Run all skills in parallel (faster for full suite)
+bash evals/run-evals.sh --parallel
+
+# Parallel + fast mode
+bash evals/run-evals.sh --parallel --eval-model haiku --judge-model haiku
 ```
 
 ## How It Works
@@ -86,6 +92,29 @@ bash evals/run-evals.sh my-skill --eval-model haiku --dry
 | `--dry` | Show test cases without executing | off |
 | `--eval-model MODEL` | Model for skill invocation | sonnet |
 | `--judge-model MODEL` | Model for rubric grading | sonnet |
+| `--parallel [N]` | Run skills concurrently (default N=5) | off (sequential) |
+
+### Parallel Execution
+
+Run all skills concurrently to reduce total eval time:
+
+```bash
+# Default: 5 concurrent skills
+bash evals/run-evals.sh --parallel
+
+# Custom concurrency limit
+bash evals/run-evals.sh --parallel 10
+
+# Combine with model overrides
+bash evals/run-evals.sh --parallel --eval-model haiku --judge-model haiku
+```
+
+Each skill gets its own sandboxed git worktree. Results are aggregated after all skills complete. Per-skill logs are saved to `.eval-runs/TIMESTAMP/logs/SKILL.log`.
+
+**Notes:**
+- Single-skill runs (`bash evals/run-evals.sh my-skill --parallel`) ignore `--parallel` and run sequentially
+- Default concurrency of 5 balances API throughput with rate limits
+- Use `--parallel 1` to test the parallel code path without actual concurrency
 
 ### Environment Variables
 
