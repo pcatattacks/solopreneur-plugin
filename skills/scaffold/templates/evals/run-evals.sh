@@ -107,6 +107,43 @@ print(json.dumps(rows))
 " "$1"
 }
 
+# Capture artifacts from the worktree for judge visibility.
+# Scans .solopreneur/ for generated files and returns their contents
+# with path headers. Truncates individual files at 200 lines to keep
+# judge payload manageable.
+capture_artifacts() {
+  local workdir="$1"
+  local solopreneur_dir="$workdir/.solopreneur"
+  local max_lines=200
+
+  if [ ! -d "$solopreneur_dir" ]; then
+    return
+  fi
+
+  local found_files
+  found_files=$(find "$solopreneur_dir" -type f \( -name "*.md" -o -name "*.html" -o -name "*.yaml" -o -name "*.yml" -o -name "*.json" -o -name "*.txt" \) 2>/dev/null | sort)
+
+  if [ -z "$found_files" ]; then
+    return
+  fi
+
+  echo ""
+  echo "--- ARTIFACTS ---"
+  echo ""
+
+  echo "$found_files" | while read -r filepath; do
+    local relpath="${filepath#$workdir/}"
+    local linecount
+    linecount=$(wc -l < "$filepath" 2>/dev/null || echo "0")
+    echo "=== $relpath ($linecount lines) ==="
+    head -n "$max_lines" "$filepath" 2>/dev/null
+    if [ "$linecount" -gt "$max_lines" ]; then
+      echo "... (truncated at $max_lines lines)"
+    fi
+    echo ""
+  done
+}
+
 # Grade a test case using the rubric (works for both positive and negative tests)
 grade_with_rubric() {
   local skill_name=$1
@@ -208,6 +245,9 @@ run_skill_tests() {
     echo -e "  Running: ${BLUE}$ID${NC} ${DIM}(${TEST_TYPE})${NC}"
     echo -e "    Prompt: ${DIM}$PROMPT${NC}"
 
+    # Clean artifacts from previous test case within this skill
+    rm -rf "$RUN_DIR/.solopreneur"
+
     SKILL_RUN_DIR="$EVAL_RUNS_DIR/$SKILL_NAME"
     mkdir -p "$SKILL_RUN_DIR"
     OUTPUT_FILE="$SKILL_RUN_DIR/${ID}.md"
@@ -232,6 +272,13 @@ run_skill_tests() {
       echo -e "    ${YELLOW}TIMEOUT${NC} after ${EVAL_TIMEOUT}s"
     fi
     OUTPUT=$(cat "$OUTPUT_FILE")
+
+    # Capture artifacts from worktree for judge visibility
+    ARTIFACTS=$(capture_artifacts "$RUN_DIR")
+    if [ -n "$ARTIFACTS" ]; then
+      echo "$ARTIFACTS" >> "$OUTPUT_FILE"
+      OUTPUT="${OUTPUT}${ARTIFACTS}"
+    fi
 
     # Grade with rubric (same path for positive and negative tests)
     JUDGE_JSON=$(grade_with_rubric "$SKILL_NAME" "$EXPECTED" "$OUTPUT" "$OUTPUT_FILE")

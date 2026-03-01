@@ -1,2 +1,2 @@
 id,should_trigger,prompt,expected_behaviors
-format-plan,true,"Run /solopreneur:build a simple hello world Node.js HTTP server","Produces a plan file with numbered steps|Each step has Files and Do sections|Plan includes Context section"
+format-plan,true,"Run /solopreneur:build a simple hello world Node.js HTTP server — I want to take it to Cursor after","Delegates to engineer subagent|Creates a plan file in .solopreneur/plans/|Plan contains numbered implementation steps|Mentions taking the plan to Cursor or another coding agent"
