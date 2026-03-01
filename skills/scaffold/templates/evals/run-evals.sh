@@ -24,8 +24,8 @@
 #   EVAL_TIMEOUT Seconds per skill invocation (default: 900 = 15 min; 0 = no timeout)
 #   JUDGE_TIMEOUT Seconds per judge call (default: 120 = 2 min; 0 = no timeout)
 #
-# Safety: Actual runs execute inside a temporary git worktree with
-# --dangerously-skip-permissions so skills can write files and spawn subagents.
+# Safety: Runs execute inside a per-skill temporary git worktree.
+# Git remote operations are blocked via --disallowedTools and the eval-mode system prompt.
 # The worktree is cleaned up automatically when the run finishes.
 
 set -euo pipefail
@@ -218,9 +218,15 @@ run_skill_tests() {
     fi
     SKILL_EXIT=0
     if [ -n "$TIMEOUT_CMD" ] && [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null; then
-      echo "$PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+      echo "$PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 \
+        --dangerously-skip-permissions \
+        --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
+        "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     else
-      echo "$PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 --dangerously-skip-permissions "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+      echo "$PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 \
+        --dangerously-skip-permissions \
+        --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
+        "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     fi
     if [ "$SKILL_EXIT" -eq 124 ]; then
       echo -e "    ${YELLOW}TIMEOUT${NC} after ${EVAL_TIMEOUT}s"
@@ -518,7 +524,7 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
 fi
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Sequential mode (default): single worktree, all skills in series
+# Sequential mode (default): per-skill worktrees, all skills in series
 # ─────────────────────────────────────────────────────────────────────────────
 
 WORKTREE_DIR=""
@@ -527,14 +533,12 @@ RUN_DIR="$PLUGIN_DIR"
 
 setup_worktree() {
   cleanup_stale_branches
-
-  WORKTREE_BRANCH="eval-sandbox-$$"
+  WORKTREE_BRANCH="eval-sandbox-$$-${SKILL_NAME:-seq}"
   WORKTREE_DIR=$(mktemp -d "${TMPDIR:-/tmp}/eval-sandbox.XXXXXX")
-
+  git -C "$PLUGIN_DIR" branch -q -D "$WORKTREE_BRANCH" 2>/dev/null || true
   echo -e "${DIM}  Setting up sandbox worktree...${NC}"
   git -C "$PLUGIN_DIR" worktree add -q -b "$WORKTREE_BRANCH" "$WORKTREE_DIR" HEAD
   RUN_DIR="$WORKTREE_DIR"
-
   echo -e "${DIM}  Sandbox: $WORKTREE_DIR${NC}"
   echo ""
 }
@@ -544,11 +548,12 @@ cleanup_worktree() {
     echo -e "${DIM}  Cleaning up sandbox worktree...${NC}"
     git -C "$PLUGIN_DIR" worktree remove --force "$WORKTREE_DIR" 2>/dev/null || true
     git -C "$PLUGIN_DIR" branch -q -D "$WORKTREE_BRANCH" 2>/dev/null || true
+    WORKTREE_DIR=""
+    WORKTREE_BRANCH=""
   fi
 }
 
-setup_worktree
-trap cleanup_worktree EXIT
+trap 'cleanup_worktree' EXIT
 
 RUN_TIMESTAMP=$(date +%Y-%m-%dT%H-%M-%S)
 EVAL_RUNS_DIR="$EVAL_RUNS_BASE/$RUN_TIMESTAMP"
@@ -561,6 +566,8 @@ SUMMARY_LINES=""
 for CSV_FILE in $CSV_FILES; do
   SKILL_NAME=$(basename "$(dirname "$CSV_FILE")")
 
+  setup_worktree
+
   echo -e "${YELLOW}Skill: ${SKILL_NAME}${NC}"
   echo "─────────────────────────────────────"
 
@@ -569,6 +576,8 @@ for CSV_FILE in $CSV_FILES; do
   TOTAL_PASS=$((TOTAL_PASS + CHILD_PASS))
   TOTAL_FAIL=$((TOTAL_FAIL + CHILD_FAIL))
   SUMMARY_LINES="${SUMMARY_LINES}${CHILD_SUMMARY}"
+
+  cleanup_worktree
 
   echo ""
 done

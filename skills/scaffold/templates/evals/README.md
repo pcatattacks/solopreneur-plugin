@@ -38,6 +38,8 @@ Runs execute inside a temporary git worktree for safety — your working directo
 
 Skills that ask clarifying questions (e.g., "confirm with the user", "wait for approval") would block in `--print` mode. The runner automatically appends an eval-mode system prompt (`evals/eval-mode.txt`) that instructs Claude to skip interactive questions and proceed with reasonable defaults.
 
+The eval-mode prompt also includes git safety rules that prevent the model from pushing to remote repositories. Each eval runs inside an isolated git worktree, and these rules ensure changes stay local.
+
 If you add skills with approval gates, customize `evals/eval-mode.txt` to include skill-specific defaults.
 
 ## CSV Format

@@ -88,6 +88,7 @@ depends_on: []
 blocks: [MVP-002]
 design_ref:
 branch:
+worktree:
 ---
 
 ## Description

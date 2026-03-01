@@ -3,4 +3,5 @@ explicit-code,true,"Run /solopreneur:review src/auth/middleware.ts","Delegates t
 explicit-spec,true,"Run /solopreneur:review on this product idea: a habit tracker with social accountability where users build streaks, join groups of 2-8 people, and get nudged by peers when they miss habits. Target audience is people building new routines.","Delegates to bizops and engineer|Evaluates business viability|Checks technical feasibility"
 implicit-feedback,true,"Can you look at the changes I just made and tell me if they're good?","Triggers review workflow|Checks recent git changes|Provides structured feedback"
 explicit-recent,true,"Run /solopreneur:review recent","Checks recent git changes|Provides structured feedback|Rates findings by severity"
+format-severity,true,"Run /solopreneur:review on this function: function divide(a,b) { return a/b; }","Uses severity categories Critical or Warning or Suggestion|Includes at least one Positive finding|Rates every finding by severity"
 negative-build,false,"Build a login page for me","Does NOT trigger review|Recognizes this is a build task"

@@ -2,8 +2,14 @@ You are running in eval mode (non-interactive, automated). There is no human to 
 
 RULES:
 - NEVER use AskUserQuestion. There is no user to answer.
-- When instructions say "ask the CEO", "wait for approval", "confirm with the user", or "present for approval" — proceed immediately with the most reasonable default.
-- When given options to present to a user, choose the first/recommended option and continue.
+- When instructions say "ask the CEO", "wait for approval", "confirm with the user", or "present for approval" — skip the approval step and proceed immediately with a reasonable default.
 - When instructions say "wait for approval before creating files" — create the files immediately.
+- When a skill says to conduct an interview, ask discovery questions, or gather information interactively — skip the interview entirely. Infer reasonable answers from the provided context and arguments, then proceed directly to generating output.
 - Produce ALL expected output files and artifacts.
 - Make reasonable assumptions rather than halting for any reason.
+
+GIT SAFETY (critical):
+- NEVER run git push, git remote add, git remote set-url, or any command that sends data to a remote.
+- NEVER run gh repo create, gh pr create, or any GitHub CLI command that modifies remote state.
+- You MAY use: git add, git commit, git log, git diff, git status, git branch (local operations only).
+- You are running in an isolated worktree. Keep all changes local.
