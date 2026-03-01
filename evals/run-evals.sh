@@ -96,6 +96,98 @@ NC='\033[0m'
 # Shared functions (used by both child and parent/sequential modes)
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Format seconds as human-readable duration
+format_duration() {
+  local secs=$1
+  if [ "$secs" -ge 3600 ]; then
+    printf "%dh %dm" $((secs / 3600)) $(((secs % 3600) / 60))
+  elif [ "$secs" -ge 60 ]; then
+    printf "%dm %ds" $((secs / 60)) $((secs % 60))
+  else
+    printf "%ds" "$secs"
+  fi
+}
+
+# Print a progress bar with elapsed time.
+# Usage: print_progress DONE TOTAL START_EPOCH [LABEL]
+print_progress() {
+  local done=$1 total=$2 start=$3 label="${4:-}"
+  local now elapsed
+  local bar_width=20 filled empty
+
+  now=$(date +%s)
+  elapsed=$((now - start))
+
+  if [ "$total" -eq 0 ]; then return; fi
+  filled=$((done * bar_width / total))
+  empty=$((bar_width - filled))
+
+  local bar=""
+  for ((b=0; b<filled; b++)); do bar="${bar}█"; done
+  for ((b=0; b<empty; b++)); do bar="${bar}░"; done
+
+  printf "  ${DIM}%s %d/%d | %s elapsed${NC}" \
+    "$bar" "$done" "$total" "$(format_duration $elapsed)"
+  if [ -n "$label" ]; then
+    printf " ${DIM}(%s)${NC}" "$label"
+  fi
+  echo ""
+}
+
+# Live spinner that updates in-place every second.
+# Shows elapsed time and what's currently running.
+# Usage: start_spinner DONE TOTAL START_EPOCH LABEL
+SPINNER_PID=""
+start_spinner() {
+  local done=$1 total=$2 start=$3 label="$4"
+  local bar_width=20
+  stop_spinner  # kill any existing
+  (
+    local frames=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
+    local i=0
+    while true; do
+      local now elapsed filled empty bar
+      now=$(date +%s)
+      elapsed=$((now - start))
+      filled=$((done * bar_width / total))
+      empty=$((bar_width - filled))
+      bar=""
+      for ((b=0; b<filled; b++)); do bar="${bar}█"; done
+      for ((b=0; b<empty; b++)); do bar="${bar}░"; done
+      printf "\r    ${DIM}%s %s %d/%d | %s | %s${NC}    " \
+        "${frames[$i]}" "$bar" "$done" "$total" \
+        "$(format_duration $elapsed)" "$label"
+      i=$(( (i + 1) % ${#frames[@]} ))
+      sleep 1
+    done
+  ) &
+  SPINNER_PID=$!
+}
+
+stop_spinner() {
+  if [ -n "$SPINNER_PID" ] && kill -0 "$SPINNER_PID" 2>/dev/null; then
+    kill "$SPINNER_PID" 2>/dev/null
+    wait "$SPINNER_PID" 2>/dev/null || true
+  fi
+  SPINNER_PID=""
+  printf "\r%80s\r" ""  # clear the spinner line
+}
+
+# Count total test cases across a set of CSV files
+count_total_tests() {
+  local total=0
+  for csv in $1; do
+    local n
+    n=$(python3 -c "
+import csv, sys
+with open(sys.argv[1]) as f:
+    print(sum(1 for _ in csv.DictReader(f)))
+" "$csv")
+    total=$((total + n))
+  done
+  echo "$total"
+}
+
 # Parse CSV using python3 (handles quoted fields with commas)
 parse_csv() {
   python3 -c "
@@ -171,7 +263,13 @@ print_summary() {
     printf "  %-12s %-22s %-10s %-8b %-6s %s\n" "$skill" "$id" "$type" "$result" "$score" "$notes"
   done
   echo ""
-  echo -e "  Total: $((TOTAL_PASS + TOTAL_FAIL)) | ${GREEN}Pass: $TOTAL_PASS${NC} | ${RED}Fail: $TOTAL_FAIL${NC}"
+  local total_elapsed=""
+  if [ -n "${PROGRESS_START:-}" ]; then
+    total_elapsed=$(format_duration $(( $(date +%s) - PROGRESS_START )))
+  elif [ -n "${PARALLEL_START:-}" ]; then
+    total_elapsed=$(format_duration $(( $(date +%s) - PARALLEL_START )))
+  fi
+  echo -e "  Total: $((TOTAL_PASS + TOTAL_FAIL)) | ${GREEN}Pass: $TOTAL_PASS${NC} | ${RED}Fail: $TOTAL_FAIL${NC}${total_elapsed:+ | ${DIM}${total_elapsed}${NC}}"
   echo ""
 
   # Save summary to run dir and update latest symlink
@@ -228,6 +326,10 @@ run_skill_tests() {
       EVAL_MODE_ARGS=(--append-system-prompt-file "$SCRIPT_DIR/eval-mode.txt")
     fi
     SKILL_EXIT=0
+    # Start live spinner during skill execution (not in child/parallel mode)
+    if [ "${_EVAL_CHILD:-}" != "1" ]; then
+      start_spinner "$PROGRESS_DONE" "$PROGRESS_TOTAL" "$PROGRESS_START" "exec ${SKILL_NAME}:${ID}"
+    fi
     if [ -n "$TIMEOUT_CMD" ] && [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null; then
       echo "$PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 \
         --dangerously-skip-permissions \
@@ -238,6 +340,9 @@ run_skill_tests() {
         --dangerously-skip-permissions \
         --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
         "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+    fi
+    if [ "${_EVAL_CHILD:-}" != "1" ]; then
+      stop_spinner
     fi
     if [ "$SKILL_EXIT" -eq 124 ]; then
       echo -e "    ${YELLOW}TIMEOUT${NC} after ${EVAL_TIMEOUT}s"
@@ -263,10 +368,17 @@ print(result)
 " "$RUBRIC_FILE" "$SKILL_NAME" "$EXPECTED")
       FULL_JUDGE_PROMPT=$(printf "%s\n\n--- SKILL OUTPUT ---\n%s" "$RUBRIC_PROMPT" "$OUTPUT")
 
+      # Start live spinner during judge grading (not in child/parallel mode)
+      if [ "${_EVAL_CHILD:-}" != "1" ]; then
+        start_spinner "$PROGRESS_DONE" "$PROGRESS_TOTAL" "$PROGRESS_START" "judging ${SKILL_NAME}:${ID}"
+      fi
       if [ -n "$TIMEOUT_CMD" ] && [ "$JUDGE_TIMEOUT" -gt 0 ] 2>/dev/null; then
         JUDGE_RESPONSE=$(echo "$FULL_JUDGE_PROMPT" | $TIMEOUT_CMD "$JUDGE_TIMEOUT" claude --print --model "$JUDGE_MODEL" 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}')
       else
         JUDGE_RESPONSE=$(echo "$FULL_JUDGE_PROMPT" | claude --print --model "$JUDGE_MODEL" 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}')
+      fi
+      if [ "${_EVAL_CHILD:-}" != "1" ]; then
+        stop_spinner
       fi
 
       # Extract JSON from judge response (may have markdown fences)
@@ -348,6 +460,10 @@ else:
       fi
     fi
 
+    # Update progress
+    PROGRESS_DONE=$((PROGRESS_DONE + 1))
+    print_progress "$PROGRESS_DONE" "$PROGRESS_TOTAL" "$PROGRESS_START"
+
     echo ""
   done
 }
@@ -403,6 +519,11 @@ if [ "${_EVAL_CHILD:-}" = "1" ]; then
     fi
   }
   trap child_cleanup EXIT
+
+  # Progress tracking for child
+  PROGRESS_TOTAL=$(count_total_tests "$CSV_FILE")
+  PROGRESS_DONE=0
+  PROGRESS_START=$(date +%s)
 
   # Run tests
   run_skill_tests
@@ -511,12 +632,18 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
   done
   TOTAL_SKILLS=${#SKILL_ARRAY[@]}
 
-  echo -e "${YELLOW}Parallel mode:${NC} ${TOTAL_SKILLS} skills, max ${MAX_PARALLEL} concurrent"
+  # Count total tests across all skills for progress
+  PARALLEL_TOTAL_TESTS=$(count_total_tests "$CSV_FILES")
+  echo -e "${YELLOW}Parallel mode:${NC} ${TOTAL_SKILLS} skills (${PARALLEL_TOTAL_TESTS} tests), max ${MAX_PARALLEL} concurrent"
   echo ""
+
+  PARALLEL_START=$(date +%s)
+  SKILLS_DONE=0
 
   # Signal handler: kill all children on interrupt
   ALL_CHILD_PIDS=()
   parallel_cleanup() {
+    stop_spinner
     echo -e "\n${RED}  Interrupted. Stopping child processes...${NC}"
     for pid in "${ALL_CHILD_PIDS[@]}"; do
       kill "$pid" 2>/dev/null || true
@@ -551,12 +678,15 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
     echo -e "  ${DIM}Waiting for batch: ${BATCH_SKILLS[*]}...${NC}"
     echo ""
 
+    start_spinner "$SKILLS_DONE" "$TOTAL_SKILLS" "$PARALLEL_START" "batch: ${BATCH_SKILLS[*]}"
     for pid in "${BATCH_PIDS[@]}"; do
       wait "$pid" 2>/dev/null || true
     done
+    stop_spinner
 
     # Report batch completions
     for skill in "${BATCH_SKILLS[@]}"; do
+      SKILLS_DONE=$((SKILLS_DONE + 1))
       if [ -f "$RESULTS_DIR/${skill}.result" ]; then
         pass=$(grep '^pass=' "$RESULTS_DIR/${skill}.result" | cut -d= -f2)
         fail=$(grep '^fail=' "$RESULTS_DIR/${skill}.result" | cut -d= -f2)
@@ -569,6 +699,7 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
         echo -e "  ${RED}CRASH:${NC} $skill ${DIM}(check $LOGS_DIR/${skill}.log)${NC}"
       fi
     done
+    print_progress "$SKILLS_DONE" "$TOTAL_SKILLS" "$PARALLEL_START" "skills"
     echo ""
   done
 
@@ -638,11 +769,18 @@ cleanup_worktree() {
   fi
 }
 
-trap 'cleanup_worktree' EXIT
+trap 'stop_spinner; cleanup_worktree' EXIT
 
 RUN_TIMESTAMP=$(date +%Y-%m-%dT%H-%M-%S)
 EVAL_RUNS_DIR="$EVAL_RUNS_BASE/$RUN_TIMESTAMP"
 mkdir -p "$EVAL_RUNS_DIR"
+
+# Progress tracking
+PROGRESS_TOTAL=$(count_total_tests "$CSV_FILES")
+PROGRESS_DONE=0
+PROGRESS_START=$(date +%s)
+echo -e "${DIM}  $PROGRESS_TOTAL tests across $(echo "$CSV_FILES" | wc -l | tr -d ' ') skill(s)${NC}"
+echo ""
 
 # Summary accumulators
 TOTAL_PASS=0
