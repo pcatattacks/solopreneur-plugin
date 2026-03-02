@@ -673,18 +673,18 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
   parallel_cleanup() {
     stop_spinner
     echo -e "\n${RED}  Interrupted. Stopping child processes...${NC}"
-    for pid in "${ALL_CHILD_PIDS[@]}"; do
+    for pid in ${ALL_CHILD_PIDS[@]+"${ALL_CHILD_PIDS[@]}"}; do
       kill "$pid" 2>/dev/null || true
     done
     wait 2>/dev/null || true
     # Clean up any worktrees created by parent
-    for wt_dir in "${ALL_WORKTREE_DIRS[@]}"; do
+    for wt_dir in ${ALL_WORKTREE_DIRS[@]+"${ALL_WORKTREE_DIRS[@]}"}; do
       if [ -n "$wt_dir" ] && [ -d "$wt_dir" ]; then
         git -C "$PLUGIN_DIR" worktree remove --force "$wt_dir" 2>/dev/null || true
         rmdir "$wt_dir" 2>/dev/null || true
       fi
     done
-    for wt_branch in "${ALL_WORKTREE_BRANCHES[@]}"; do
+    for wt_branch in ${ALL_WORKTREE_BRANCHES[@]+"${ALL_WORKTREE_BRANCHES[@]}"}; do
       if [ -n "$wt_branch" ]; then
         git -C "$PLUGIN_DIR" branch -q -D "$wt_branch" 2>/dev/null || true
       fi
@@ -786,8 +786,8 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
           NEXT_PIDS+=("$pid")
         fi
       done
-      REMAINING_SKILLS=("${NEXT_SKILLS[@]}")
-      REMAINING_PIDS=("${NEXT_PIDS[@]}")
+      REMAINING_SKILLS=(${NEXT_SKILLS[@]+"${NEXT_SKILLS[@]}"})
+      REMAINING_PIDS=(${NEXT_PIDS[@]+"${NEXT_PIDS[@]}"})
 
       if [ ${#REMAINING_SKILLS[@]} -gt 0 ]; then
         start_spinner "$SKILLS_DONE" "$TOTAL_SKILLS" "$PARALLEL_START" "running: ${REMAINING_SKILLS[*]}"
