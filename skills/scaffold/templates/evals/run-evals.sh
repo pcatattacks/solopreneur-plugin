@@ -352,6 +352,24 @@ run_skill_tests() {
     mkdir -p "$SKILL_RUN_DIR"
     OUTPUT_FILE="$SKILL_RUN_DIR/${ID}.md"
 
+    # Inject SKILL.md body for disable-model-invocation skills.
+    # In interactive mode, skill content loads as conversation context (user message level).
+    # Since --print mode doesn't auto-load these skills, prepend the body to the user prompt.
+    SKILL_MD="$RUN_DIR/skills/$SKILL_NAME/SKILL.md"
+    if [ ! -f "$SKILL_MD" ]; then
+      SKILL_MD="$RUN_DIR/.claude/skills/$SKILL_NAME/SKILL.md"
+    fi
+    FULL_PROMPT="$PROMPT"
+    if [ -f "$SKILL_MD" ] && head -20 "$SKILL_MD" | grep -q "disable-model-invocation.*true"; then
+      SKILL_BODY=$(awk 'BEGIN{skip=0} /^---$/{skip++; next} skip>=2{print}' "$SKILL_MD")
+      FULL_PROMPT="--- SKILL INSTRUCTIONS for ${SKILL_NAME} ---
+${SKILL_BODY}
+--- END SKILL INSTRUCTIONS ---
+
+Now execute the following request using the skill instructions above:
+${PROMPT}"
+    fi
+
     EVAL_MODE_ARGS=()
     if [ -f "$SCRIPT_DIR/eval-mode.txt" ]; then
       EVAL_MODE_ARGS=(--append-system-prompt-file "$SCRIPT_DIR/eval-mode.txt")
@@ -362,12 +380,12 @@ run_skill_tests() {
       start_spinner "$PROGRESS_DONE" "$PROGRESS_TOTAL" "$PROGRESS_START" "exec ${SKILL_NAME}:${ID}"
     fi
     if [ -n "$TIMEOUT_CMD" ] && [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null; then
-      echo "$PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 \
+      echo "$FULL_PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
         --dangerously-skip-permissions \
         --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
         "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     else
-      echo "$PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 \
+      echo "$FULL_PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
         --dangerously-skip-permissions \
         --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
         "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?

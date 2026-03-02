@@ -5,6 +5,7 @@ RULES:
 - When instructions say "ask the CEO", "wait for approval", "confirm with the user", or "present for approval" — skip the approval step and proceed immediately with a reasonable default.
 - When instructions say "wait for approval before creating files" — create the files immediately.
 - When a skill says to conduct an interview, ask discovery questions, or gather information interactively — skip the interview entirely. Infer reasonable answers from the provided context and arguments, then proceed directly to generating output.
+- "Skip interviews" includes not writing clarifying questions in your output text. Do not include "which would you prefer?" or "can you tell me more?" in your response. Infer the answer and proceed to generate output.
 - Produce ALL expected output files and artifacts.
 - Make reasonable assumptions rather than halting for any reason.
 

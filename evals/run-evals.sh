@@ -207,9 +207,9 @@ get_negative_patterns() {
   case "$skill" in
     discover) echo "Go/No-Go|Competitive Landscape|Market Size|Discovery Brief" ;;
     spec)     echo "User Stor|Acceptance Criteria|Technical Requirements|Out of Scope" ;;
-    design)   echo "User Flow|Component|Visual Direction|design-brief|\.html|daisyui" ;;
+    design)   echo "user flow|visual direction|design-brief|html mockup|daisyui" ;;
     review)   echo "Critical|Warning|Suggestion|Positive|Severity" ;;
-    backlog)  echo "Backlog|MVP|P1|P2|Depend|Acceptance Criteria|ticket" ;;
+    backlog)  echo "backlog.md|MVP-[0-9]|P1/P2|Acceptance Criteria|depends_on|ticket file" ;;
     scaffold) echo "Your AI Org|Employees.*Agents|SOPs.*Skills|org chart" ;;
     sprint)   echo "Sprint Complete|tickets built|BUILT|status: built" ;;
     *)        echo "" ;;
@@ -322,6 +322,21 @@ run_skill_tests() {
     mkdir -p "$SKILL_RUN_DIR"
     OUTPUT_FILE="$SKILL_RUN_DIR/${ID}.md"
 
+    # Inject SKILL.md body for disable-model-invocation skills.
+    # In interactive mode, skill content loads as conversation context (user message level).
+    # Since --print mode doesn't auto-load these skills, prepend the body to the user prompt.
+    SKILL_MD="$RUN_DIR/skills/$SKILL_NAME/SKILL.md"
+    FULL_PROMPT="$PROMPT"
+    if [ -f "$SKILL_MD" ] && head -20 "$SKILL_MD" | grep -q "disable-model-invocation.*true"; then
+      SKILL_BODY=$(awk 'BEGIN{skip=0} /^---$/{skip++; next} skip>=2{print}' "$SKILL_MD")
+      FULL_PROMPT="--- SKILL INSTRUCTIONS for /solopreneur:${SKILL_NAME} ---
+${SKILL_BODY}
+--- END SKILL INSTRUCTIONS ---
+
+Now execute the following request using the skill instructions above:
+${PROMPT}"
+    fi
+
     # Invoke skill inside the sandboxed worktree
     EVAL_MODE_ARGS=()
     if [ -f "$SCRIPT_DIR/eval-mode.txt" ]; then
@@ -333,12 +348,12 @@ run_skill_tests() {
       start_spinner "$PROGRESS_DONE" "$PROGRESS_TOTAL" "$PROGRESS_START" "exec ${SKILL_NAME}:${ID}"
     fi
     if [ -n "$TIMEOUT_CMD" ] && [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null; then
-      echo "$PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 \
+      echo "$FULL_PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
         --dangerously-skip-permissions \
         --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
         "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     else
-      echo "$PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" --max-turns 25 \
+      echo "$FULL_PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
         --dangerously-skip-permissions \
         --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
         "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?

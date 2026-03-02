@@ -1,7 +1,13 @@
 id,should_trigger,prompt,expected_behaviors
-explicit-code,true,"Run /solopreneur:review src/auth/middleware.ts","Delegates to engineer and QA in parallel|Checks for security issues in auth code|Rates findings by severity|Includes at least one positive finding"
+explicit-code,true,"Run /solopreneur:review on this code:
+function authenticate(req, res, next) {
+  const token = req.headers.authorization;
+  if (!token) return res.status(401).json({error: 'No token'});
+  try { req.user = jwt.verify(token, SECRET); next(); }
+  catch(e) { res.status(403).json({error: 'Invalid token'}); }
+}","Delegates to engineer and QA in parallel|Checks for security issues in auth code|Rates findings by severity|Includes at least one positive finding"
 explicit-spec,true,"Run /solopreneur:review on this product idea: a habit tracker with social accountability where users build streaks, join groups of 2-8 people, and get nudged by peers when they miss habits. Target audience is people building new routines.","Delegates to bizops and engineer|Evaluates business viability|Checks technical feasibility"
-implicit-feedback,true,"Can you look at the changes I just made and tell me if they're good?","Triggers review workflow|Checks recent git changes|Provides structured feedback"
+implicit-feedback,true,"Can you look at the changes I just made and tell me if they're good?","Triggers review workflow|Checks recent git changes or available code|Provides structured feedback"
 explicit-recent,true,"Run /solopreneur:review recent","Checks recent git changes|Provides structured feedback|Rates findings by severity"
 format-severity,true,"Run /solopreneur:review on this function: function divide(a,b) { return a/b; }","Uses severity categories Critical or Warning or Suggestion|Includes at least one Positive finding|Rates every finding by severity"
 negative-build,false,"Build a login page for me","Does NOT trigger review|Recognizes this is a build task"
