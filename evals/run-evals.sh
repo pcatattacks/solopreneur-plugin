@@ -281,7 +281,8 @@ print_summary() {
     printf "%-12s %-22s %-10s %-8s %-6s %s\n" "$skill" "$id" "$type" "$result" "$score" "$notes"
   done >> "$EVAL_RUNS_DIR/summary.txt"
   echo "Total: $((TOTAL_PASS + TOTAL_FAIL)) | Pass: $TOTAL_PASS | Fail: $TOTAL_FAIL" >> "$EVAL_RUNS_DIR/summary.txt"
-  ln -sfn "$RUN_TIMESTAMP" "$EVAL_RUNS_BASE/latest"
+  ln -sfn "$RUN_TIMESTAMP" "$EVAL_RUNS_BASE/.latest.tmp.$$" && \
+    mv "$EVAL_RUNS_BASE/.latest.tmp.$$" "$EVAL_RUNS_BASE/latest"
 
   echo -e "  Artifacts saved to: ${DIM}$EVAL_RUNS_DIR/${NC}"
   echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -328,7 +329,7 @@ run_skill_tests() {
     SKILL_MD="$RUN_DIR/skills/$SKILL_NAME/SKILL.md"
     FULL_PROMPT="$PROMPT"
     if [ -f "$SKILL_MD" ] && head -20 "$SKILL_MD" | grep -q "disable-model-invocation.*true"; then
-      SKILL_BODY=$(awk 'BEGIN{skip=0} /^---$/{skip++; next} skip>=2{print}' "$SKILL_MD")
+      SKILL_BODY=$(awk '/^---$/ && skip<2 {skip++; next} skip>=2{print}' "$SKILL_MD")
       FULL_PROMPT="--- SKILL INSTRUCTIONS for /solopreneur:${SKILL_NAME} ---
 ${SKILL_BODY}
 --- END SKILL INSTRUCTIONS ---
@@ -348,12 +349,12 @@ ${PROMPT}"
       start_spinner "$PROGRESS_DONE" "$PROGRESS_TOTAL" "$PROGRESS_START" "exec ${SKILL_NAME}:${ID}"
     fi
     if [ -n "$TIMEOUT_CMD" ] && [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null; then
-      echo "$FULL_PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
+      printf '%s\n' "$FULL_PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
         --dangerously-skip-permissions \
         --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
         "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     else
-      echo "$FULL_PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
+      printf '%s\n' "$FULL_PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
         --dangerously-skip-permissions \
         --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
         "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
@@ -521,18 +522,23 @@ if [ "${_EVAL_CHILD:-}" = "1" ]; then
   SKILL_NAME="$SKILL_FILTER"
   EVAL_RUNS_DIR="$_EVAL_RUNS_DIR"
 
-  # Create child's own worktree (unique PID + skill name ensures no collisions)
-  WORKTREE_BRANCH="eval-sandbox-$$-${SKILL_NAME}"
-  WORKTREE_DIR=$(mktemp -d "${TMPDIR:-/tmp}/solopreneur-eval.XXXXXX")
-  # Clean up this specific branch in case of PID reuse from a crashed run
-  git -C "$PLUGIN_DIR" branch -q -D "$WORKTREE_BRANCH" 2>/dev/null || true
-  git -C "$PLUGIN_DIR" worktree add -q -b "$WORKTREE_BRANCH" "$WORKTREE_DIR" HEAD
+  # Use pre-created worktree from parent (parallel mode) or create our own (standalone/sequential)
+  if [ -n "${_EVAL_WORKTREE_DIR:-}" ] && [ -d "$_EVAL_WORKTREE_DIR" ]; then
+    WORKTREE_DIR="$_EVAL_WORKTREE_DIR"
+    WORKTREE_BRANCH="${_EVAL_WORKTREE_BRANCH:-}"
+  else
+    WORKTREE_BRANCH="eval-sandbox-$$-${SKILL_NAME}"
+    WORKTREE_DIR=$(mktemp -d "${TMPDIR:-/tmp}/solopreneur-eval.XXXXXX")
+    git -C "$PLUGIN_DIR" branch -q -D "$WORKTREE_BRANCH" 2>/dev/null || true
+    git -C "$PLUGIN_DIR" worktree add -q -b "$WORKTREE_BRANCH" "$WORKTREE_DIR" HEAD
+  fi
   RUN_DIR="$WORKTREE_DIR"
 
   child_cleanup() {
     if [ -n "$WORKTREE_DIR" ] && [ -d "$WORKTREE_DIR" ]; then
       git -C "$PLUGIN_DIR" worktree remove --force "$WORKTREE_DIR" 2>/dev/null || true
       git -C "$PLUGIN_DIR" branch -q -D "$WORKTREE_BRANCH" 2>/dev/null || true
+      rmdir "$WORKTREE_DIR" 2>/dev/null || true  # fallback if worktree add failed leaving empty dir
     fi
   }
   trap child_cleanup EXIT
@@ -659,6 +665,8 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
 
   # Signal handler: kill all children on interrupt
   ALL_CHILD_PIDS=()
+  ALL_WORKTREE_DIRS=()
+  ALL_WORKTREE_BRANCHES=()
   parallel_cleanup() {
     stop_spinner
     echo -e "\n${RED}  Interrupted. Stopping child processes...${NC}"
@@ -666,6 +674,18 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
       kill "$pid" 2>/dev/null || true
     done
     wait 2>/dev/null || true
+    # Clean up any worktrees created by parent
+    for wt_dir in "${ALL_WORKTREE_DIRS[@]}"; do
+      if [ -n "$wt_dir" ] && [ -d "$wt_dir" ]; then
+        git -C "$PLUGIN_DIR" worktree remove --force "$wt_dir" 2>/dev/null || true
+        rmdir "$wt_dir" 2>/dev/null || true
+      fi
+    done
+    for wt_branch in "${ALL_WORKTREE_BRANCHES[@]}"; do
+      if [ -n "$wt_branch" ]; then
+        git -C "$PLUGIN_DIR" branch -q -D "$wt_branch" 2>/dev/null || true
+      fi
+    done
     rm -rf "$RESULTS_DIR"
   }
   trap parallel_cleanup INT TERM
@@ -674,7 +694,25 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
   for ((batch_start=0; batch_start<TOTAL_SKILLS; batch_start+=MAX_PARALLEL)); do
     BATCH_PIDS=()
     BATCH_SKILLS=()
+    BATCH_WORKTREE_DIRS=()
+    BATCH_WORKTREE_BRANCHES=()
+
+    # Pre-create worktrees sequentially to avoid git race condition
     for ((j=batch_start; j<batch_start+MAX_PARALLEL && j<TOTAL_SKILLS; j++)); do
+      skill="${SKILL_ARRAY[$j]}"
+      wt_branch="eval-sandbox-${$}-${skill}"
+      wt_dir=$(mktemp -d "${TMPDIR:-/tmp}/solopreneur-eval.XXXXXX")
+      git -C "$PLUGIN_DIR" branch -q -D "$wt_branch" 2>/dev/null || true
+      git -C "$PLUGIN_DIR" worktree add -q -b "$wt_branch" "$wt_dir" HEAD
+      BATCH_WORKTREE_DIRS+=("$wt_dir")
+      BATCH_WORKTREE_BRANCHES+=("$wt_branch")
+      ALL_WORKTREE_DIRS+=("$wt_dir")
+      ALL_WORKTREE_BRANCHES+=("$wt_branch")
+    done
+
+    # Spawn children with pre-created worktrees
+    for ((j=batch_start; j<batch_start+MAX_PARALLEL && j<TOTAL_SKILLS; j++)); do
+      local_idx=$((j - batch_start))
       skill="${SKILL_ARRAY[$j]}"
       BATCH_SKILLS+=("$skill")
       echo -e "  ${BLUE}Starting:${NC} $skill"
@@ -682,6 +720,8 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
       _EVAL_CHILD=1 \
         _EVAL_RUNS_DIR="$EVAL_RUNS_DIR" \
         _EVAL_RESULTS_DIR="$RESULTS_DIR" \
+        _EVAL_WORKTREE_DIR="${BATCH_WORKTREE_DIRS[$local_idx]}" \
+        _EVAL_WORKTREE_BRANCH="${BATCH_WORKTREE_BRANCHES[$local_idx]}" \
         EVAL_MODEL="$EVAL_MODEL" \
         JUDGE_MODEL="$JUDGE_MODEL" \
         EVAL_TIMEOUT="$EVAL_TIMEOUT" \
@@ -816,6 +856,7 @@ cleanup_worktree() {
     echo -e "${DIM}  Cleaning up sandbox worktree...${NC}"
     git -C "$PLUGIN_DIR" worktree remove --force "$WORKTREE_DIR" 2>/dev/null || true
     git -C "$PLUGIN_DIR" branch -q -D "$WORKTREE_BRANCH" 2>/dev/null || true
+    rmdir "$WORKTREE_DIR" 2>/dev/null || true
     WORKTREE_DIR=""
     WORKTREE_BRANCH=""
   fi
