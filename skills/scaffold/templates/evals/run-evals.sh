@@ -722,7 +722,8 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
 
         if [ -f "$RESULTS_DIR/${skill}.result" ] || ! kill -0 "$pid" 2>/dev/null; then
           # Skill finished or crashed — report immediately
-          wait "$pid" 2>/dev/null || true
+          # Don't wait "$pid" here: child may still be in EXIT trap cleaning up
+          # its worktree, which blocks the polling loop from detecting other completions.
           stop_spinner
           SKILLS_DONE=$((SKILLS_DONE + 1))
 
@@ -768,6 +769,9 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
     print_progress "$SKILLS_DONE" "$TOTAL_SKILLS" "$PARALLEL_START" "skills"
     echo ""
   done
+
+  # Reap any remaining child processes (deferred from polling loop)
+  wait 2>/dev/null || true
 
   TOTAL_PASS=0
   TOTAL_FAIL=0
