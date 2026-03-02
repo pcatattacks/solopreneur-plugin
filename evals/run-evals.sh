@@ -147,8 +147,10 @@ start_spinner() {
   (
     local frames=("⠋" "⠙" "⠹" "⠸" "⠼" "⠴" "⠦" "⠧" "⠇" "⠏")
     local i=0
+    local cols
+    cols=$(tput cols 2>/dev/null || echo 80)
     while true; do
-      local now elapsed filled empty bar
+      local now elapsed filled empty bar line
       now=$(date +%s)
       elapsed=$((now - start))
       filled=$((done * bar_width / total))
@@ -156,9 +158,10 @@ start_spinner() {
       bar=""
       for ((b=0; b<filled; b++)); do bar="${bar}█"; done
       for ((b=0; b<empty; b++)); do bar="${bar}░"; done
-      printf "\r    ${DIM}%s %s %d/%d | %s | %s${NC}    " \
+      line=$(printf "    %s %s %d/%d | %s | %s" \
         "${frames[$i]}" "$bar" "$done" "$total" \
-        "$(format_duration $elapsed)" "$label"
+        "$(format_duration $elapsed)" "$label")
+      printf "\r\033[2K${DIM}%s${NC}" "${line:0:$cols}"
       i=$(( (i + 1) % ${#frames[@]} ))
       sleep 1
     done
@@ -172,7 +175,7 @@ stop_spinner() {
     wait "$SPINNER_PID" 2>/dev/null || true
   fi
   SPINNER_PID=""
-  printf "\r%80s\r" ""  # clear the spinner line
+  printf "\r\033[2K"  # clear the spinner line
 }
 
 # Count total test cases across a set of CSV files
