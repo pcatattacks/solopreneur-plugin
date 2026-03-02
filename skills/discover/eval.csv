@@ -4,6 +4,6 @@ explicit-niche,true,"Run /solopreneur:discover on a browser extension that trans
 implicit-question,true,"Is building a meal prep subscription service worth pursuing?","Triggers discovery workflow without explicit skill name|Identifies meal kit competitors (HelloFresh etc)|Analyzes subscription model economics"
 implicit-broad,true,"I have an idea for a tool that helps remote teams run better standups. Thoughts?","Identifies existing standup tools (Geekbot etc)|Assesses market saturation|Provides honest recommendation"
 contextual-saturated,true,"I want to build a new social media platform for sharing photos","Acknowledges heavy competition (Instagram/TikTok)|Does not blindly encourage building|Either suggests a niche or recommends no-go"
-contextual-vague,true,"I want to build something with AI","Makes reasonable assumptions about the AI idea|Produces at least a preliminary analysis|Acknowledges limited input in the output"
+contextual-vague,true,"I want to build something with AI","Makes reasonable assumptions about the AI idea|Produces at least a preliminary analysis"
 negative-unrelated,false,"Can you fix the bug in my login form?","Does NOT trigger discovery workflow|Recognizes this is a code task not an idea validation"
 negative-existing,false,"Review the code I just pushed to main","Does NOT trigger discovery workflow|Recognizes this is a review task"

@@ -67,6 +67,7 @@ SKILL_FILTER="all"
 DRY_RUN=false
 PARALLEL=false
 MAX_PARALLEL=5
+VERBOSE=false
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry) DRY_RUN=true ;;
@@ -79,6 +80,7 @@ while [ $# -gt 0 ]; do
         shift
       fi
       ;;
+    --verbose|-v) VERBOSE=true ;;
     *) SKILL_FILTER="$1" ;;
   esac
   shift
@@ -675,30 +677,65 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
       ALL_CHILD_PIDS+=($!)
     done
 
-    echo -e "  ${DIM}Waiting for batch: ${BATCH_SKILLS[*]}...${NC}"
     echo ""
 
-    start_spinner "$SKILLS_DONE" "$TOTAL_SKILLS" "$PARALLEL_START" "batch: ${BATCH_SKILLS[*]}"
-    for pid in "${BATCH_PIDS[@]}"; do
-      wait "$pid" 2>/dev/null || true
-    done
-    stop_spinner
+    # Poll for completions — report each skill as it finishes
+    REMAINING_SKILLS=("${BATCH_SKILLS[@]}")
+    REMAINING_PIDS=("${BATCH_PIDS[@]}")
+    start_spinner "$SKILLS_DONE" "$TOTAL_SKILLS" "$PARALLEL_START" "running: ${REMAINING_SKILLS[*]}"
 
-    # Report batch completions
-    for skill in "${BATCH_SKILLS[@]}"; do
-      SKILLS_DONE=$((SKILLS_DONE + 1))
-      if [ -f "$RESULTS_DIR/${skill}.result" ]; then
-        pass=$(grep '^pass=' "$RESULTS_DIR/${skill}.result" | cut -d= -f2)
-        fail=$(grep '^fail=' "$RESULTS_DIR/${skill}.result" | cut -d= -f2)
-        if [ "${fail:-0}" -gt 0 ]; then
-          echo -e "  ${RED}Done:${NC} $skill (${pass:-0} pass, ${fail:-0} fail)"
+    while [ ${#REMAINING_SKILLS[@]} -gt 0 ]; do
+      NEXT_SKILLS=()
+      NEXT_PIDS=()
+      for idx in "${!REMAINING_SKILLS[@]}"; do
+        skill="${REMAINING_SKILLS[$idx]}"
+        pid="${REMAINING_PIDS[$idx]}"
+
+        if [ -f "$RESULTS_DIR/${skill}.result" ] || ! kill -0 "$pid" 2>/dev/null; then
+          # Skill finished or crashed — report immediately
+          wait "$pid" 2>/dev/null || true
+          stop_spinner
+          SKILLS_DONE=$((SKILLS_DONE + 1))
+
+          if [ -f "$RESULTS_DIR/${skill}.result" ]; then
+            pass=$(grep '^pass=' "$RESULTS_DIR/${skill}.result" | cut -d= -f2)
+            fail=$(grep '^fail=' "$RESULTS_DIR/${skill}.result" | cut -d= -f2)
+            if [ "${fail:-0}" -gt 0 ]; then
+              echo -e "  ${RED}Done:${NC} $skill (${pass:-0} pass, ${fail:-0} fail)"
+            else
+              echo -e "  ${GREEN}Done:${NC} $skill (${pass:-0} pass, ${fail:-0} fail)"
+            fi
+            # With --verbose, print per-test results so user can start fixing
+            if [ "$VERBOSE" = true ] && [ -f "$RESULTS_DIR/${skill}.summary" ]; then
+              while IFS='|' read -r _sk tid ttype tresult tscore tnotes; do
+                [ -z "$tid" ] && continue
+                printf "    %-8b %-22s" "$tresult" "$tid"
+                if [ "$tscore" != "-" ] && [ -n "$tscore" ]; then
+                  printf " (%s)" "$tscore"
+                fi
+                if echo "$tresult" | grep -q "FAIL" && [ -n "$tnotes" ]; then
+                  printf "  %s" "$tnotes"
+                fi
+                echo ""
+              done < "$RESULTS_DIR/${skill}.summary"
+            fi
+          else
+            echo -e "  ${RED}CRASH:${NC} $skill ${DIM}(check $LOGS_DIR/${skill}.log)${NC}"
+          fi
         else
-          echo -e "  ${GREEN}Done:${NC} $skill (${pass:-0} pass, ${fail:-0} fail)"
+          NEXT_SKILLS+=("$skill")
+          NEXT_PIDS+=("$pid")
         fi
-      else
-        echo -e "  ${RED}CRASH:${NC} $skill ${DIM}(check $LOGS_DIR/${skill}.log)${NC}"
+      done
+      REMAINING_SKILLS=("${NEXT_SKILLS[@]}")
+      REMAINING_PIDS=("${NEXT_PIDS[@]}")
+
+      if [ ${#REMAINING_SKILLS[@]} -gt 0 ]; then
+        start_spinner "$SKILLS_DONE" "$TOTAL_SKILLS" "$PARALLEL_START" "running: ${REMAINING_SKILLS[*]}"
+        sleep 2
       fi
     done
+
     print_progress "$SKILLS_DONE" "$TOTAL_SKILLS" "$PARALLEL_START" "skills"
     echo ""
   done
