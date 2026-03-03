@@ -27,6 +27,11 @@
 # Safety: Runs execute inside a per-skill temporary git worktree.
 # Git remote operations are blocked via --disallowedTools and the eval-mode system prompt.
 # The worktree is cleaned up automatically when the run finishes.
+#
+# TODO: Interactive eval mode
+# Some skills correctly ask questions on vague input, but single-turn --print
+# can't verify that. Future: multi-turn harness that detects AskUserQuestion
+# calls and feeds scripted answers.
 
 set -euo pipefail
 
@@ -212,33 +217,80 @@ capture_artifacts() {
   local workdir="$1"
   local solopreneur_dir="$workdir/.solopreneur"
   local max_lines=200
+  local max_extra_files=10
 
-  if [ ! -d "$solopreneur_dir" ]; then
-    return
-  fi
+  # Capture .solopreneur/ artifacts
+  if [ -d "$solopreneur_dir" ]; then
+    local found_files
+    found_files=$(find "$solopreneur_dir" -type f \( -name "*.md" -o -name "*.html" -o -name "*.yaml" -o -name "*.yml" -o -name "*.json" -o -name "*.txt" \) 2>/dev/null | sort)
 
-  local found_files
-  found_files=$(find "$solopreneur_dir" -type f \( -name "*.md" -o -name "*.html" -o -name "*.yaml" -o -name "*.yml" -o -name "*.json" -o -name "*.txt" \) 2>/dev/null | sort)
+    if [ -n "$found_files" ]; then
+      echo ""
+      echo "--- ARTIFACTS ---"
+      echo ""
 
-  if [ -z "$found_files" ]; then
-    return
-  fi
-
-  echo ""
-  echo "--- ARTIFACTS ---"
-  echo ""
-
-  echo "$found_files" | while read -r filepath; do
-    local relpath="${filepath#$workdir/}"
-    local linecount
-    linecount=$(wc -l < "$filepath" 2>/dev/null || echo "0")
-    echo "=== $relpath ($linecount lines) ==="
-    head -n "$max_lines" "$filepath" 2>/dev/null
-    if [ "$linecount" -gt "$max_lines" ]; then
-      echo "... (truncated at $max_lines lines)"
+      echo "$found_files" | while read -r filepath; do
+        local relpath="${filepath#$workdir/}"
+        local linecount
+        linecount=$(wc -l < "$filepath" 2>/dev/null || echo "0")
+        echo "=== $relpath ($linecount lines) ==="
+        head -n "$max_lines" "$filepath" 2>/dev/null
+        if [ "$linecount" -gt "$max_lines" ]; then
+          echo "... (truncated at $max_lines lines)"
+        fi
+        echo ""
+      done
     fi
+  fi
+
+  # Capture code changes outside .solopreneur/ (e.g., build skill creating server.js)
+  local code_changes new_files
+  code_changes=$(cd "$workdir" && git diff --name-only HEAD 2>/dev/null | grep -v '^\.solopreneur/' || true)
+  new_files=$(cd "$workdir" && git ls-files --others --exclude-standard 2>/dev/null | grep -v '^\.solopreneur/' || true)
+
+  if [ -n "$code_changes" ]; then
     echo ""
-  done
+    echo "--- CODE CHANGES ---"
+    echo ""
+    local count=0
+    echo "$code_changes" | while read -r filepath; do
+      [ -z "$filepath" ] && continue
+      count=$((count + 1))
+      [ "$count" -gt "$max_extra_files" ] && { echo "(... capped at $max_extra_files files)"; break; }
+      local fullpath="$workdir/$filepath"
+      [ ! -f "$fullpath" ] && continue
+      local linecount
+      linecount=$(wc -l < "$fullpath" 2>/dev/null || echo "0")
+      echo "=== $filepath ($linecount lines) ==="
+      head -n "$max_lines" "$fullpath" 2>/dev/null
+      if [ "$linecount" -gt "$max_lines" ]; then
+        echo "... (truncated at $max_lines lines)"
+      fi
+      echo ""
+    done
+  fi
+
+  if [ -n "$new_files" ]; then
+    echo ""
+    echo "--- NEW FILES ---"
+    echo ""
+    local count=0
+    echo "$new_files" | while read -r filepath; do
+      [ -z "$filepath" ] && continue
+      count=$((count + 1))
+      [ "$count" -gt "$max_extra_files" ] && { echo "(... capped at $max_extra_files files)"; break; }
+      local fullpath="$workdir/$filepath"
+      [ ! -f "$fullpath" ] && continue
+      local linecount
+      linecount=$(wc -l < "$fullpath" 2>/dev/null || echo "0")
+      echo "=== $filepath ($linecount lines) ==="
+      head -n "$max_lines" "$fullpath" 2>/dev/null
+      if [ "$linecount" -gt "$max_lines" ]; then
+        echo "... (truncated at $max_lines lines)"
+      fi
+      echo ""
+    done
+  fi
 }
 
 # Grade a test case using the rubric (works for both positive and negative tests)
@@ -349,22 +401,34 @@ run_skill_tests() {
     echo -e "  Running: ${BLUE}$ID${NC} ${DIM}(${TEST_TYPE})${NC}"
     echo -e "    Prompt: ${DIM}$PROMPT${NC}"
 
-    # Clean artifacts from previous test case within this skill
-    rm -rf "$RUN_DIR/.solopreneur"
+    # Reset worktree to clean state between tests
+    if [ ! -d "$RUN_DIR" ]; then
+      # Worktree was destroyed by previous test — recreate it
+      echo -e "    ${YELLOW}WARNING${NC}: Worktree removed during previous test, recreating..."
+      git -C "$PLUGIN_DIR" branch -q -D "$WORKTREE_BRANCH" 2>/dev/null || true
+      WORKTREE_DIR=$(mktemp -d "${TMPDIR:-/tmp}/eval-sandbox.XXXXXX")
+      git -C "$PLUGIN_DIR" worktree add -q -b "$WORKTREE_BRANCH" "$WORKTREE_DIR" HEAD
+      RUN_DIR="$WORKTREE_DIR"
+    else
+      # Worktree exists — clean gitignored artifacts, then reset tracked + untracked files
+      rm -rf "$RUN_DIR/.solopreneur"
+      (cd "$RUN_DIR" && git checkout -- . && git clean -fd) 2>/dev/null || true
+    fi
 
     SKILL_RUN_DIR="$EVAL_RUNS_DIR/$SKILL_NAME"
     mkdir -p "$SKILL_RUN_DIR"
     OUTPUT_FILE="$SKILL_RUN_DIR/${ID}.md"
 
-    # Inject SKILL.md body for disable-model-invocation skills.
+    # Inject SKILL.md body for disable-model-invocation skills (positive tests only).
     # In interactive mode, skill content loads as conversation context (user message level).
     # Since --print mode doesn't auto-load these skills, prepend the body to the user prompt.
+    # Skip injection for negative tests — they should NOT receive skill instructions.
     SKILL_MD="$RUN_DIR/skills/$SKILL_NAME/SKILL.md"
     if [ ! -f "$SKILL_MD" ]; then
       SKILL_MD="$RUN_DIR/.claude/skills/$SKILL_NAME/SKILL.md"
     fi
     FULL_PROMPT="$PROMPT"
-    if [ -f "$SKILL_MD" ] && head -20 "$SKILL_MD" | grep -q "disable-model-invocation.*true"; then
+    if [ "$SHOULD_TRIGGER" = "true" ] && [ -f "$SKILL_MD" ] && head -20 "$SKILL_MD" | grep -q "disable-model-invocation.*true"; then
       SKILL_BODY=$(awk '/^---$/ && skip<2 {skip++; next} skip>=2{print}' "$SKILL_MD")
       FULL_PROMPT="--- SKILL INSTRUCTIONS for ${SKILL_NAME} ---
 ${SKILL_BODY}
