@@ -8,11 +8,13 @@
 # Usage:
 #   bash evals/run-evals.sh                  # Run all evals
 #   bash evals/run-evals.sh [skill-name]     # Run evals for one skill
+#   bash evals/run-evals.sh skill1 skill2    # Run a subset of skills
 #   bash evals/run-evals.sh --dry            # Dry run (show test cases)
 #   bash evals/run-evals.sh [skill] --dry    # Dry run for one skill
 #   bash evals/run-evals.sh --eval-model haiku --judge-model haiku  # Fast mode
 #   bash evals/run-evals.sh --parallel       # Run skills in parallel (default: 5 concurrent)
 #   bash evals/run-evals.sh --parallel 10    # Parallel with custom concurrency
+#   bash evals/run-evals.sh skill1 skill2 --parallel  # Subset in parallel
 #
 # Flags:
 #   --dry                Dry run (show test cases without executing)
@@ -34,6 +36,9 @@
 # calls and feeds scripted answers.
 
 set -euo pipefail
+
+# Prevent nesting errors when run from terminals that inherit CLAUDECODE
+unset CLAUDECODE
 
 PLUGIN_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -68,7 +73,7 @@ if [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null || [ "$JUDGE_TIMEOUT" -gt 0 ] 2>/dev/nu
 fi
 
 # Parse arguments
-SKILL_FILTER="all"
+SKILL_FILTERS=()
 DRY_RUN=false
 PARALLEL=false
 MAX_PARALLEL=5
@@ -86,10 +91,12 @@ while [ $# -gt 0 ]; do
       fi
       ;;
     --verbose|-v) VERBOSE=true ;;
-    *) SKILL_FILTER="$1" ;;
+    *) SKILL_FILTERS+=("$1") ;;
   esac
   shift
 done
+# Single skill name for child mode backward compat
+SKILL_FILTER="${SKILL_FILTERS[0]:-all}"
 
 # Colors
 GREEN='\033[0;32m'
@@ -342,6 +349,7 @@ except:
         print(json.dumps({'overall_pass': False, 'score': 0, 'checks': []}))
 " 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}'
 }
+
 
 # Print the summary table and save artifacts
 print_summary() {
@@ -607,7 +615,7 @@ echo -e "${DIM}  eval model: $EVAL_MODEL | judge model: $JUDGE_MODEL${NC}"
 echo ""
 
 # Find eval CSVs - check both plugin-style (skills/) and project-style (.claude/skills/)
-if [ "$SKILL_FILTER" = "all" ]; then
+if [ ${#SKILL_FILTERS[@]} -eq 0 ]; then
   CSV_FILES=""
   for search_dir in "$PLUGIN_DIR/skills" "$PLUGIN_DIR/.claude/skills"; do
     if [ -d "$search_dir" ]; then
@@ -616,12 +624,16 @@ if [ "$SKILL_FILTER" = "all" ]; then
   done
   CSV_FILES=$(echo "$CSV_FILES" | tr ' ' '\n' | sort | grep -v '^$')
 else
-  CSV_FILE=$(find_skill_csv "$SKILL_FILTER")
-  if [ -z "$CSV_FILE" ]; then
-    echo -e "${RED}No eval file found for: $SKILL_FILTER${NC}"
-    exit 1
-  fi
-  CSV_FILES="$CSV_FILE"
+  CSV_FILES=""
+  for _skill in "${SKILL_FILTERS[@]}"; do
+    _csv=$(find_skill_csv "$_skill")
+    if [ -z "$_csv" ]; then
+      echo -e "${RED}No eval file found for: $_skill${NC}"
+      exit 1
+    fi
+    CSV_FILES="${CSV_FILES:+$CSV_FILES
+}$_csv"
+  done
 fi
 
 if [ -z "$CSV_FILES" ]; then
@@ -679,7 +691,8 @@ fi
 # Parallel mode: one child process per skill
 # ─────────────────────────────────────────────────────────────────────────────
 
-if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
+CSV_COUNT=$(echo "$CSV_FILES" | grep -c '.' || true)
+if [ "$PARALLEL" = true ] && [ "$CSV_COUNT" -gt 1 ]; then
   cleanup_stale_branches
 
   RUN_TIMESTAMP=$(date +%Y-%m-%dT%H-%M-%S)
@@ -792,6 +805,8 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
           SKILLS_DONE=$((SKILLS_DONE + 1))
 
           if [ -f "$RESULTS_DIR/${skill}.result" ]; then
+            # Preserve result file for post-mortem debugging
+            cp "$RESULTS_DIR/${skill}.result" "$LOGS_DIR/${skill}.result" 2>/dev/null || true
             pass=$(grep '^pass=' "$RESULTS_DIR/${skill}.result" | cut -d= -f2)
             fail=$(grep '^fail=' "$RESULTS_DIR/${skill}.result" | cut -d= -f2)
             if [ "${fail:-0}" -gt 0 ]; then
@@ -837,6 +852,7 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
   # Reap any remaining child processes (deferred from polling loop)
   wait 2>/dev/null || true
 
+  # Aggregate results — use judge files as source of truth for counts
   TOTAL_PASS=0
   TOTAL_FAIL=0
   SUMMARY_LINES=""
@@ -853,7 +869,9 @@ if [ "$PARALLEL" = true ] && [ "$SKILL_FILTER" = "all" ]; then
       SUMMARY_LINES="${SUMMARY_LINES}${skill}|-|crash|${RED}FAIL${NC}|-|Child process crashed (check logs/${skill}.log)\n"
     fi
     if [ -f "$summary_file" ]; then
-      SUMMARY_LINES="${SUMMARY_LINES}$(cat "$summary_file")"
+      # $(cat) strips trailing newlines — add one back to separate skills
+      SUMMARY_LINES="${SUMMARY_LINES}$(cat "$summary_file")
+"
     fi
   done
 
