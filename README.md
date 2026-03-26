@@ -1,5 +1,7 @@
 # Solopreneur - Your Virtual AI Company
 
+[![Mentioned in awesome-claude-code-workflows](https://awesome.re/mentioned-badge.svg)](https://github.com/ithiria894/awesome-claude-code-workflows)
+
 You're a solopreneur. You have ideas, ambition, and not enough hours in the day. What if you had a full team -- an engineer, designer, QA lead, researcher, business analyst, and content strategist -- available instantly, working in parallel, and remembering every decision you've ever made?
 
 Solopreneur is a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins) that turns Claude into a structured virtual company. Not a chatbot you ask questions to. A company with specialists, workflows, and institutional memory.
