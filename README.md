@@ -1,8 +1,10 @@
 # Solopreneur - Your Virtual AI Company
 
+> A Claude Code plugin with a Codex-compatible workspace layer.
+
 You're a solopreneur. You have ideas, ambition, and not enough hours in the day. What if you had a full team -- an engineer, designer, QA lead, researcher, business analyst, and content strategist -- available instantly, working in parallel, and remembering every decision you've ever made?
 
-Solopreneur is a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins) that turns Claude into a structured virtual company. Not a chatbot you ask questions to. A company with specialists, workflows, and institutional memory.
+Solopreneur is a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-code/plugins) that turns Claude into a structured virtual company. It now also ships with a Codex-friendly `AGENTS.md`, so the same agents, workflows, and project conventions can be used directly in OpenAI Codex. Not a chatbot you ask questions to. A company with specialists, workflows, and institutional memory.
 
 ## What Makes This Different
 
@@ -10,7 +12,7 @@ Solopreneur is a [Claude Code plugin](https://docs.anthropic.com/en/docs/claude-
 
 **You don't need to know what to do next.** Every skill suggests the next step when it finishes. Discover an idea, and it suggests writing a spec. Write a spec, and it suggests creating a backlog. The workflow guides you from idea to shipped product.
 
-**Two build modes.** Generate a step-by-step plan and hand it to any coding agent (Cursor, Windsurf, Cline, Aider, or anything else), or have Claude build it directly. You choose per feature.
+**Two build modes.** Generate a step-by-step plan and hand it to any coding agent (Cursor, Windsurf, Cline, Aider, Codex, or anything else), or have Claude build it directly. You choose per feature.
 
 **Your decisions are remembered.** Every choice you make -- what you picked, what you rejected, and why -- is captured in a decision journal. Later, turn that journal into a publishable blog post, tutorial, or case study of your building journey.
 
@@ -39,6 +41,35 @@ cd solopreneur-plugin
 claude --plugin-dir .
 ```
 
+### Use it with Codex
+
+For Codex, Solopreneur now follows Codex-native skill discovery patterns instead of Claude's plugin packaging.
+
+**Quick install inside Codex:**
+
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/pcatattacks/solopreneur-plugin/refs/heads/main/.codex/INSTALL.md
+```
+
+**Manual install:**
+
+```bash
+git clone https://github.com/pcatattacks/solopreneur-plugin.git ~/.codex/solopreneur-plugin
+mkdir -p ~/.agents/skills
+ln -s ~/.codex/solopreneur-plugin/.agents/skills/solopreneur ~/.agents/skills/solopreneur
+```
+
+Detailed Codex docs: `docs/README.codex.md`.
+
+### Claude Code compatibility
+
+Codex support is additive:
+
+- Claude plugin install and slash commands stay the same.
+- `.claude-plugin/`, `hooks/hooks.json`, and `settings.json` remain the Claude-facing integration points.
+- `skills/*/SKILL.md` and `agents/*.md` remain the shared source of truth for both runtimes.
+- `.agents/skills/solopreneur/using-solopreneur/` provides a single Codex-native, auto-discoverable entrypoint that delegates back to those shared files.
+
 ### First command
 
 ```
@@ -46,6 +77,39 @@ claude --plugin-dir .
 ```
 
 This opens an interactive org chart of your AI team and shows you where to start based on your project's current state.
+
+## Claude Code vs Codex Workflow
+
+The **product workflow is the same** in both runtimes:
+
+```
+discover -> spec -> backlog -> design -> build -> review -> ship -> release-notes
+```
+
+What changes is **how the workflow is activated**:
+
+| Concern | Claude Code plugin | Codex |
+| --- | --- | --- |
+| Installation | Marketplace or `claude --plugin-dir .` | Clone + symlink the checked-in `.agents/skills/solopreneur/` bundle, or run the installer from `.codex/INSTALL.md` |
+| Invocation | Slash commands like `/solopreneur:build` | The auto-discovered `using-solopreneur` skill or natural-language prompts |
+| Routing layer | Claude plugin packaging + plugin skill dispatch | Codex skill discovery via `.agents/skills/` + repo `AGENTS.md` guardrails |
+| Shared workflow logic | `skills/*/SKILL.md` | `skills/*/SKILL.md` |
+| Shared role briefs | `agents/*.md` | `agents/*.md` |
+| Artifacts and outputs | `.solopreneur/` | `.solopreneur/` |
+
+So the **workflow content stays the same**; the main difference is the install/discovery/invocation surface.
+
+## Using Solopreneur in Codex
+
+Codex does not use Claude's slash-command plugin UI, so you drive the same workflows with natural language. Codex discovers the checked-in `using-solopreneur` skill from `.agents/skills/solopreneur/`, while `AGENTS.md` provides repo-wide guardrails and shared context.
+
+Examples:
+
+- `Run the Solopreneur discover workflow for an AI meal planner idea.`
+- `Use the build workflow from this repo to plan implementation for .solopreneur/backlog/meal-planner/MVP-001.md.`
+- `Act as the Solopreneur reviewer and review the most recent changes.`
+
+In practice, Codex discovers `using-solopreneur`, and that skill routes into the shared `skills/<skill>/SKILL.md` and `agents/*.md` files as needed. `AGENTS.md` stays as repo-level guidance rather than being re-read each invocation. For installation and usage details, see `docs/README.codex.md`.
 
 ## How It Works
 
@@ -79,7 +143,7 @@ You don't have to follow the pipeline linearly. Skip steps, jump ahead, or start
 
 When you run `/solopreneur:build`, you're asked how you want to proceed:
 
-**Plan only:** Claude's engineer creates a detailed, step-by-step implementation plan. You take that plan to your preferred coding agent (Cursor, Windsurf, Cline, Aider, or any tool that can follow instructions). When the code is written, come back and Claude's QA agent validates it against the acceptance criteria.
+**Plan only:** Claude's engineer creates a detailed, step-by-step implementation plan. You take that plan to your preferred coding agent (Cursor, Windsurf, Cline, Aider, Codex, or any tool that can follow instructions). When the code is written, come back and Claude's QA agent validates it against the acceptance criteria.
 
 **Build directly:** Claude's engineer creates the plan for reference, then writes the code itself -- installing dependencies, creating files, the whole thing. Progress is reported after each step.
 
@@ -195,9 +259,9 @@ The first time a skill needs browser testing, it will ask if you want to set thi
 
 ### GitHub Integration
 
-For creating repos, managing PRs, and pushing code, the plugin uses the `gh` CLI. Claude handles all git operations for you -- just say "share this on GitHub" or "push my work" and it will walk you through setup if needed.
+For creating repos, managing PRs, and pushing code, the workflow uses the `gh` CLI. In Claude Code, Claude handles those git operations for you. In Codex, the repo's `AGENTS.md` instructs Codex to do the same thing -- just say "share this on GitHub" or "push my work" and it can walk you through setup if needed.
 
-You don't need to know git. Claude creates checkpoints automatically after each milestone, explains what it's saving in plain language, and can undo changes if you ask.
+You don't need to know git. Claude or Codex can create checkpoints after each milestone, explain what is being saved in plain language, and undo changes if you ask.
 
 ## Build Your Own AI Org
 
