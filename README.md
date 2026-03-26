@@ -43,13 +43,23 @@ claude --plugin-dir .
 
 ### Use it with Codex
 
-```bash
-git clone https://github.com/pcatattacks/solopreneur-plugin.git
-cd solopreneur-plugin
-codex
+For Codex, Solopreneur now follows Codex-native skill discovery patterns instead of Claude's plugin packaging.
+
+**Quick install inside Codex:**
+
+```
+Fetch and follow instructions from https://raw.githubusercontent.com/pcatattacks/solopreneur-plugin/refs/heads/main/.codex/INSTALL.md
 ```
 
-Codex automatically reads the repo's `AGENTS.md`, and the repo now also includes a Codex-native skill wrapper at `.codex/skills/solopreneur/SKILL.md`. Together they map Codex to the same Solopreneur workflows, output directories, and agent briefs used by the Claude plugin.
+**Manual install:**
+
+```bash
+git clone https://github.com/pcatattacks/solopreneur-plugin.git ~/.codex/solopreneur-plugin
+mkdir -p ~/.agents/skills
+ln -s ~/.codex/solopreneur-plugin/.agents/skills/solopreneur ~/.agents/skills/solopreneur
+```
+
+Detailed Codex docs: `docs/README.codex.md`.
 
 ### Claude Code compatibility
 
@@ -58,7 +68,7 @@ Codex support is additive:
 - Claude plugin install and slash commands stay the same.
 - `.claude-plugin/`, `hooks/hooks.json`, and `settings.json` remain the Claude-facing integration points.
 - `skills/*/SKILL.md` and `agents/*.md` remain the shared source of truth for both runtimes.
-- `.codex/skills/solopreneur/SKILL.md` gives Codex a native skill entrypoint that delegates back to those shared files.
+- `.agents/skills/solopreneur/` provides Codex-native, auto-discoverable wrapper skills that delegate back to those shared files.
 
 ### First command
 
@@ -70,7 +80,7 @@ This opens an interactive org chart of your AI team and shows you where to start
 
 ## Using Solopreneur in Codex
 
-Codex does not use Claude's slash-command plugin UI, so you drive the same workflows with natural language. The repo's `AGENTS.md` tells Codex which files to read and how to interpret each workflow.
+Codex does not use Claude's slash-command plugin UI, so you drive the same workflows with natural language. Codex discovers the checked-in `.agents/skills/solopreneur/` skill bundle automatically, while `AGENTS.md` provides repo-wide guardrails and shared context.
 
 Examples:
 
@@ -78,7 +88,7 @@ Examples:
 - `Use the build workflow from this repo to plan implementation for .solopreneur/backlog/meal-planner/MVP-001.md.`
 - `Act as the Solopreneur reviewer and review the most recent changes.`
 
-In practice, Codex can enter through either `AGENTS.md` or `.codex/skills/solopreneur/SKILL.md`, then consult the matching `skills/<skill>/SKILL.md` and `agents/*.md` files as needed. For a command-by-command translation table, see `docs/codex.md`.
+In practice, Codex discovers the wrapper skills in `.agents/skills/solopreneur/`, and those wrappers delegate to the shared `skills/<skill>/SKILL.md` and `agents/*.md` files as needed. For installation and usage details, see `docs/README.codex.md`.
 
 ## How It Works
 

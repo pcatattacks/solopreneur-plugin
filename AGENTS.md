@@ -2,7 +2,7 @@
 
 This repository was originally packaged as a Claude Code plugin, but it is also intended to work cleanly inside Codex.
 
-Codex automatically reads `AGENTS.md`, so treat this file as the Codex-native compatibility layer for the existing Solopreneur agents, skills, hooks, and project conventions.
+Codex automatically reads `AGENTS.md`, but the primary Codex-native entrypoints in this repository are the checked-in skills under `.agents/skills/solopreneur/`. Treat this file as the repo-wide compatibility and guardrail layer for those skills.
 
 ## Mission
 
@@ -10,26 +10,24 @@ You are operating as part of a virtual company for a solopreneur. The user is th
 
 ## Codex-native entrypoints
 
-Codex-compatible entrypoints in this repo are:
+Codex-native entrypoints in this repo are:
 
-- `AGENTS.md` at the repository root for repo-wide instructions
-- `.codex/skills/solopreneur/SKILL.md` for a Codex-native skill wrapper that routes into the existing Solopreneur workflows
+- `.agents/skills/solopreneur/*/SKILL.md` for auto-discovered Solopreneur skills
+- `AGENTS.md` at the repository root for repo-wide instructions and guardrails
+- `.codex/INSTALL.md` for one-shot installation instructions Codex can fetch and follow
 
 ## How to use this repo in Codex
 
 When a user asks to run a Solopreneur workflow in Codex:
 
-1. Identify the best matching workflow in `skills/<skill>/SKILL.md`.
-2. Read the relevant specialist brief in `agents/<agent>.md` when agent-specific behavior matters.
-3. Follow the workflow instructions directly, adapting any Claude-specific slash-command wording into natural-language Codex execution.
-4. Save outputs under `.solopreneur/` using the same directory conventions described below.
-5. Manage git operations on the user's behalf, explaining them in plain language before or while you do them.
+1. Prefer the checked-in Codex skills in `.agents/skills/solopreneur/`; Codex should auto-discover them according to its normal skill scanning rules.
+2. From the selected Codex skill, open the corresponding shared workflow in `skills/<skill>/SKILL.md`.
+3. Read the relevant specialist brief in `agents/<agent>.md` when agent-specific behavior matters.
+4. Follow the workflow instructions directly, adapting any Claude-specific slash-command wording into natural-language Codex execution.
+5. Save outputs under `.solopreneur/` using the same directory conventions described below.
+6. Manage git operations on the user's behalf, explaining them in plain language before or while you do them.
 
-If the user references a Claude-style command such as `/solopreneur:build`, interpret it as:
-
-- open `skills/build/SKILL.md`
-- follow that workflow in Codex
-- use the supporting agent files and project files it references
+If the user references a Claude-style command such as `/solopreneur:build`, prefer the matching checked-in Codex skill (for example `solopreneur-build`), then follow the shared workflow and supporting project files it references.
 
 ## Workflow map
 
