@@ -1,8 +1,9 @@
 #!/bin/bash
 # observer-log.sh - Log CEO decisions to the observer log.
 #
-# Called by PostToolUse hook on AskUserQuestion.
-# Extracts the questions asked, options presented, and the CEO's answers.
+# Called by compatible hook systems after structured user-question tools.
+# Claude Code uses PostToolUse on AskUserQuestion. Other runners can pipe a
+# similar JSON payload; unsupported payloads are ignored.
 #
 # Hook stdin format:
 #   tool_input.questions  — array of {question, options, ...}

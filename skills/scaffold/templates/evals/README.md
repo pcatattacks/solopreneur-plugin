@@ -11,8 +11,11 @@ bash evals/run-evals.sh --dry
 # Run evals for a specific skill
 bash evals/run-evals.sh [skill-name]
 
-# Run all evals
+# Run all evals with the default runner
 bash evals/run-evals.sh
+
+# If your generated plugin supports Codex and runner mode is available
+bash evals/run-evals.sh --runner codex --dry
 
 # Fast mode with cheaper models
 bash evals/run-evals.sh --eval-model haiku --judge-model haiku
@@ -27,7 +30,7 @@ bash evals/run-evals.sh --parallel --eval-model haiku --judge-model haiku
 ## How It Works
 
 1. The runner discovers all `eval.csv` files in `skills/` and `.claude/skills/`
-2. For each test case, it invokes `claude --print` with the test prompt
+2. For each test case, it invokes the configured agent runner with the test prompt
 3. An LLM judge grades the output against expected behaviors using `evals/rubric.md`
 4. Results are saved to `.eval-runs/` and a summary prints to terminal
 5. Exit code is non-zero if any test fails (CI-friendly)
@@ -36,7 +39,7 @@ Runs execute inside a temporary git worktree for safety — your working directo
 
 ## Eval Mode
 
-Skills that ask clarifying questions (e.g., "confirm with the user", "wait for approval") would block in `--print` mode. The runner automatically appends an eval-mode system prompt (`evals/eval-mode.txt`) that instructs Claude to skip interactive questions and proceed with reasonable defaults.
+Skills that ask clarifying questions (e.g., "confirm with the user", "wait for approval") would block in non-interactive eval mode. The runner automatically appends an eval-mode system prompt (`evals/eval-mode.txt`) that instructs the agent to skip interactive questions and proceed with reasonable defaults.
 
 The eval-mode prompt also includes git safety rules that prevent the model from pushing to remote repositories. Each eval runs inside an isolated git worktree, and these rules ensure changes stay local.
 
@@ -95,6 +98,7 @@ bash evals/run-evals.sh my-skill --eval-model haiku --dry
 | `--eval-model MODEL` | Model for skill invocation | sonnet |
 | `--judge-model MODEL` | Model for rubric grading | sonnet |
 | `--parallel [N]` | Run skills concurrently (default N=5) | off (sequential) |
+| `--runner RUNNER` | Select `claude`, `codex`, or `auto` when supported | claude |
 
 ### Parallel Execution
 

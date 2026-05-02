@@ -34,13 +34,13 @@ Rate every finding:
 
 ## Browser Testing (when available)
 
-When browser tools are available (the orchestrator handles detection and setup — see Browser Tools in CLAUDE.md):
+When browser tools are available (the orchestrator handles detection and setup — see Browser Tools in `CLAUDE.md` / `AGENTS.md`):
 - Open the app in the browser and walk through acceptance criteria visually
 - Take screenshots as evidence for each criterion verified
 - Check the browser console for errors or warnings
 - Verify responsive behavior at key viewport sizes (mobile, tablet, desktop)
 - Test user flows end-to-end: navigation, form submission, data display
-- Prefer the Claude Chrome Extension over Chrome DevTools MCP when both are available (it can test authenticated flows)
+- Prefer the runner's authenticated-browser tool over isolated Chrome DevTools MCP when both are available
 
 If no browser tools are available, rely on code-level verification only.
 Always produce a structured report: criterion → pass/fail → evidence (screenshot or code reference).

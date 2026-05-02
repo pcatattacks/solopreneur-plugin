@@ -45,7 +45,7 @@ Read the ticket file for acceptance criteria and the `## Files` section for what
 
 If the ticket involves UI changes (references design mockups, creates HTML/CSS/frontend files, or has UI-related acceptance criteria):
 
-1. Follow the **Claude Chrome Extension setup check** (see Browser Tools in CLAUDE.md)
+1. Follow the **Browser Setup Check** in `CLAUDE.md` / `AGENTS.md`
 2. Delegate browser validation to `@qa` — visual walk-through, screenshots, console errors
 3. Optionally spawn `@designer` to compare against design mockups if they exist in `.solopreneur/designs/`
 
@@ -89,7 +89,7 @@ This means 2 agents per ticket (up to 6 agents for 3 tickets), all running simul
 
 As review results come in, present a consolidated report grouped by ticket using the standard Output Format (Critical / Warnings / Suggestions / Positives).
 
-For **UI tickets**: run Browser Validation at this point (sequential — browser is shared state). Follow the Claude Chrome Extension setup check. Optionally spawn `@designer` to compare against design mockups if they exist.
+For **UI tickets**: run Browser Validation at this point (sequential — browser is shared state). Follow the Browser Setup Check. Optionally spawn `@designer` or the designer role to compare against design mockups if they exist.
 
 The CEO reviews the product, flow, and findings with their own eyes.
 

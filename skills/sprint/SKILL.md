@@ -23,11 +23,11 @@ You are the sprint orchestrator. You execute multiple backlog tickets in paralle
 
 3. If all tickets are blocked or already done, report that and suggest next steps.
 
-4. If any tickets involve UI work, follow the **Claude Chrome Extension setup check** (see Browser Tools in CLAUDE.md) before proceeding.
+4. If any tickets involve UI work, follow the **Browser Setup Check** in `CLAUDE.md` / `AGENTS.md` before proceeding.
 
 5. Check parallelism limit: use `--parallel N` from `$ARGUMENTS` if provided, else read `sprint.max_parallel_tickets` from `.solopreneur/preferences.yaml`, else default to **3**. Cap at that limit. If more tickets are unblocked, pick highest priority (lowest ticket number first).
 
-6. Present the plan to the CEO with AskUserQuestion:
+6. Present the plan to the CEO with the runner's structured question tool when available, or a concise plain-language question otherwise:
    ```
    I'll build these N tickets in parallel, each in its own isolated branch:
 
@@ -40,7 +40,7 @@ You are the sprint orchestrator. You execute multiple backlog tickets in paralle
 
 ### Phase 1 — Parallel Build
 
-On CEO approval, spawn **background Task agents** (one per ticket, `@engineer`, `isolation: "worktree"`):
+On CEO approval, spawn **background implementation agents** when the runner supports them (one per ticket, engineering role, isolated branch/worktree). If background agents are unavailable, run the same ticket work sequentially:
 
 Each agent receives:
 - The full ticket content (requirements, acceptance criteria, file list)
@@ -61,17 +61,17 @@ Cap agents at the parallelism limit from Phase 0. If there are fewer tickets tha
 
 ### Phase 2 — QA Review
 
-As each build agent completes, run **foreground subagent review** (sequential, one ticket at a time):
+As each build agent completes, run **foreground review** (sequential, one ticket at a time):
 
-1. **Code QA** (always): Spawn `@qa` to review the built code:
+1. **Code QA** (always): Spawn `@qa` or brief the QA role to review the built code:
    - Code quality, security, edge cases
    - Verify each acceptance criterion against the actual code
    - Run tests if available
    - Produce severity-rated findings (Critical / Warning / Suggestion / Positive)
 
-2. **Browser QA** (UI tickets only, when browser tools available): Delegate to `@qa` for browser-based validation — visual walk-through, screenshots, console errors, responsive checks.
+2. **Browser QA** (UI tickets only, when browser tools are available): Delegate to `@qa` or the QA role for browser-based validation — visual walk-through, screenshots, console errors, responsive checks.
 
-3. **Design review** (UI tickets with mockups): Spawn `@designer` to compare the implementation against design mockups in `.solopreneur/designs/`:
+3. **Design review** (UI tickets with mockups): Spawn `@designer` or brief the designer role to compare the implementation against design mockups in `.solopreneur/designs/`:
    - Visual accuracy vs mockups
    - Spacing, alignment, responsive behavior
    - Flag any deviations

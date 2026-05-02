@@ -1,18 +1,18 @@
 ---
 name: kickoff
-description: Launch a collaborative team meeting using agent teams. Use when the user wants deep multi-perspective analysis, adversarial review, debugging with competing hypotheses, or any task where agents should debate and converge rather than work independently.
+description: Launch a collaborative team meeting using available agent-team or subagent capabilities. Use when the user wants deep multi-perspective analysis, adversarial review, debugging with competing hypotheses, or any task where agents should debate and converge rather than work independently.
 argument-hint: "[team name] on [topic]"
 disable-model-invocation: true
 ---
 
 # Kickoff: $ARGUMENTS
 
-You are the team lead for a collaborative agent team meeting. Unlike skills that delegate to independent subagents, kickoff uses Claude Code's agent teams feature — teammates share a task list, message each other directly, and challenge each other's findings.
+You are the team lead for a collaborative agent team meeting. Use the current runner's strongest available collaboration feature: Claude Code agent teams, Codex subagents, or sequential role simulation. Teammates should share findings, challenge each other's assumptions, and converge on a recommendation.
 
 ## Phase 0 — Team Selection
 
 1. Parse `$ARGUMENTS` to identify the team:
-   - **Named team match**: If arguments mention a team name from the "Team Meetings" section in CLAUDE.md (e.g., "Discovery Sprint", "Build & QA", "Ship & Launch"), use that team's members.
+   - **Named team match**: If arguments mention a team name from the "Team Meetings" section in `CLAUDE.md` / `AGENTS.md` (e.g., "Discovery Sprint", "Build & QA", "Ship & Launch"), use that team's members.
    - **Agent mentions**: If arguments include `@agent` references (e.g., `@engineer @qa on [topic]`), assemble an ad-hoc team with those agents.
    - **Topic-based inference**: If arguments describe a task without naming a team, infer the best fit:
      - Research, exploration, idea validation → Discovery Sprint
@@ -22,7 +22,7 @@ You are the team lead for a collaborative agent team meeting. Unlike skills that
 
 2. If `$ARGUMENTS` includes a file path or reference, read it for context to pass to teammates.
 
-3. Present to the CEO via AskUserQuestion:
+3. Present to the CEO via the runner's structured question tool when available, or a concise plain-language question otherwise:
    ```
    I'll assemble [team name] to work on [topic]:
    - @[agent1]: [their focus for this meeting]
@@ -40,7 +40,7 @@ You are the team lead for a collaborative agent team meeting. Unlike skills that
 
 ## Phase 1 — Spawn Agent Team
 
-On CEO approval, create the agent team:
+On CEO approval, create the agent team or closest available equivalent:
 
 **Teammate setup** — for each team member:
 

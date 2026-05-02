@@ -1,0 +1,44 @@
+{
+  "name": "solopreneur",
+  "version": "1.0.0",
+  "description": "Your virtual AI team. Structured agents, skills, workflows, decision memory, and lightweight evals for solopreneurs.",
+  "author": {
+    "name": "Pranav Dhingra",
+    "url": "https://github.com/pcatattacks"
+  },
+  "homepage": "https://github.com/pcatattacks/solopreneur-plugin",
+  "repository": "https://github.com/pcatattacks/solopreneur-plugin",
+  "license": "MIT",
+  "keywords": [
+    "solopreneur",
+    "product-management",
+    "ai-team",
+    "workflow",
+    "skills",
+    "agents"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Solopreneur",
+    "shortDescription": "A virtual AI company for solo builders",
+    "longDescription": "Solopreneur gives solo builders a structured AI team with specialist roles, product workflows, decision memory, sprint planning, reviews, shipping support, and lightweight evals.",
+    "developerName": "Pranav Dhingra",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/pcatattacks/solopreneur-plugin",
+    "privacyPolicyURL": "https://github.com/pcatattacks/solopreneur-plugin",
+    "termsOfServiceURL": "https://github.com/pcatattacks/solopreneur-plugin/blob/main/LICENSE",
+    "defaultPrompt": [
+      "Show me what my Solopreneur team can do.",
+      "Research whether my product idea is worth building.",
+      "Turn this feature idea into a build plan."
+    ],
+    "brandColor": "#2563EB",
+    "screenshots": []
+  }
+}

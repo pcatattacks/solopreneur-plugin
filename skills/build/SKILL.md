@@ -1,6 +1,6 @@
 ---
 name: build
-description: Plan and execute code implementation for a feature or product. Can generate a plan file for Cursor or build directly with Claude. Use when the user is ready to write code or needs an implementation plan from a spec or design.
+description: Plan and execute code implementation for a feature or product. Can generate a plan file for any coding agent or build directly in the current runner. Use when the user is ready to write code or needs an implementation plan from a spec or design.
 argument-hint: ticket, spec, or feature description
 disable-model-invocation: true
 ---
@@ -32,7 +32,7 @@ If building from a ticket file, set up an isolated branch before building:
    > You're currently on branch `ticket/{OTHER-ID}`. To start this ticket, I need to switch branches.
    > 1. **Switch now** — I'll save your current work and switch to a new branch for this ticket
    > 2. **Finish the other ticket first** — Let's wrap up {OTHER-ID} before starting this one
-   > 3. **Build in parallel** — Use `/solopreneur:sprint` to build multiple tickets simultaneously
+   > 3. **Build in parallel** — Use the sprint skill to build multiple tickets simultaneously
 
    If the CEO chooses to switch: commit or stash any uncommitted changes on the current branch, then proceed.
 
@@ -68,7 +68,7 @@ If no deployment strategy exists yet, ask the CEO:
 > Not sure? The engineer can recommend one based on what we're building.
 
 If the CEO picks a platform or asks for a recommendation:
-1. Delegate to `@engineer` to configure the project for that platform:
+1. Delegate to the engineering role (`@engineer` when named subagents are available) to configure the project for that platform:
    - Install the platform CLI if needed (e.g., `npm i -g vercel`)
    - Create platform config files (e.g., `vercel.json`, `netlify.toml`)
    - If an MCP server exists for the platform (e.g., Vercel), add it to `.mcp.json`
@@ -95,7 +95,7 @@ This step only runs once. Subsequent `/build` calls skip it because the preferen
 
 ## Plan Path
 
-1. Delegate to the `@engineer` subagent to create a plan file following the standard plan format (from conventions). The engineer should break the work into 3-8 sequential steps with instructions specific enough that another agent can execute without additional context. Build-specific additions to the plan:
+1. Delegate to the engineering role (`@engineer` when named subagents are available) to create a plan file following the standard plan format (from conventions). The engineer should break the work into 3-8 sequential steps with instructions specific enough that another agent can execute without additional context. Build-specific additions to the plan:
    - Include `**Branch**: \`ticket/{ID}\`` in the Context section (ticket builds only)
    - Add a `## Deployment Notes` section if deployment was just configured (platform, config files created, setup status)
 
@@ -136,7 +136,7 @@ This step only runs once. Subsequent `/build` calls skip it because the preferen
 
 ## Direct Path
 
-1. Delegate to the `@engineer` subagent to **plan and execute the implementation directly**. The engineer should:
+1. Delegate to the engineering role (`@engineer` when named subagents are available) to **plan and execute the implementation directly**. The engineer should:
    - First, create a plan following the standard plan format (from conventions), with the same build-specific additions as the Plan Path
    - Save the plan: if building from a ticket, co-locate as `.solopreneur/backlog/{dir}/{ID}-plan.md`; otherwise save to `.solopreneur/plans/build-{feature-slug}.md`
    - Then execute each step: create/modify files, install dependencies, write the actual code

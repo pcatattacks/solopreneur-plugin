@@ -746,15 +746,15 @@ def generate_html(config, marketing=False):
     # -- OG meta tags (marketing mode only) --
     if marketing:
         og_tags = """
-<meta name="description" content="A Claude Code plugin that gives you a full AI team — engineer, designer, researcher, QA, and more. Ship products faster as a team of one.">
+<meta name="description" content="A Claude Code and Codex plugin that gives you a full AI team — engineer, designer, researcher, QA, and more. Ship products faster as a team of one.">
 <meta property="og:title" content="Solopreneur — Your Virtual AI Company">
-<meta property="og:description" content="A Claude Code plugin that gives you a full AI team — engineer, designer, researcher, QA, and more. Ship products faster as a team of one.">
+<meta property="og:description" content="A Claude Code and Codex plugin that gives you a full AI team — engineer, designer, researcher, QA, and more. Ship products faster as a team of one.">
 <meta property="og:image" content="https://pcatattacks.github.io/solopreneur-plugin/og-image.png">
 <meta property="og:url" content="https://pcatattacks.github.io/solopreneur-plugin/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Solopreneur — Your Virtual AI Company">
-<meta name="twitter:description" content="A Claude Code plugin that gives you a full AI team — engineer, designer, researcher, QA, and more. Ship products faster as a team of one.">
+<meta name="twitter:description" content="A Claude Code and Codex plugin that gives you a full AI team — engineer, designer, researcher, QA, and more. Ship products faster as a team of one.">
 <meta name="twitter:image" content="https://pcatattacks.github.io/solopreneur-plugin/og-image.png">"""
     else:
         og_tags = ""
@@ -764,11 +764,11 @@ def generate_html(config, marketing=False):
     if marketing:
         hero_html = f"""
   <div class="hero">
-    <div class="pill reveal">Claude Code Plugin</div>
+    <div class="pill reveal">Claude Code + Codex Plugin</div>
     <h1 class="hero-title reveal">{escaped_name}</h1>
     <p class="hero-tagline reveal">Your Virtual AI Company</p>
-    <p class="hero-desc reveal">A Claude Code plugin that gives you a full AI team &mdash; specialized agents, guided workflows, and decision memory. Ship products faster as a team of one.</p>
-    <p class="hero-install-label reveal">Open Claude Code in your terminal and run:</p>
+    <p class="hero-desc reveal">A plugin that gives Claude Code or Codex a full AI team &mdash; specialized agents, guided workflows, and decision memory. Ship products faster as a team of one.</p>
+    <p class="hero-install-label reveal">Install in Claude Code:</p>
     <div class="install-steps reveal">
       <div class="install-step">
         <span class="install-num">1</span>
@@ -786,6 +786,15 @@ def generate_html(config, marketing=False):
         <button class="copy-btn" onclick="copyCmd('cmd3',this)">{copy_svg}</button>
       </div>
     </div>
+    <p class="hero-install-label reveal" style="margin-top:1rem">Install in Codex:</p>
+    <div class="terminal reveal">
+      <div class="terminal-row">
+        <span class="prompt">$</span>
+        <code id="cmd4">codex plugin marketplace add pcatattacks/solopreneur-plugin</code>
+        <button class="copy-btn" onclick="copyCmd('cmd4')">Copy</button>
+      </div>
+    </div>
+    <p class="install-prereq reveal">Codex users can install directly from the GitHub marketplace source. No clone required for normal installs.</p>
     <p class="install-prereq reveal">New to Claude Code? <a href="https://code.claude.com/docs/en/quickstart" target="_blank" rel="noopener">Start here &rarr;</a></p>
     <div class="hero-link-wrap reveal">
       <a class="hero-link" href="https://github.com/pcatattacks/solopreneur-plugin" target="_blank" rel="noopener">
@@ -812,7 +821,7 @@ def generate_html(config, marketing=False):
   </div>"""
         footer_html = """
   <div class="footer">
-    <div class="footer-name reveal">Built with the <a href="https://github.com/pcatattacks/solopreneur-plugin" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:none">Solopreneur plugin</a> for Claude Code</div>
+    <div class="footer-name reveal">Built with the <a href="https://github.com/pcatattacks/solopreneur-plugin" target="_blank" rel="noopener" style="color:var(--text-secondary);text-decoration:none">Solopreneur plugin</a> for Claude Code and Codex</div>
   </div>"""
 
     # Star CTA (marketing mode only — shown after VP section)
@@ -1310,12 +1319,12 @@ def generate_html(config, marketing=False):
   <!-- How it works -->
   <div class="section">
     <div class="section-eyebrow reveal">How it works</div>
-    <div class="section-heading reveal">You lead. Claude orchestrates. Agents execute.</div>
-    <div class="section-desc reveal">You're the CEO. Claude coordinates your AI team through a guided workflow &mdash; delegating to specialized agents, then reporting back.</div>
+    <div class="section-heading reveal">You lead. Your agent orchestrates. Specialists execute.</div>
+    <div class="section-desc reveal">You're the CEO. Your agent coordinates the AI team through a guided workflow &mdash; delegating to specialists, then reporting back.</div>
     <div class="hiw-flow reveal">
       <div class="hiw-node hiw-you"><span class="hiw-label">You</span>CEO</div>
       <span class="hiw-arrow">&rarr;</span>
-      <div class="hiw-node hiw-claude"><span class="hiw-label">Claude</span>Orchestrator</div>
+      <div class="hiw-node hiw-claude"><span class="hiw-label">Agent</span>Orchestrator</div>
       <span class="hiw-arrow">&rarr;</span>
       <div class="hiw-agents-node">
         {hiw_dots}
@@ -1590,7 +1599,7 @@ function openSkillPanel(sk) {{
 function openVpPanel(sk) {{
   const vp = VP_CARDS.find(v => v.skill === sk); if (!vp) return;
   const agentNames = vp.agents.map(id => {{
-    if (id === 'orchestrator') return 'Orchestrator (Claude)';
+    if (id === 'orchestrator') return 'Orchestrator (Claude Code or Codex)';
     const ag = AM[id];
     return ag ? ag.name : id;
   }});

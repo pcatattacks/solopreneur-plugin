@@ -1,7 +1,7 @@
 #!/bin/bash
 # run-evals.sh - Run eval suite for Solopreneur plugin skills.
 #
-# Discovers skills/*/eval.csv files, invokes each test case via Claude Code CLI
+# Discovers skills/*/eval.csv files, invokes each test case via Claude Code or Codex
 # inside a sandboxed git worktree, grades outputs with an LLM rubric, and prints
 # a summary table.
 #
@@ -15,12 +15,14 @@
 #   bash evals/run-evals.sh --parallel       # Run skills in parallel (default: 5 concurrent)
 #   bash evals/run-evals.sh --parallel 10    # Parallel with custom concurrency
 #   bash evals/run-evals.sh discover design ship --parallel  # Subset in parallel
+#   bash evals/run-evals.sh --runner codex --dry  # Dry run with Codex runner selected
 #
 # Flags:
 #   --dry                Dry run (show test cases without executing)
 #   --eval-model MODEL   Model for skill invocation (default: sonnet, env: EVAL_MODEL)
 #   --judge-model MODEL  Model for rubric grading (default: sonnet, env: JUDGE_MODEL)
 #   --parallel [N]       Run skills in parallel (default N=5, max concurrency)
+#   --runner RUNNER      claude (default), codex, or auto
 #
 # Environment variables (CLI flags take precedence):
 #   EVAL_TIMEOUT Seconds per skill invocation (default: 900 = 15 min; 0 = no timeout)
@@ -47,8 +49,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 EVAL_RUNS_BASE="$PLUGIN_DIR/.eval-runs"
 RUBRIC_FILE="$SCRIPT_DIR/rubric.md"
 
-EVAL_MODEL="${EVAL_MODEL:-sonnet}"
-JUDGE_MODEL="${JUDGE_MODEL:-sonnet}"
+EVAL_MODEL="${EVAL_MODEL:-}"
+JUDGE_MODEL="${JUDGE_MODEL:-}"
 EVAL_TIMEOUT="${EVAL_TIMEOUT:-900}"
 JUDGE_TIMEOUT="${JUDGE_TIMEOUT:-120}"
 
@@ -59,11 +61,6 @@ for cmd in python3 git; do
     exit 1
   fi
 done
-if ! command -v claude &>/dev/null; then
-  echo "Claude CLI not found. Install: https://docs.anthropic.com/en/docs/claude-code" >&2
-  exit 1
-fi
-
 # Detect timeout command (macOS: gtimeout from coreutils, Linux: timeout)
 TIMEOUT_CMD=""
 if [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null || [ "$JUDGE_TIMEOUT" -gt 0 ] 2>/dev/null; then
@@ -80,11 +77,16 @@ DRY_RUN=false
 PARALLEL=false
 MAX_PARALLEL=5
 VERBOSE=false
+EVAL_RUNNER="${EVAL_RUNNER:-claude}"
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry) DRY_RUN=true ;;
     --eval-model) EVAL_MODEL="$2"; shift ;;
     --judge-model) JUDGE_MODEL="$2"; shift ;;
+    --runner)
+      EVAL_RUNNER="$2"
+      shift
+      ;;
     --parallel)
       PARALLEL=true
       if [[ "${2:-}" =~ ^[0-9]+$ ]]; then
@@ -99,6 +101,38 @@ while [ $# -gt 0 ]; do
 done
 # Single skill name for child mode backward compat
 SKILL_FILTER="${SKILL_FILTERS[0]:-all}"
+
+if [ "$EVAL_RUNNER" = "auto" ]; then
+  if command -v codex &>/dev/null; then
+    EVAL_RUNNER="codex"
+  else
+    EVAL_RUNNER="claude"
+  fi
+fi
+
+if [ "$EVAL_RUNNER" != "claude" ] && [ "$EVAL_RUNNER" != "codex" ]; then
+  echo "Unsupported runner: $EVAL_RUNNER (expected claude, codex, or auto)" >&2
+  exit 1
+fi
+
+if [ "$EVAL_RUNNER" = "claude" ]; then
+  EVAL_MODEL="${EVAL_MODEL:-sonnet}"
+  JUDGE_MODEL="${JUDGE_MODEL:-sonnet}"
+else
+  EVAL_MODEL="${EVAL_MODEL:-}"
+  JUDGE_MODEL="${JUDGE_MODEL:-}"
+fi
+
+if [ "$DRY_RUN" = false ]; then
+  if [ "$EVAL_RUNNER" = "claude" ] && ! command -v claude &>/dev/null; then
+    echo "Claude CLI not found. Install: https://docs.anthropic.com/en/docs/claude-code" >&2
+    exit 1
+  fi
+  if [ "$EVAL_RUNNER" = "codex" ] && ! command -v codex &>/dev/null; then
+    echo "Codex CLI not found. Install or update Codex before running --runner codex." >&2
+    exit 1
+  fi
+fi
 
 # Colors
 GREEN='\033[0;32m'
@@ -216,6 +250,35 @@ with open(sys.argv[1]) as f:
     rows = list(reader)
 print(json.dumps(rows))
 " "$1"
+}
+
+run_agent_prompt() {
+  local mode="$1"
+  local workdir="$2"
+  local prompt="$3"
+
+  if [ "$EVAL_RUNNER" = "codex" ]; then
+    local model_args=()
+    [ -n "$EVAL_MODEL" ] && model_args=(--model "$EVAL_MODEL")
+    if [ "$mode" = "judge" ]; then
+      model_args=()
+      [ -n "$JUDGE_MODEL" ] && model_args=(--model "$JUDGE_MODEL")
+    fi
+    printf '%s\n' "$prompt" | (cd "$workdir" && codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check "${model_args[@]}" -)
+  else
+    if [ "$mode" = "judge" ]; then
+      printf '%s\n' "$prompt" | claude --print --model "$JUDGE_MODEL"
+    else
+      local eval_mode_args=()
+      if [ -f "$SCRIPT_DIR/eval-mode.txt" ]; then
+        eval_mode_args=(--append-system-prompt-file "$SCRIPT_DIR/eval-mode.txt")
+      fi
+      printf '%s\n' "$prompt" | (cd "$workdir" && claude --print --plugin-dir "$workdir" --model "$EVAL_MODEL" \
+        --dangerously-skip-permissions \
+        --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
+        "${eval_mode_args[@]}")
+    fi
+  fi
 }
 
 # Negative-test patterns per skill (used to detect false triggers)
@@ -420,25 +483,15 @@ ${PROMPT}"
     fi
 
     # Invoke skill inside the sandboxed worktree
-    EVAL_MODE_ARGS=()
-    if [ -f "$SCRIPT_DIR/eval-mode.txt" ]; then
-      EVAL_MODE_ARGS=(--append-system-prompt-file "$SCRIPT_DIR/eval-mode.txt")
-    fi
     SKILL_EXIT=0
     # Start live spinner during skill execution (not in child/parallel mode)
     if [ "${_EVAL_CHILD:-}" != "1" ]; then
       start_spinner "$PROGRESS_DONE" "$PROGRESS_TOTAL" "$PROGRESS_START" "exec ${SKILL_NAME}:${ID}"
     fi
     if [ -n "$TIMEOUT_CMD" ] && [ "$EVAL_TIMEOUT" -gt 0 ] 2>/dev/null; then
-      printf '%s\n' "$FULL_PROMPT" | (cd "$RUN_DIR" && $TIMEOUT_CMD "$EVAL_TIMEOUT" claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
-        --dangerously-skip-permissions \
-        --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
-        "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+      $TIMEOUT_CMD "$EVAL_TIMEOUT" bash -c "$(declare -f run_agent_prompt); EVAL_RUNNER=\"$EVAL_RUNNER\" EVAL_MODEL=\"$EVAL_MODEL\" JUDGE_MODEL=\"$JUDGE_MODEL\" SCRIPT_DIR=\"$SCRIPT_DIR\" run_agent_prompt eval \"$RUN_DIR\" \"\$(cat)\"" < <(printf '%s\n' "$FULL_PROMPT") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     else
-      printf '%s\n' "$FULL_PROMPT" | (cd "$RUN_DIR" && claude --print --plugin-dir "$RUN_DIR" --model "$EVAL_MODEL" \
-        --dangerously-skip-permissions \
-        --disallowedTools "Bash(git push*)" "Bash(git remote*)" "Bash(gh pr *)" "Bash(gh repo *)" \
-        "${EVAL_MODE_ARGS[@]}") > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
+      run_agent_prompt eval "$RUN_DIR" "$FULL_PROMPT" > "$OUTPUT_FILE" 2>&1 || SKILL_EXIT=$?
     fi
     if [ "${_EVAL_CHILD:-}" != "1" ]; then
       stop_spinner
@@ -472,9 +525,9 @@ print(result)
         start_spinner "$PROGRESS_DONE" "$PROGRESS_TOTAL" "$PROGRESS_START" "judging ${SKILL_NAME}:${ID}"
       fi
       if [ -n "$TIMEOUT_CMD" ] && [ "$JUDGE_TIMEOUT" -gt 0 ] 2>/dev/null; then
-        JUDGE_RESPONSE=$(echo "$FULL_JUDGE_PROMPT" | $TIMEOUT_CMD "$JUDGE_TIMEOUT" claude --print --model "$JUDGE_MODEL" 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}')
+        JUDGE_RESPONSE=$($TIMEOUT_CMD "$JUDGE_TIMEOUT" bash -c "$(declare -f run_agent_prompt); EVAL_RUNNER=\"$EVAL_RUNNER\" EVAL_MODEL=\"$EVAL_MODEL\" JUDGE_MODEL=\"$JUDGE_MODEL\" SCRIPT_DIR=\"$SCRIPT_DIR\" run_agent_prompt judge \"$RUN_DIR\" \"\$(cat)\"" < <(printf '%s\n' "$FULL_JUDGE_PROMPT") 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}')
       else
-        JUDGE_RESPONSE=$(echo "$FULL_JUDGE_PROMPT" | claude --print --model "$JUDGE_MODEL" 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}')
+        JUDGE_RESPONSE=$(run_agent_prompt judge "$RUN_DIR" "$FULL_JUDGE_PROMPT" 2>/dev/null || echo '{"overall_pass": false, "score": 0, "checks": []}')
       fi
       if [ "${_EVAL_CHILD:-}" != "1" ]; then
         stop_spinner
@@ -649,7 +702,7 @@ echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${BLUE}  Solopreneur Eval Runner${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${DIM}  eval model: $EVAL_MODEL | judge model: $JUDGE_MODEL${NC}"
+echo -e "${DIM}  runner: $EVAL_RUNNER | eval model: ${EVAL_MODEL:-default} | judge model: ${JUDGE_MODEL:-default}${NC}"
 echo ""
 
 # Find eval CSVs (always from the real plugin dir, not the worktree)
@@ -714,7 +767,7 @@ if [ "$DRY_RUN" = true ]; then
 
   echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   echo -e "${YELLOW}Dry run complete.${NC} Found $TOTAL_TESTS test cases across $(echo "$CSV_FILES" | wc -l | tr -d ' ') skill(s)."
-  echo "Remove --dry to execute evals."
+  echo "Remove --dry to execute evals with runner: $EVAL_RUNNER."
   echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
   exit 0
 fi
@@ -811,6 +864,7 @@ if [ "$PARALLEL" = true ] && [ "$CSV_COUNT" -gt 1 ]; then
         _EVAL_WORKTREE_BRANCH="${BATCH_WORKTREE_BRANCHES[$local_idx]}" \
         EVAL_MODEL="$EVAL_MODEL" \
         JUDGE_MODEL="$JUDGE_MODEL" \
+        EVAL_RUNNER="$EVAL_RUNNER" \
         EVAL_TIMEOUT="$EVAL_TIMEOUT" \
         JUDGE_TIMEOUT="$JUDGE_TIMEOUT" \
         bash "$0" "$skill" \

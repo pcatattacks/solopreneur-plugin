@@ -26,12 +26,13 @@ If `$ARGUMENTS` provides context, use it to skip already-answered questions. Oth
 
 **About sharing:**
 7. **Is this just for you, or do you want to distribute it on the marketplace?**
-   - **Personal use (or sharing via git)**: We'll create a project with `.claude/` structure — simpler, no plugin packaging. Others can still use it by cloning the repo.
-   - **Marketplace distribution**: We'll create a full plugin with `.claude-plugin/plugin.json` and `marketplace.json` for the Anthropic marketplace.
+   - **Personal use (or sharing via git)**: We'll create a project with local skills and agent instructions — simpler, no marketplace packaging.
+   - **Claude Code marketplace distribution**: We'll create a plugin with `.claude-plugin/plugin.json` and Claude marketplace metadata.
+   - **Dual Claude Code + Codex distribution**: We'll create a root-level shared plugin with `.claude-plugin/plugin.json`, `.codex-plugin/plugin.json`, `CLAUDE.md`, and `AGENTS.md`, reusing the same skills and agents.
 
 **About their setup:**
-8. **What Claude plan are you on?** (Pro, Max, Team, or API)
-   - Use this to calibrate model guidance in Step 5. Don't set explicit models on agents — all agents inherit from the session model, giving users runtime control via `/model`.
+8. **Which agent runner will you use most?** (Claude Code, Codex, both, or another coding agent)
+   - Use this to calibrate install instructions and model guidance in Step 5. Don't set explicit models on agents unless the user specifically asks — agents should inherit from the session model where the runner supports it.
 
 Check the examples in `skills/scaffold/examples/` for reference architectures that might match the user's profile.
 
@@ -117,11 +118,11 @@ Where `<project>` is the user's project directory (for personal use, save the HT
 
 Tell the user: "This chart shows your entire AI team — who they are, what they can do, and how the workflow connects them. Click on any card for details."
 
-## Step 3.5: Consult Claude Code Best Practices
+## Step 3.5: Consult Platform Best Practices
 
-Before generating any files, delegate to the `claude-code-guide` subagent for authoritative guidance:
+Before generating any files, use available platform documentation or specialist guidance for the target runner:
 
-> "I'm building a Claude Code project with custom agents and skills for a [user's domain] workflow. I need:
+> "I'm building a [Claude Code / Codex / dual-platform] project with custom agents and skills for a [user's domain] workflow. I need:
 >
 > 1. **Complete frontmatter specs**: All supported YAML frontmatter fields for custom agents (agents/*.md) and custom skills (skills/*/SKILL.md). For each field: name, type, required/optional, default value, and when to use it.
 >
@@ -136,7 +137,7 @@ Before generating any files, delegate to the `claude-code-guide` subagent for au
 > Provide specific, actionable guidance I can apply when generating files."
 
 Use the response as the authoritative reference for all file generation in Step 4. This ensures:
-- Generated files use the latest correct format (even if Claude Code adds new fields)
+- Generated files use the latest correct format for the selected runner
 - Architecture follows proven patterns (not just valid syntax)
 - Users get an optimally structured org without needing to understand the underlying platform
 
@@ -189,7 +190,7 @@ This structure is auto-discovered by Claude Code — no `--plugin-dir` flag need
 10. **`[name]/.claude/skills/[skill]/eval.csv`** — Generate eval CSVs for ALL lifecycle skills (see eval guidance below)
 11. **`[name]/.gitignore`** — See gitignore template below
 
-### For marketplace distribution (plugin structure):
+### For Claude Code marketplace distribution (plugin structure):
 
 Same content as above, but with a different directory layout:
 
@@ -219,11 +220,38 @@ Key differences from personal use:
 - Add `.claude-plugin/marketplace.json` for distribution
 - Skills are namespaced: `/[plugin-name]:[skill]`
 
+### For dual Claude Code + Codex distribution:
+
+Use the same root-level content tree for both platforms:
+
+```
+[name]/
+├── .claude-plugin/plugin.json
+├── .codex-plugin/plugin.json
+├── .codex/INSTALL.md
+├── CLAUDE.md
+├── AGENTS.md          ← symlink or wrapper pointing to CLAUDE.md
+├── agents/[agent].md
+├── skills/[skill]/SKILL.md
+├── hooks/hooks.json
+├── settings.json
+├── .mcp.json
+├── scripts/observer-log.sh
+├── evals/
+└── .gitignore
+```
+
+Key rules:
+- Do not duplicate `skills/` under a Codex-only plugin directory.
+- `.codex-plugin/plugin.json` should include `"skills": "./skills/"` and platform interface metadata.
+- `AGENTS.md` should share the same handbook as `CLAUDE.md` through a symlink or short wrapper.
+- `.codex/INSTALL.md` should document marketplace install, local path install, and native skill-discovery symlink fallback.
+
 ### Agent generation guidance
 
-Use the frontmatter fields from the claude-code-guide specs (Step 3.5). Every agent needs:
+Use the frontmatter fields from the platform guidance in Step 3.5. Every agent needs:
 - `name` (required): lowercase-with-hyphens identifier
-- `description` (required): when Claude should delegate to this agent — be specific, this is Claude's "API docs" for routing
+- `description` (required): when the orchestrator should delegate to this role — be specific, this is the runner's routing guidance
 - `color`: assign a color from `purple`, `cyan`, `green`, `orange`, `blue`, `red`. Cycle through the set if there are more agents than colors. This helps users visually identify which agent is running.
 - `tools`: restrict to what the agent actually needs (principle of least privilege)
 - Do NOT set `model` on agents — let them inherit from the session. This gives users runtime control via `/model`. Only set `model: haiku` for agents that do simple, high-volume tasks (log formatting, simple lookups).
@@ -240,9 +268,9 @@ The markdown body is the agent's system prompt. Include:
 
 ### Skill generation guidance
 
-Use the frontmatter fields from the claude-code-guide specs (Step 3.5). Common fields:
+Use the frontmatter fields from the platform guidance in Step 3.5. Common fields:
 - `name`: display name (defaults to directory name if omitted)
-- `description`: when to use this skill — Claude uses this to decide auto-invocation
+- `description`: when to use this skill — runners use this to decide skill discovery and invocation
 - `argument-hint`: brief hint shown in autocomplete (e.g., `"[idea or topic]"`)
 - `disable-model-invocation: true`: for skills that should only run when explicitly called (kickoff, help)
 - `user-invocable: false`: for internal reference skills that agents load but users don't invoke
@@ -273,9 +301,9 @@ The markdown body defines the workflow. Structure as:
 
 If the org has a ship/deploy skill, it should read deployment config from preferences, support first-time deployment setup, and pattern after the solopreneur plugin's ship skill.
 
-### CLAUDE.md sections
+### Shared handbook sections
 
-In the generated CLAUDE.md, include:
+In the generated `CLAUDE.md` and `AGENTS.md` (or shared symlink), include:
 
 **Communication Style:**
 ```
@@ -285,22 +313,22 @@ The user's technical level is: [beginner/intermediate/advanced]
 - [intermediate]: Can use a terminal and understands basic concepts. Explain technical decisions but not basic operations.
 - [advanced]: Be concise and technical. Skip explanations of standard tools and patterns.
 
-All agents inherit your session model. Use `/model` to switch between sonnet, opus, and haiku.
+Agents inherit your session model when the runner supports it. Use your runner's model controls to switch model quality/speed.
 ```
 
-**Team Meetings:** Define named teams using the `**Team Name**: @agent1 + @agent2 + @agent3` format in CLAUDE.md. This format is parsed by the org chart visualization script.
+**Team Meetings:** Define named teams using the `**Team Name**: @agent1 + @agent2 + @agent3` format. This format is parsed by the org chart visualization script.
 
 **Version Control:**
 ```
 ## Version Control
-You (Claude) manage all git operations for the user. They should never need to use git directly.
+The agent manages git operations for the user when permitted. They should never need to use git directly.
 - Automatically create commits after significant milestones with clear, descriptive messages
 - Explain what you're saving and why in plain language: "I'm saving a checkpoint of your work so we can go back to this point if needed"
 - If the user wants to share, handle GitHub repository creation and pushing
 - Always explain what you're doing with git before doing it
 ```
 
-**Observer Protocol:** Include the observer format (same as the solopreneur plugin's CLAUDE.md — captures WHY decisions were made for future storytelling).
+**Observer Protocol:** Include the observer format from this plugin's shared handbook. It captures WHY decisions were made for future storytelling.
 
 ### Eval CSV generation
 
@@ -357,6 +385,7 @@ Tell the user (adapted to their technical level):
 ```
 Your setup is ready! Start using it:
   cd [name] && claude
+  # or open the project in Codex if you generated a dual-platform plugin
 
 Try your first skill:
   /[first-skill] [example input]
@@ -391,8 +420,12 @@ how something works, just ask:
 
 *In addition to the above:*
 ```
-To test your plugin:
+To test your Claude Code plugin:
   cd [name] && claude --plugin-dir .
+
+To test your Codex plugin:
+  cd [name] && codex plugin marketplace add "$PWD"
+  bash evals/run-evals.sh --runner codex --dry
 
 To share your AI team:
 1. I'll create a GitHub repository for you (just confirm and I'll handle it)
@@ -404,6 +437,6 @@ Want me to set up the GitHub repository now?
 **For all users:**
 
 Also mention:
-- "Want to refine your skills? Check the official Anthropic marketplace for the skill-creator plugin — it can test, evaluate, and improve your skills. Browse available plugins with `/plugin`."
+- "Want to refine your skills? Use the eval runner and the skill-authoring tools available for your agent runner."
 - "If you ever need to explain your setup to a developer or document how it works technically, just ask me and I'll generate detailed documentation for you."
 - "Run `/help team` to see a visual org chart of your AI team anytime."
