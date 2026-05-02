@@ -32,8 +32,15 @@ if [ ! -f "$PLUGIN_DIR/.agents/plugins/marketplace.json" ]; then
   exit 1
 fi
 
-if ! grep -q '"path": "."' "$PLUGIN_DIR/.agents/plugins/marketplace.json"; then
-  echo "FAIL: Codex marketplace catalog must point solopreneur at the shared repo root"
+if ! grep -q '"source": "url"' "$PLUGIN_DIR/.agents/plugins/marketplace.json" ||
+  ! grep -q '"url": "https://github.com/pcatattacks/solopreneur-plugin.git"' "$PLUGIN_DIR/.agents/plugins/marketplace.json" ||
+  ! grep -q '"ref": "codex-plugin-compat"' "$PLUGIN_DIR/.agents/plugins/marketplace.json"; then
+  echo "FAIL: Codex marketplace catalog must use a Git-backed root plugin source"
+  exit 1
+fi
+
+if ! grep -q '"hooks": "./hooks/codex-hooks.json"' "$PLUGIN_DIR/.codex-plugin/plugin.json"; then
+  echo "FAIL: Codex plugin manifest must point at safe hook config"
   exit 1
 fi
 

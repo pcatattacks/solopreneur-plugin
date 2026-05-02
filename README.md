@@ -4,7 +4,9 @@
 
 You're a solopreneur. You have ideas, ambition, and not enough hours in the day. Solopreneur gives your coding agent a structured virtual company: an engineer, designer, QA lead, researcher, business analyst, and content strategist working from shared workflows and decision memory.
 
-Solopreneur works as a Claude Code plugin and as a Codex plugin. Both platforms use the same root `skills/`, `agents/`, `hooks/`, and `scripts/` directories; there is no duplicated Codex-only skill tree. The Codex marketplace catalog at `.agents/plugins/marketplace.json` points back to the repository root.
+Solopreneur works as a Claude Code plugin and as a Codex plugin. Both platforms use the same root `skills/`, `agents/`, `hooks/`, and `scripts/` directories; there is no duplicated Codex-only skill tree. The Codex marketplace catalog at `.agents/plugins/marketplace.json` uses a Git-backed root plugin source that points back to this repository.
+
+The `codex-plugin-compat` branch temporarily pins that Git-backed plugin source to `codex-plugin-compat` for branch testing. Remove the branch `ref` before merging to `main`.
 
 ## What Makes This Different
 
@@ -53,7 +55,7 @@ Codex reads the root `.codex-plugin/plugin.json` and the shared `skills/` direct
 Normal users do not need to clone the repository first:
 
 ```bash
-codex plugin marketplace add pcatattacks/solopreneur-plugin
+codex plugin marketplace add pcatattacks/solopreneur-plugin --ref codex-plugin-compat
 ```
 
 Then enable or install `solopreneur` from Codex. For local development:

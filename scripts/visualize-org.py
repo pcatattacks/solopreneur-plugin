@@ -790,11 +790,11 @@ def generate_html(config, marketing=False):
     <div class="terminal reveal">
       <div class="terminal-row">
         <span class="prompt">$</span>
-        <code id="cmd4">codex plugin marketplace add pcatattacks/solopreneur-plugin</code>
+        <code id="cmd4">codex plugin marketplace add pcatattacks/solopreneur-plugin --ref codex-plugin-compat</code>
         <button class="copy-btn" onclick="copyCmd('cmd4')">Copy</button>
       </div>
     </div>
-    <p class="install-prereq reveal">Codex users can install directly from the GitHub marketplace source. No clone required for normal installs.</p>
+    <p class="install-prereq reveal">Codex users can install directly from the GitHub marketplace source. No clone required for normal installs. This branch pins the test ref until merge.</p>
     <p class="install-prereq reveal">New to Claude Code? <a href="https://code.claude.com/docs/en/quickstart" target="_blank" rel="noopener">Start here &rarr;</a></p>
     <div class="hero-link-wrap reveal">
       <a class="hero-link" href="https://github.com/pcatattacks/solopreneur-plugin" target="_blank" rel="noopener">

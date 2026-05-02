@@ -43,6 +43,7 @@ def main() -> int:
         "skills",
         "agents",
         "hooks/hooks.json",
+        "hooks/codex-hooks.json",
         "scripts/observer-log.sh",
         "scripts/verify-codex-install.sh",
         "evals/run-evals.sh",
@@ -63,6 +64,8 @@ def main() -> int:
         fail(".codex-plugin/plugin.json must reference shared ./skills/")
     if codex.get("mcpServers") != "./.mcp.json":
         fail(".codex-plugin/plugin.json must reference shared ./.mcp.json")
+    if codex.get("hooks") != "./hooks/codex-hooks.json":
+        fail(".codex-plugin/plugin.json must point Codex at safe hook config")
     if codex_marketplace.get("name") != "solopreneur":
         fail(".agents/plugins/marketplace.json name must be solopreneur")
     entries = codex_marketplace.get("plugins")
@@ -72,13 +75,19 @@ def main() -> int:
     if entry.get("name") != "solopreneur":
         fail(".agents/plugins/marketplace.json plugin entry name must be solopreneur")
     source = entry.get("source", {})
-    if source.get("source") != "local" or source.get("path") != ".":
-        fail(".agents/plugins/marketplace.json must point solopreneur at the shared repo root")
+    if source.get("source") != "url" or source.get("url") != "https://github.com/pcatattacks/solopreneur-plugin.git":
+        fail(".agents/plugins/marketplace.json must use a Git-backed root plugin source")
+    if source.get("ref") != "codex-plugin-compat":
+        fail(".agents/plugins/marketplace.json must pin this test branch until merge")
     policy = entry.get("policy", {})
     if policy.get("installation") != "AVAILABLE" or policy.get("authentication") != "ON_INSTALL":
         fail(".agents/plugins/marketplace.json must mark solopreneur available on install")
     if (ROOT / "plugins" / "solopreneur" / "skills").exists():
         fail("do not create a duplicated plugins/solopreneur/skills tree")
+
+    codex_hooks = load_json(ROOT / "hooks/codex-hooks.json")
+    if codex_hooks != {"hooks": {}}:
+        fail("hooks/codex-hooks.json must remain empty so Codex does not run Claude-only hooks")
 
     agents = ROOT / "AGENTS.md"
     if agents.is_symlink():

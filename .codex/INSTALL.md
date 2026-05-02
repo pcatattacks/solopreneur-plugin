@@ -1,13 +1,15 @@
 # Installing Solopreneur for Codex
 
-Solopreneur supports Codex without duplicating plugin files. The repository root is both the marketplace root and the plugin root: Codex reads `.agents/plugins/marketplace.json`, which points to `.`, then reads `.codex-plugin/plugin.json` and the shared `skills/` directory.
+Solopreneur supports Codex without duplicating plugin files. The repository root is both the marketplace root and the plugin root: Codex reads `.agents/plugins/marketplace.json`, whose plugin entry uses a Git-backed root source for this repository, then reads `.codex-plugin/plugin.json` and the shared `skills/` directory.
+
+This branch pins the Git-backed plugin entry to `codex-plugin-compat` for testing. Remove that marketplace `ref` before merging to `main`.
 
 ## Recommended: Plugin Marketplace
 
 Normal users do not need to clone the repository first.
 
 ```bash
-codex plugin marketplace add pcatattacks/solopreneur-plugin
+codex plugin marketplace add pcatattacks/solopreneur-plugin --ref codex-plugin-compat
 ```
 
 Then open Codex, install or enable the `solopreneur` plugin from the marketplace UI, and restart Codex if prompted.

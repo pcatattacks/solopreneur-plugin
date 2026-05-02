@@ -7,8 +7,9 @@
     {
       "name": "solopreneur",
       "source": {
-        "source": "local",
-        "path": "."
+        "source": "url",
+        "url": "https://github.com/pcatattacks/solopreneur-plugin.git",
+        "ref": "codex-plugin-compat"
       },
       "policy": {
         "installation": "AVAILABLE",

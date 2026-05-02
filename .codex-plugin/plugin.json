@@ -19,6 +19,7 @@
   ],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/codex-hooks.json",
   "interface": {
     "displayName": "Solopreneur",
     "shortDescription": "A virtual AI company for solo builders",

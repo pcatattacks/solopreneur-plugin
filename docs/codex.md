@@ -1,6 +1,8 @@
 # Solopreneur on Codex
 
-Solopreneur is packaged as a root-level Codex plugin. The marketplace catalog lives at `.agents/plugins/marketplace.json` and points to `.`, so the Codex manifest at `.codex-plugin/plugin.json` and the shared root `skills/` directory are used directly. There is no copied Codex-only skill tree.
+Solopreneur is packaged as a root-level Codex plugin. The marketplace catalog lives at `.agents/plugins/marketplace.json` and uses a Git-backed root source for this repository, so the Codex manifest at `.codex-plugin/plugin.json` and the shared root `skills/` directory are used directly. There is no copied Codex-only skill tree.
+
+The `codex-plugin-compat` branch temporarily pins that Git-backed plugin source to `codex-plugin-compat` for testing. Remove the branch `ref` before merging to `main`.
 
 ## Install Options
 
@@ -9,7 +11,7 @@ Solopreneur is packaged as a root-level Codex plugin. The marketplace catalog li
 Normal users do not need to clone the repository first.
 
 ```bash
-codex plugin marketplace add pcatattacks/solopreneur-plugin
+codex plugin marketplace add pcatattacks/solopreneur-plugin --ref codex-plugin-compat
 ```
 
 Install or enable `solopreneur` in Codex after registering the marketplace.
