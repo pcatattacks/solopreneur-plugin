@@ -27,6 +27,16 @@ if ! grep -q "source = \"$PLUGIN_DIR\"" "$tmp_home/config.toml"; then
   exit 1
 fi
 
+if [ ! -f "$PLUGIN_DIR/.agents/plugins/marketplace.json" ]; then
+  echo "FAIL: missing Codex marketplace catalog at .agents/plugins/marketplace.json"
+  exit 1
+fi
+
+if ! grep -q '"path": "."' "$PLUGIN_DIR/.agents/plugins/marketplace.json"; then
+  echo "FAIL: Codex marketplace catalog must point solopreneur at the shared repo root"
+  exit 1
+fi
+
 echo "Checking native skill discovery symlink fallback..."
 mkdir -p "$tmp_home/skills"
 ln -s "$PLUGIN_DIR/skills" "$tmp_home/skills/solopreneur"

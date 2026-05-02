@@ -36,6 +36,7 @@ def main() -> int:
         ".claude-plugin/plugin.json",
         ".claude-plugin/marketplace.json",
         ".codex-plugin/plugin.json",
+        ".agents/plugins/marketplace.json",
         ".codex/INSTALL.md",
         "AGENTS.md",
         "CLAUDE.md",
@@ -51,6 +52,7 @@ def main() -> int:
 
     claude = load_json(ROOT / ".claude-plugin/plugin.json")
     codex = load_json(ROOT / ".codex-plugin/plugin.json")
+    codex_marketplace = load_json(ROOT / ".agents/plugins/marketplace.json")
     load_json(ROOT / ".claude-plugin/marketplace.json")
 
     if claude.get("name") != "solopreneur":
@@ -61,6 +63,20 @@ def main() -> int:
         fail(".codex-plugin/plugin.json must reference shared ./skills/")
     if codex.get("mcpServers") != "./.mcp.json":
         fail(".codex-plugin/plugin.json must reference shared ./.mcp.json")
+    if codex_marketplace.get("name") != "solopreneur":
+        fail(".agents/plugins/marketplace.json name must be solopreneur")
+    entries = codex_marketplace.get("plugins")
+    if not isinstance(entries, list) or len(entries) != 1:
+        fail(".agents/plugins/marketplace.json must contain exactly one plugin entry")
+    entry = entries[0]
+    if entry.get("name") != "solopreneur":
+        fail(".agents/plugins/marketplace.json plugin entry name must be solopreneur")
+    source = entry.get("source", {})
+    if source.get("source") != "local" or source.get("path") != ".":
+        fail(".agents/plugins/marketplace.json must point solopreneur at the shared repo root")
+    policy = entry.get("policy", {})
+    if policy.get("installation") != "AVAILABLE" or policy.get("authentication") != "ON_INSTALL":
+        fail(".agents/plugins/marketplace.json must mark solopreneur available on install")
     if (ROOT / "plugins" / "solopreneur" / "skills").exists():
         fail("do not create a duplicated plugins/solopreneur/skills tree")
 

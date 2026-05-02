@@ -1,6 +1,6 @@
 # Solopreneur on Codex
 
-Solopreneur is packaged as a root-level Codex plugin. The Codex manifest lives at `.codex-plugin/plugin.json` and points at the shared root `skills/` directory. There is no copied Codex-only skill tree.
+Solopreneur is packaged as a root-level Codex plugin. The marketplace catalog lives at `.agents/plugins/marketplace.json` and points to `.`, so the Codex manifest at `.codex-plugin/plugin.json` and the shared root `skills/` directory are used directly. There is no copied Codex-only skill tree.
 
 ## Install Options
 

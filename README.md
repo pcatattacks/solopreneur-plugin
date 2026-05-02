@@ -4,7 +4,7 @@
 
 You're a solopreneur. You have ideas, ambition, and not enough hours in the day. Solopreneur gives your coding agent a structured virtual company: an engineer, designer, QA lead, researcher, business analyst, and content strategist working from shared workflows and decision memory.
 
-Solopreneur works as a Claude Code plugin and as a Codex plugin. Both platforms use the same root `skills/`, `agents/`, `hooks/`, and `scripts/` directories; there is no duplicated Codex-only skill tree.
+Solopreneur works as a Claude Code plugin and as a Codex plugin. Both platforms use the same root `skills/`, `agents/`, `hooks/`, and `scripts/` directories; there is no duplicated Codex-only skill tree. The Codex marketplace catalog at `.agents/plugins/marketplace.json` points back to the repository root.
 
 ## What Makes This Different
 

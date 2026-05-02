@@ -1,6 +1,6 @@
 # Installing Solopreneur for Codex
 
-Solopreneur supports Codex without duplicating plugin files. The repository root is the plugin root: Codex reads `.codex-plugin/plugin.json`, and the skills come from the same `skills/` directory used by Claude Code.
+Solopreneur supports Codex without duplicating plugin files. The repository root is both the marketplace root and the plugin root: Codex reads `.agents/plugins/marketplace.json`, which points to `.`, then reads `.codex-plugin/plugin.json` and the shared `skills/` directory.
 
 ## Recommended: Plugin Marketplace
 

@@ -1,0 +1,20 @@
+{
+  "name": "solopreneur",
+  "interface": {
+    "displayName": "Solopreneur"
+  },
+  "plugins": [
+    {
+      "name": "solopreneur",
+      "source": {
+        "source": "local",
+        "path": "."
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
