@@ -2,12 +2,13 @@
 # observer-log.sh - Log CEO decisions to the observer log.
 #
 # Called by compatible hook systems after structured user-question tools.
-# Claude Code uses PostToolUse on AskUserQuestion. Other runners can pipe a
-# similar JSON payload; unsupported payloads are ignored.
+# Claude Code uses PostToolUse on AskUserQuestion. Codex uses UserPromptSubmit.
+# Unsupported payloads are ignored.
 #
 # Hook stdin format:
 #   tool_input.questions  — array of {question, options, ...}
 #   tool_input.answers    — {question_text: selected_label} (filled by permission component)
+#   prompt                — Codex user prompt when hook_event_name is UserPromptSubmit
 
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 LOG_FILE=".solopreneur/observer-log.md"
@@ -20,7 +21,7 @@ INPUT=$(cat 2>/dev/null || echo '{}')
 
 # Pass data via env var — can't pipe + heredoc at the same time (heredoc steals stdin)
 INPUT="$INPUT" TIMESTAMP="$TIMESTAMP" LOG_FILE="$LOG_FILE" python3 << 'PYEOF'
-import json, os
+import json, os, re
 
 timestamp = os.environ.get("TIMESTAMP", "")
 log_file = os.environ.get("LOG_FILE", ".solopreneur/observer-log.md")
@@ -28,6 +29,68 @@ log_file = os.environ.get("LOG_FILE", ".solopreneur/observer-log.md")
 try:
     data = json.loads(os.environ.get("INPUT", "{}"))
 except Exception:
+    exit(0)
+
+def append_lines(lines):
+    if lines:
+        with open(log_file, "a") as f:
+            f.write("\n".join(lines) + "\n")
+
+def summarize_prompt(prompt):
+    summary = " ".join(prompt.strip().split())
+    if len(summary) > 220:
+        return summary[:217].rstrip() + "..."
+    return summary
+
+def is_decision_like(prompt):
+    if not isinstance(prompt, str):
+        return False
+    text = " ".join(prompt.lower().split())
+    if not text:
+        return False
+    patterns = [
+        r"\blet'?s\b",
+        r"\bgo with\b",
+        r"\bchoose\b",
+        r"\bprefer\b",
+        r"\bswitch to\b",
+        r"\bstick with\b",
+        r"\bi want\b",
+        r"\bi do want\b",
+        r"\bi don't want\b",
+        r"\bi do not want\b",
+        r"\bwe need\b",
+        r"\bwe should\b",
+        r"\bneed to\b",
+        r"\bshould\b",
+        r"\bmake sure\b",
+        r"\bensure\b",
+        r"\bmust\b",
+        r"\bdon't\b",
+        r"\bdo not\b",
+        r"\bavoid\b",
+        r"\bskip\b",
+        r"\bremove\b",
+        r"\bdelete\b",
+        r"\bstop\b",
+        r"\byes\b",
+        r"\bno\b",
+        r"\bthat works\b",
+        r"\bdo that\b",
+        r"\bgo ahead\b",
+    ]
+    return any(re.search(pattern, text) for pattern in patterns)
+
+if data.get("hook_event_name") == "UserPromptSubmit":
+    prompt = data.get("prompt", "")
+    if not is_decision_like(prompt):
+        exit(0)
+    append_lines([
+        f"\n## [{timestamp}] - Codex user direction",
+        f"**Choice**: {summarize_prompt(prompt)}",
+        "**Context**: Captured from Codex `UserPromptSubmit` because the prompt appears to express a decision, preference, constraint, or instruction.",
+        "---",
+    ])
     exit(0)
 
 tool_input = data.get("tool_input", {})
@@ -72,8 +135,7 @@ for q in questions:
     lines.append("---")
 
 if lines:
-    with open(log_file, "a") as f:
-        f.write("\n".join(lines) + "\n")
+    append_lines(lines)
 PYEOF
 
 # --- Log rotation ---

@@ -36,7 +36,6 @@ def main() -> int:
         ".claude-plugin/plugin.json",
         ".claude-plugin/marketplace.json",
         ".codex-plugin/plugin.json",
-        ".agents/plugins/marketplace.json",
         ".codex/INSTALL.md",
         "AGENTS.md",
         "CLAUDE.md",
@@ -53,8 +52,7 @@ def main() -> int:
 
     claude = load_json(ROOT / ".claude-plugin/plugin.json")
     codex = load_json(ROOT / ".codex-plugin/plugin.json")
-    codex_marketplace = load_json(ROOT / ".agents/plugins/marketplace.json")
-    load_json(ROOT / ".claude-plugin/marketplace.json")
+    claude_marketplace = load_json(ROOT / ".claude-plugin/marketplace.json")
 
     if claude.get("name") != "solopreneur":
         fail(".claude-plugin/plugin.json name must be solopreneur")
@@ -66,28 +64,35 @@ def main() -> int:
         fail(".codex-plugin/plugin.json must reference shared ./.mcp.json")
     if codex.get("hooks") != "./hooks/codex-hooks.json":
         fail(".codex-plugin/plugin.json must point Codex at safe hook config")
-    if codex_marketplace.get("name") != "solopreneur":
-        fail(".agents/plugins/marketplace.json name must be solopreneur")
-    entries = codex_marketplace.get("plugins")
+    if claude_marketplace.get("name") != "solopreneur":
+        fail(".claude-plugin/marketplace.json name must be solopreneur")
+    entries = claude_marketplace.get("plugins")
     if not isinstance(entries, list) or len(entries) != 1:
-        fail(".agents/plugins/marketplace.json must contain exactly one plugin entry")
+        fail(".claude-plugin/marketplace.json must contain exactly one plugin entry")
     entry = entries[0]
     if entry.get("name") != "solopreneur":
-        fail(".agents/plugins/marketplace.json plugin entry name must be solopreneur")
-    source = entry.get("source", {})
-    if source.get("source") != "url" or source.get("url") != "https://github.com/pcatattacks/solopreneur-plugin.git":
-        fail(".agents/plugins/marketplace.json must use a Git-backed root plugin source")
-    if source.get("ref") != "codex-plugin-compat":
-        fail(".agents/plugins/marketplace.json must pin this test branch until merge")
-    policy = entry.get("policy", {})
-    if policy.get("installation") != "AVAILABLE" or policy.get("authentication") != "ON_INSTALL":
-        fail(".agents/plugins/marketplace.json must mark solopreneur available on install")
+        fail(".claude-plugin/marketplace.json plugin entry name must be solopreneur")
+    if entry.get("source") != "./":
+        fail(".claude-plugin/marketplace.json must point solopreneur at the shared repo root")
+    if (ROOT / ".agents").exists():
+        fail("do not keep a Codex-only .agents marketplace; use the shared Claude-style marketplace")
+    if (ROOT / ".codex" / "agents").exists():
+        fail("do not create duplicated native Codex agents; use shared agents/*.md role prompts")
     if (ROOT / "plugins" / "solopreneur" / "skills").exists():
         fail("do not create a duplicated plugins/solopreneur/skills tree")
 
     codex_hooks = load_json(ROOT / "hooks/codex-hooks.json")
-    if codex_hooks != {"hooks": {}}:
-        fail("hooks/codex-hooks.json must remain empty so Codex does not run Claude-only hooks")
+    user_prompt_hooks = codex_hooks.get("hooks", {}).get("UserPromptSubmit", [])
+    if not user_prompt_hooks:
+        fail("hooks/codex-hooks.json must register a Codex UserPromptSubmit observer hook")
+    hook_commands = [
+        hook.get("command", "")
+        for group in user_prompt_hooks
+        for hook in group.get("hooks", [])
+        if isinstance(hook, dict)
+    ]
+    if not any("scripts/observer-log.sh" in command for command in hook_commands):
+        fail("hooks/codex-hooks.json must route Codex prompts to scripts/observer-log.sh")
 
     agents = ROOT / "AGENTS.md"
     if agents.is_symlink():
@@ -107,6 +112,25 @@ def main() -> int:
     ]:
         if needle not in readme:
             fail(f"README.md missing required docs: {needle}")
+
+    handbook = (ROOT / "CLAUDE.md").read_text()
+    for needle in [
+        "not native Codex custom agents",
+        "spawn a generic Codex subagent",
+        "agents/<role>.md",
+    ]:
+        if needle not in handbook:
+            fail(f"CLAUDE.md missing Codex role delegation bridge: {needle}")
+
+    codex_docs = (ROOT / "docs/codex.md").read_text()
+    for needle in [
+        "subagent workflows are enabled by default",
+        "target project's `.codex/config.toml`",
+        "not native Codex custom agents",
+        "spawn a generic",
+    ]:
+        if needle not in codex_docs:
+            fail(f"docs/codex.md missing Codex role delegation docs: {needle}")
 
     print("OK: shared root Claude/Codex plugin packaging is valid")
     return 0

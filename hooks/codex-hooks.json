@@ -1,3 +1,16 @@
 {
-  "hooks": {}
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -lc 'for script in \"${CODEX_HOME:-$HOME/.codex}\"/plugins/cache/solopreneur/solopreneur/*/scripts/observer-log.sh scripts/observer-log.sh; do if [ -f \"$script\" ]; then exec bash \"$script\"; fi; done; exit 0'",
+            "timeout": 10,
+            "statusMessage": "Recording Solopreneur decision"
+          }
+        ]
+      }
+    ]
+  }
 }

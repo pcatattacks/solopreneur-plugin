@@ -1,18 +1,47 @@
 # Installing Solopreneur for Codex
 
-Solopreneur supports Codex without duplicating plugin files. The repository root is both the marketplace root and the plugin root: Codex reads `.agents/plugins/marketplace.json`, whose plugin entry uses a Git-backed root source for this repository, then reads `.codex-plugin/plugin.json` and the shared `skills/` directory.
-
-This branch pins the Git-backed plugin entry to `codex-plugin-compat` for testing. Remove that marketplace `ref` before merging to `main`.
+Solopreneur supports Codex without duplicating plugin files. The repository root is both the marketplace root and the plugin root: Codex reads the existing Claude-style marketplace at `.claude-plugin/marketplace.json`, which points to `./`, then reads `.codex-plugin/plugin.json` and the shared `skills/` directory.
 
 ## Recommended: Plugin Marketplace
 
 Normal users do not need to clone the repository first.
 
+For this branch, add the marketplace with the test ref:
+
 ```bash
 codex plugin marketplace add pcatattacks/solopreneur-plugin --ref codex-plugin-compat
 ```
 
-Then open Codex, install or enable the `solopreneur` plugin from the marketplace UI, and restart Codex if prompted.
+Then install the plugin in Codex:
+
+1. Open Codex and run `/plugins`.
+2. Select the `Solopreneur` marketplace tab.
+3. Install or enable the `solopreneur` plugin.
+4. Restart Codex if prompted, then start a fresh session.
+
+Codex subagent workflows are enabled by default in current Codex releases. No feature flag is required for Solopreneur role delegation.
+
+To enable the observer hook for every Codex project, turn on Codex hooks in `${CODEX_HOME:-$HOME/.codex}/config.toml`:
+
+```toml
+[features]
+codex_hooks = true
+```
+
+For project/repo scope only, put the same flag in the target project's `.codex/config.toml`:
+
+```toml
+[features]
+codex_hooks = true
+```
+
+Project-local Codex config is only active when the project `.codex/` layer is trusted. The hook records decision-like user prompts to the same project-local `.solopreneur/observer-log.md` used by Claude Code. Solopreneur still works without this flag, but Codex will not run bundled hooks.
+
+After this branch is merged to `main`, use the same command without the test ref:
+
+```bash
+codex plugin marketplace add pcatattacks/solopreneur-plugin
+```
 
 ## Local Development Install
 
@@ -47,7 +76,7 @@ Restart Codex after creating the link.
 Codex plugin scope behavior depends on the Codex version and UI surface:
 
 - User scope: add the marketplace from your normal Codex config and enable Solopreneur globally.
-- Project scope: if your Codex build exposes project-scoped plugin config, add the marketplace while the target project is active and verify Solopreneur appears only there.
+- Project scope: if your Codex build exposes project-scoped plugin config, add the marketplace while the target project is active and verify Solopreneur appears only there. For repo-scoped observer logging, add `[features].codex_hooks = true` to that repo's `.codex/config.toml` and trust the project config when Codex prompts.
 - Local development: use `codex plugin marketplace add /absolute/path/to/solopreneur-plugin`.
 - Fallback: symlink `skills/` into `${CODEX_HOME:-$HOME/.codex}/skills/solopreneur`.
 

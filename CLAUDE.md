@@ -16,7 +16,27 @@ This handbook is shared by Claude Code, Codex, and other compatible agent runner
 
 ## Team Structure
 
-The following AI employees are available as named roles. If the runner supports named subagents, use the `@role` handles. If it does not, spawn or brief a general agent with the matching file from `agents/*.md`.
+The following AI employees are available as named roles. The files in `agents/*.md` are the canonical role definitions for all runners.
+
+- **Claude Code**: use named agents such as `@engineer`, `@qa`, and `@designer` when available.
+- **Codex**: `agents/*.md` are shared role prompt files, not native Codex custom agents. When a Solopreneur workflow mentions `@engineer`, `@qa`, `@designer`, `@bizops`, `@researcher`, or `@content-strategist`, read the matching `agents/<role>.md` file and spawn a generic Codex subagent with that role brief plus the specific task. Prefer `worker` for implementation, review, design, and writing tasks; prefer `explorer` for read-only research or codebase exploration.
+- **Other runners**: if named subagents are unavailable, simulate or brief the role from the matching `agents/<role>.md` file.
+
+For Codex subagent messages, use this framing:
+
+```text
+Your task is to perform the following Solopreneur role task. Follow the role instructions exactly.
+
+<role-instructions>
+[relevant content from agents/<role>.md]
+</role-instructions>
+
+<task>
+[specific delegated task]
+</task>
+
+Return only the requested role output.
+```
 
 - **Engineer** (`@engineer`): Software architecture, implementation, debugging, code review
 - **Designer** (`@designer`): UI/UX, HTML mockups, user flows, design systems, accessibility
@@ -177,7 +197,7 @@ Always read before writing to avoid overwriting unrelated keys.
 
 The observer captures WHY (CEO decisions), not WHAT (git handles that). These entries are the raw material for the story skill.
 
-**Automatic when supported:** Claude Code hook config logs structured `AskUserQuestion` answers to `.solopreneur/observer-log.md`. Other runners may not expose the same hook payloads.
+**Automatic when supported:** Claude Code hook config logs structured `AskUserQuestion` answers to `.solopreneur/observer-log.md`. Codex logs decision-like `UserPromptSubmit` prompts to the same file when `codex_hooks` is enabled.
 
 **Manual for all runners:** append an observer entry after any of these triggers:
 

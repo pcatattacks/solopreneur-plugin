@@ -27,15 +27,13 @@ if ! grep -q "source = \"$PLUGIN_DIR\"" "$tmp_home/config.toml"; then
   exit 1
 fi
 
-if [ ! -f "$PLUGIN_DIR/.agents/plugins/marketplace.json" ]; then
-  echo "FAIL: missing Codex marketplace catalog at .agents/plugins/marketplace.json"
+if [ ! -f "$PLUGIN_DIR/.claude-plugin/marketplace.json" ]; then
+  echo "FAIL: missing shared Claude-style marketplace at .claude-plugin/marketplace.json"
   exit 1
 fi
 
-if ! grep -q '"source": "url"' "$PLUGIN_DIR/.agents/plugins/marketplace.json" ||
-  ! grep -q '"url": "https://github.com/pcatattacks/solopreneur-plugin.git"' "$PLUGIN_DIR/.agents/plugins/marketplace.json" ||
-  ! grep -q '"ref": "codex-plugin-compat"' "$PLUGIN_DIR/.agents/plugins/marketplace.json"; then
-  echo "FAIL: Codex marketplace catalog must use a Git-backed root plugin source"
+if ! grep -q '"source": "./"' "$PLUGIN_DIR/.claude-plugin/marketplace.json"; then
+  echo "FAIL: shared Claude-style marketplace must point solopreneur at the repo root"
   exit 1
 fi
 

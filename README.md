@@ -4,9 +4,7 @@
 
 You're a solopreneur. You have ideas, ambition, and not enough hours in the day. Solopreneur gives your coding agent a structured virtual company: an engineer, designer, QA lead, researcher, business analyst, and content strategist working from shared workflows and decision memory.
 
-Solopreneur works as a Claude Code plugin and as a Codex plugin. Both platforms use the same root `skills/`, `agents/`, `hooks/`, and `scripts/` directories; there is no duplicated Codex-only skill tree. The Codex marketplace catalog at `.agents/plugins/marketplace.json` uses a Git-backed root plugin source that points back to this repository.
-
-The `codex-plugin-compat` branch temporarily pins that Git-backed plugin source to `codex-plugin-compat` for branch testing. Remove the branch `ref` before merging to `main`.
+Solopreneur works as a Claude Code plugin and as a Codex plugin. Both platforms use the same root `skills/`, `agents/`, `hooks/`, and `scripts/` directories; there is no duplicated Codex-only skill tree. Codex reads the existing Claude-style marketplace at `.claude-plugin/marketplace.json`, which points back to the shared repository root.
 
 ## What Makes This Different
 
@@ -52,13 +50,28 @@ Start with:
 ### Install in Codex
 
 Codex reads the root `.codex-plugin/plugin.json` and the shared `skills/` directory.
-Normal users do not need to clone the repository first:
+Normal users do not need to clone the repository first.
+
+For this branch, add the marketplace with the test ref:
 
 ```bash
 codex plugin marketplace add pcatattacks/solopreneur-plugin --ref codex-plugin-compat
 ```
 
-Then enable or install `solopreneur` from Codex. For local development:
+Then install the plugin in Codex:
+
+1. Open Codex and run `/plugins`.
+2. Select the `Solopreneur` marketplace tab.
+3. Install or enable the `solopreneur` plugin.
+4. Restart Codex if prompted, then start a fresh session.
+
+After this branch is merged to `main`, use the same command without the test ref:
+
+```bash
+codex plugin marketplace add pcatattacks/solopreneur-plugin
+```
+
+For local development:
 
 ```bash
 git clone https://github.com/pcatattacks/solopreneur-plugin.git
@@ -130,7 +143,7 @@ You can skip steps, jump ahead, or start wherever makes sense.
 | **Researcher** | Competitive analysis, market research, trend identification |
 | **Content Strategist** | Copywriting, tutorials, launch communications, documentation |
 
-Agent runners differ in how they expose named subagents. When named agents are unavailable, use the role descriptions in `agents/*.md` as delegation prompts.
+Agent runners differ in how they expose named subagents. The `agents/*.md` files are the canonical role definitions. Claude Code can use named agents when available; Codex should read the matching role file and spawn a generic subagent with that role brief; other runners can simulate or brief the role in-session.
 
 ## Skills Reference
 
@@ -165,7 +178,7 @@ Runtime files live under:
   observer-archives/
 ```
 
-Claude Code can use the included hook to capture structured questions automatically. Other agent runners should append manual observer entries when the user explains a decision, rejects an approach, or pivots direction.
+Claude Code can use the included `AskUserQuestion` hook to capture structured decisions automatically. Codex can use the included `UserPromptSubmit` hook when `codex_hooks` is enabled; it writes decision-like user directions to the same `.solopreneur/observer-log.md` file so a project can move between agents without losing the decision trail.
 
 ## MCP and Browser Tools
 
@@ -217,8 +230,12 @@ bash evals/run-evals.sh --parallel
 Override models via environment variables or CLI flags:
 
 ```bash
+# Claude runner aliases
 EVAL_MODEL=opus JUDGE_MODEL=opus bash evals/run-evals.sh
 bash evals/run-evals.sh --eval-model haiku --judge-model haiku
+
+# Codex runner: omit models for the Codex CLI default, or pass Codex model ids
+bash evals/run-evals.sh --runner codex --eval-model <codex-model-id> --judge-model <codex-model-id>
 ```
 
 ## Packaging Checks
@@ -241,7 +258,7 @@ solopreneur-plugin/
 ├── CLAUDE.md                      # Shared agent handbook
 ├── agents/                        # Employee definitions
 ├── skills/                        # Workflows and SOPs
-├── hooks/                         # Hook config for runners that support it
+├── hooks/                         # Claude Code and Codex hook configs
 ├── scripts/                       # Helper and validation scripts
 ├── evals/                         # Eval runner and rubric grader
 ├── docs/                          # Website and platform docs

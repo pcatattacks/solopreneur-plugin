@@ -11,7 +11,8 @@
 #   bash evals/run-evals.sh discover design ship  # Run a subset of skills
 #   bash evals/run-evals.sh --dry            # Dry run (show test cases without executing)
 #   bash evals/run-evals.sh discover --dry   # Dry run for one skill
-#   bash evals/run-evals.sh --eval-model haiku --judge-model haiku  # Fast mode
+#   bash evals/run-evals.sh --eval-model haiku --judge-model haiku  # Claude fast mode
+#   bash evals/run-evals.sh --runner codex --eval-model <codex-model-id>
 #   bash evals/run-evals.sh --parallel       # Run skills in parallel (default: 5 concurrent)
 #   bash evals/run-evals.sh --parallel 10    # Parallel with custom concurrency
 #   bash evals/run-evals.sh discover design ship --parallel  # Subset in parallel
@@ -19,8 +20,8 @@
 #
 # Flags:
 #   --dry                Dry run (show test cases without executing)
-#   --eval-model MODEL   Model for skill invocation (default: sonnet, env: EVAL_MODEL)
-#   --judge-model MODEL  Model for rubric grading (default: sonnet, env: JUDGE_MODEL)
+#   --eval-model MODEL   Model for skill invocation (Claude default: sonnet; Codex default: CLI default)
+#   --judge-model MODEL  Model for rubric grading (Claude default: sonnet; Codex default: CLI default)
 #   --parallel [N]       Run skills in parallel (default N=5, max concurrency)
 #   --runner RUNNER      claude (default), codex, or auto
 #
@@ -116,9 +117,21 @@ if [ "$EVAL_RUNNER" != "claude" ] && [ "$EVAL_RUNNER" != "codex" ]; then
 fi
 
 if [ "$EVAL_RUNNER" = "claude" ]; then
+  [ "$EVAL_MODEL" = "default" ] && EVAL_MODEL=""
+  [ "$JUDGE_MODEL" = "default" ] && JUDGE_MODEL=""
   EVAL_MODEL="${EVAL_MODEL:-sonnet}"
   JUDGE_MODEL="${JUDGE_MODEL:-sonnet}"
 else
+  for _model_value in "$EVAL_MODEL" "$JUDGE_MODEL"; do
+    case "$_model_value" in
+      haiku|sonnet|opus)
+        echo "Model alias '$_model_value' is Claude-specific. For --runner codex, omit the model to use the Codex default or pass an explicit Codex model id accepted by 'codex exec --model'." >&2
+        exit 1
+        ;;
+    esac
+  done
+  [ "$EVAL_MODEL" = "default" ] && EVAL_MODEL=""
+  [ "$JUDGE_MODEL" = "default" ] && JUDGE_MODEL=""
   EVAL_MODEL="${EVAL_MODEL:-}"
   JUDGE_MODEL="${JUDGE_MODEL:-}"
 fi
@@ -264,7 +277,11 @@ run_agent_prompt() {
       model_args=()
       [ -n "$JUDGE_MODEL" ] && model_args=(--model "$JUDGE_MODEL")
     fi
-    printf '%s\n' "$prompt" | (cd "$workdir" && codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check "${model_args[@]}" -)
+    if [ "${#model_args[@]}" -gt 0 ]; then
+      printf '%s\n' "$prompt" | (cd "$workdir" && codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check "${model_args[@]}" -)
+    else
+      printf '%s\n' "$prompt" | (cd "$workdir" && codex exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check -)
+    fi
   else
     if [ "$mode" = "judge" ]; then
       printf '%s\n' "$prompt" | claude --print --model "$JUDGE_MODEL"
